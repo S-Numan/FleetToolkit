@@ -22,6 +22,6 @@ object VariantFormat : Format<DataVariant.ParsedVariantData> {
             suppressedMods = c.strSet(d?.suppressedMods),
             wings = c.strList(d?.wings),
             weaponGroups = c.list(d?.weaponGroups, WeaponGroupFormat),
-            moduleVariants = c.map(d?.moduleVariants) { sync(c, it) }
+            moduleVariants = c.map(d?.moduleVariants) { c.nested { sync(c, it) } }
         )
 }

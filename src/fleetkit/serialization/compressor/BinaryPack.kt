@@ -56,7 +56,12 @@ object BinaryPack {
         else PackDictionariesV1.byVersion[dictVersion]
             ?: error("Unknown dictionary version '$dictVersion' (code from a newer version?)")
 
-        val data = Base64.getDecoder().decode(code.substring(1))
+        // Stray or mistyped characters make Base64 throw IllegalArgumentException
+        val data = try {
+            Base64.getDecoder().decode(code.substring(1))
+        } catch (e: IllegalArgumentException) {
+            throw IllegalStateException("Corrupt data code", e)
+        }
 
         val inf = Inflater(true)
         try {
@@ -73,6 +78,8 @@ object BinaryPack {
                 if (k == 0 && (inf.needsInput() || inf.needsDictionary())) break
                 off += k
             }
+            // The loop also exits when input runs out, so confirm the stream really ended
+            check(inf.finished()) { "Truncated data code" }
             return raw.copyOf(off)
         } catch (e: DataFormatException) {
             throw IllegalStateException("Corrupt data code", e)

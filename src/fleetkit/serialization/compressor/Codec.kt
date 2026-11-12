@@ -10,6 +10,18 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
 
     val reading: Boolean get() = input != null
 
+    private var depth = 0
+
+    /** Wrap every recursive step in this. Throws on corrupt data that nests too deeply. */
+    fun <T> nested(block: () -> T): T {
+        check(++depth <= MAX_DEPTH) { "Corrupt data: nesting too deep" }
+        try {
+            return block()
+        } finally {
+            depth--
+        }
+    }
+
     // ---- primitives: write `v` (or a default if null) / read and ignore `v` ----
     fun int(v: Int?): Int = input?.readInt() ?: (v ?: 0).also { out!!.writeInt(it) }
     fun long(v: Long?): Long = input?.readLong() ?: (v ?: 0L).also { out!!.writeLong(it) }
@@ -93,5 +105,9 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
             9 -> str(v as? String)
             else -> null // tag 0: null or unsupported type, nothing follows
         }
+    }
+
+    private companion object {
+        const val MAX_DEPTH = 32
     }
 }
