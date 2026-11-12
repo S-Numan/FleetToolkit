@@ -83,6 +83,7 @@ object SerializationUtils {
 
     @JvmOverloads
     fun extractDataFromString(text: String, missing: MissingContent = MissingContent()): Any? {
+        val text = text.trim()
         if (text.isBlank()) return null
         val json = getJSONFromStringSafe(text)
         if (json != null) {
