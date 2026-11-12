@@ -10,11 +10,11 @@ object MemberFormat : Format<DataMember.ParsedMemberData> {
     override fun sync(c: Codec, d: DataMember.ParsedMemberData?) = DataMember.ParsedMemberData(
         variantData = c.opt(d?.variantData, VariantFormat),
         personData = c.opt(d?.personData, PersonFormat),
-        shipName = c.s(d?.shipName),
-        cr = c.optF(d?.cr),
-        hullFraction = c.optF(d?.hullFraction),
-        isMothballed = c.b(d?.isMothballed),
-        isFlagship = c.b(d?.isFlagship),
-        id = c.optS(d?.id)
+        shipName = c.str(d?.shipName),
+        cr = c.optFloat2(d?.cr),
+        hullFraction = c.optFloat2(d?.hullFraction),
+        isMothballed = c.bool(d?.isMothballed),
+        isFlagship = c.bool(d?.isFlagship),
+        id = c.optStr(d?.id)
     )
 }

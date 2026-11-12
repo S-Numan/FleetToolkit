@@ -10,8 +10,8 @@ object WeaponGroupFormat : Format<DataVariant.ParsedWeaponGroup> {
     override val typeId = 'g'
     override val version = 1
     override fun sync(c: Codec, d: DataVariant.ParsedWeaponGroup?) = DataVariant.ParsedWeaponGroup(
-        autofire = c.b(d?.autofire),
+        autofire = c.bool(d?.autofire),
         mode = c.enum(d?.mode, WeaponGroupType.values()),
-        weapons = c.map(d?.weapons) { c.s(it) }
+        weapons = c.map(d?.weapons) { c.str(it) }
     )
 }

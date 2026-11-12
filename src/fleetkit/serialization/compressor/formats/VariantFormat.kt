@@ -9,11 +9,11 @@ object VariantFormat : Format<DataVariant.ParsedVariantData> {
     override val version = 1
     override fun sync(c: Codec, d: DataVariant.ParsedVariantData?): DataVariant.ParsedVariantData =
         DataVariant.ParsedVariantData(
-            hullId = c.s(d?.hullId),
-            variantId = c.s(d?.variantId),
-            displayName = c.s(d?.displayName),
-            fluxCapacitors = c.i(d?.fluxCapacitors),
-            fluxVents = c.i(d?.fluxVents),
+            hullId = c.str(d?.hullId),
+            variantId = c.str(d?.variantId),
+            displayName = c.str(d?.displayName),
+            fluxCapacitors = c.int(d?.fluxCapacitors),
+            fluxVents = c.int(d?.fluxVents),
             tags = c.strList(d?.tags),
             hullMods = c.strSet(d?.hullMods),
             permaMods = c.strSet(d?.permaMods),

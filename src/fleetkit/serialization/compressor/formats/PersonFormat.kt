@@ -10,20 +10,20 @@ object PersonFormat : Format<DataPerson.ParsedPersonData> {
     override val typeId = 'p'
     override val version = 1
     override fun sync(c: Codec, d: DataPerson.ParsedPersonData?) = DataPerson.ParsedPersonData(
-        aiCoreId = c.s(d?.aiCoreId),
-        first = c.s(d?.first),
-        last = c.s(d?.last),
+        aiCoreId = c.str(d?.aiCoreId),
+        first = c.str(d?.first),
+        last = c.str(d?.last),
         gender = c.enum(d?.gender, FullName.Gender.values()),
-        portrait = c.optS(d?.portrait),
+        portrait = c.optStr(d?.portrait),
         tags = c.strSet(d?.tags),
-        rankId = c.s(d?.rankId),
-        postId = c.s(d?.postId),
-        personality = c.s(d?.personality),
-        level = c.optI(d?.level),
-        skills = c.map(d?.skills) { c.f(it) },
-        xp = c.l(d?.xp),
-        bonusXp = c.l(d?.bonusXp),
-        points = c.i(d?.points),
+        rankId = c.str(d?.rankId),
+        postId = c.str(d?.postId),
+        personality = c.str(d?.personality),
+        level = c.optInt(d?.level),
+        skills = c.map(d?.skills) { c.float2(it) },
+        xp = c.long(d?.xp),
+        bonusXp = c.long(d?.bonusXp),
+        points = c.int(d?.points),
         memKeys = c.map(d?.memKeys) { c.any(it) }
     )
 }
