@@ -1,3 +1,7 @@
+# 2.0.1
+- Fix captain picker dialog copy.
+- Fix officer storage.
+
 # 2.0.0
 - Renamed mod to Fleet Toolkit
 - Basic 0.98.5a compatibility, not well tested yet. Expect issues.

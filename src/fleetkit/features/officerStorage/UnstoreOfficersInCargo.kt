@@ -25,12 +25,10 @@ internal class UnstoreOfficersInCargo : EveryFrameScript {
 
             val playerFleet = sector.playerFleet ?: return
 
-            //Mothball captained ships that go above the officer limit
-            if (sector.memoryWithoutUpdate?.getBoolean("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL") != true && !FTSettings.cheatsEnabled() &&
-                playerFleet.fleetData.getAssignedOfficers().count { !it.isMercenary() } > playerFleet.getMaxOfficers()
-            ) {
+            val maxOfficers = playerFleet.getMaxOfficers()
+            if (playerFleet.memoryWithoutUpdate?.getBoolean("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL") != true &&
+                !FTSettings.cheatsEnabled() && playerFleet.fleetData.getAssignedOfficers().count { !it.isMercenary() } > maxOfficers) {
                 var nonMothballedOfficerCount = getNonMothballedOfficerCount(playerFleet)
-                val maxOfficers = playerFleet.getMaxOfficers()
 
                 if (nonMothballedOfficerCount > maxOfficers) {
                     for (member in playerFleet.fleetData.membersListCopy.asReversed()) {
@@ -68,13 +66,15 @@ internal class UnstoreOfficersInCargo : EveryFrameScript {
         if (Mouse.isButtonDown(0)) return // Don't do anything if the mouse is down. This is a hack as isLMBUpEvent does not work properly for the use-case I want to use it for
         val playerFleet = sector.playerFleet?.fleetData ?: return
         playerFleet.membersListCopy.forEach { member ->
-            if (member != null && member.captain != null && member.captain.memoryWithoutUpdate.contains(FTVariables.STORED_OFFICER_TAG)) {
+            if (member?.captain != null && member.captain.memoryWithoutUpdate.contains(FTVariables.STORED_OFFICER_TAG)) {
                 member.captain.memoryWithoutUpdate.unset(FTVariables.STORED_OFFICER_TAG)
                 member.captain.memoryWithoutUpdate.unset(Misc.CAPTAIN_UNREMOVABLE)
 
                 if (!member.captain.isDefault && !member.captain.isAICore) {
                     playerFleet.addOfficer(member.captain)
-                    if (FTSettings.storeOfficersInCargo && getNonMothballedOfficerCount(playerFleet.fleet) == playerFleet.fleet.getMaxOfficers() + 1)
+                    if (FTSettings.storeOfficersInCargo && !FTSettings.cheatsEnabled()
+                        && playerFleet.fleet.memoryWithoutUpdate?.getBoolean("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL") != true
+                        && getNonMothballedOfficerCount(playerFleet.fleet) == playerFleet.fleet.getMaxOfficers() + 1)
                         DisplayMessage.showMessage(FTTxt.txt("officer_limit_reached"), Misc.getNegativeHighlightColor())
                 }
             }

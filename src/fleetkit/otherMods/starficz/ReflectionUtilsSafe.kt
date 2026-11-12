@@ -1,6 +1,7 @@
 package fleetkit.otherMods.starficz
 
 import com.fs.starfarer.api.Global
+import fleetkit.core.util.FTMisc
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 
@@ -9,14 +10,14 @@ internal object ReflectionUtilsSafe {
         val paramTypes = args.map { arg -> arg?.let { it::class.javaPrimitiveType ?: it::class.java } }.toTypedArray()
         val reflectedMethods = this.getMethodsMatching(name, parameterTypes = paramTypes)
         if (reflectedMethods.isEmpty()) {
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "No method found for name: '$name' on class: ${this::class.java.name} " +
-                        "with compatible parameter types derived from arguments: ${paramTypes.contentToString()}"
+                        "with compatible parameter types derived from arguments: ${paramTypes.contentToString()}\n${FTMisc.getStackTraceString()}"
             )
         } else if (reflectedMethods.size > 1) {
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "Ambiguous method call for name: '$name' on class: ${this::class.java.name}. " +
-                        "Multiple methods match parameter types derived from arguments: ${paramTypes.contentToString()}"
+                        "Multiple methods match parameter types derived from arguments: ${paramTypes.contentToString()}\n${FTMisc.getStackTraceString()}"
             )
         } else return reflectedMethods[0].invoke(this, *args)
 
@@ -27,14 +28,14 @@ internal object ReflectionUtilsSafe {
         val paramTypes = args.map { arg -> arg?.let { it::class.javaPrimitiveType ?: it::class.java } }.toTypedArray()
         val reflectedMethods = this.getMethodsMatching(name, parameterTypes = paramTypes)
         if (reflectedMethods.isEmpty())
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "No method found for name: '$name' on class: ${this::class.java.name} " +
-                        "with compatible parameter types derived from arguments: ${paramTypes.contentToString()}"
+                        "with compatible parameter types derived from arguments: ${paramTypes.contentToString()}\n${FTMisc.getStackTraceString()}"
             )
         else if (reflectedMethods.size > 1)
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "Ambiguous method call for name: '$name' on class: ${this::class.java.name}. " +
-                        "Multiple methods match parameter types derived from arguments: ${paramTypes.contentToString()}"
+                        "Multiple methods match parameter types derived from arguments: ${paramTypes.contentToString()}\n${FTMisc.getStackTraceString()}"
             )
         else return reflectedMethods[0].invoke(null, *args)
         return null
@@ -43,14 +44,14 @@ internal object ReflectionUtilsSafe {
     internal fun Any.safeGet(name: String? = null, type: Class<*>? = null, searchSuperclass: Boolean = false): Any? {
         val reflectedFields = this.getFieldsMatching(name, fieldAssignableTo = type, searchSuperclass = searchSuperclass)
         if (reflectedFields.isEmpty())
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "No field found for name: '${name ?: "<any>"}' on class: ${this::class.java.name} " +
-                        "that is assignable to type: '${type?.name ?: "<any>"}'."
+                        "that is assignable to type: '${type?.name ?: "<any>"}'.\n${FTMisc.getStackTraceString()}"
             )
         else if (reflectedFields.size > 1)
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "Ambiguous fields with name: '${name ?: "<any>"}' on class ${this::class.java.name} " +
-                        "assignable to type: '${type?.name ?: "<any>"}'. Multiple fields match."
+                        "assignable to type: '${type?.name ?: "<any>"}'. Multiple fields match.\n${FTMisc.getStackTraceString()}"
             )
         else return reflectedFields[0].get(this)
 
@@ -61,14 +62,14 @@ internal object ReflectionUtilsSafe {
         val valueType = value?.let { it::class.javaPrimitiveType ?: it::class.java }
         val reflectedFields = this.getFieldsMatching(name, fieldAccepts = valueType, searchSuperclass = searchSuperclass)
         if (reflectedFields.isEmpty())
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "No field found for name: '${name ?: "<any>"}' on class: ${this::class.java.name} " +
-                        "that is accepts type: '${valueType?.name ?: "null"}'."
+                        "that is accepts type: '${valueType?.name ?: "null"}'.\n${FTMisc.getStackTraceString()}"
             )
         else if (reflectedFields.size > 1)
-            Global.getLogger(this.javaClass).error(
+            Global.getLogger(FTMisc.getCallerClass()).error(
                 "Ambiguous fields with name: '${name ?: "<any>"}' on class ${this::class.java.name} " +
-                        "assignable to type: '${valueType?.name ?: "null"}'. Multiple fields match."
+                        "assignable to type: '${valueType?.name ?: "null"}'. Multiple fields match.\n${FTMisc.getStackTraceString()}"
             )
         else return reflectedFields[0].set(this, value)
     }
