@@ -19,16 +19,26 @@ class Out {
 
     fun writeByte(b: Int) { ensure(1); buf[len++] = b.toByte() }
     fun writeBoolean(b: Boolean) = writeByte(if (b) 1 else 0)
+
+    // zigzag + varint: small magnitudes (incl. -1) take 1 byte
     fun writeInt(v: Int) {
-        writeByte(v ushr 24); writeByte(v ushr 16); writeByte(v ushr 8); writeByte(v)
+        var x = (v shl 1) xor (v shr 31)
+        while (x and 0x7F.inv() != 0) {
+            writeByte((x and 0x7F) or 0x80)
+            x = x ushr 7
+        }
+        writeByte(x)
     }
+
+    // null-terminated; \u0000 is stripped since it would break decoding
     fun writeUTF(s: String) {
-        val b = s.toByteArray(Charsets.UTF_8)
-        writeInt(b.size)
-        ensure(b.size)
+        val b = s.replace("\u0000", "").toByteArray(Charsets.UTF_8)
+        ensure(b.size + 1)
         System.arraycopy(b, 0, buf, len, b.size)
         len += b.size
+        buf[len++] = 0
     }
+
     fun toByteArray(): ByteArray = buf.copyOf(len)
 }
 
@@ -38,13 +48,29 @@ class In(private val buf: ByteArray, private var pos: Int = 0) {
         return buf[pos++].toInt() and 0xFF
     }
     fun readBoolean(): Boolean = readByte() != 0
-    fun readInt(): Int =
-        (readByte() shl 24) or (readByte() shl 16) or (readByte() shl 8) or readByte()
+
+    fun readInt(): Int {
+        var x = 0
+        var shift = 0
+        while (true) {
+            val b = readByte()
+            x = x or ((b and 0x7F) shl shift)
+            if (b and 0x80 == 0) break
+            shift += 7
+            check(shift < 35) { "Bad varint" }
+        }
+        return (x ushr 1) xor -(x and 1)
+    }
+
     fun readUTF(): String {
-        val n = readInt()
-        check(n >= 0 && pos + n <= buf.size) { "Bad string length" }
-        val s = String(buf, pos, n, Charsets.UTF_8)
-        pos += n
+        val start = pos
+        while (true) {
+            check(pos < buf.size) { "Unterminated string" }
+            if (buf[pos] == 0.toByte()) break
+            pos++
+        }
+        val s = String(buf, start, pos - start, Charsets.UTF_8)
+        pos++ // skip terminator
         return s
     }
 }
@@ -120,7 +146,7 @@ object VariantCodec {
         sync(c, data)
         val raw = out.toByteArray()
 
-        val d = Deflater(Deflater.BEST_COMPRESSION)
+        val d = Deflater(Deflater.BEST_COMPRESSION, true) // true = no zlib header/checksum
         d.setInput(raw)
         d.finish()
         var tmp = ByteArray(raw.size + 64)
@@ -131,24 +157,23 @@ object VariantCodec {
         }
         d.end()
 
-        // prefix with raw length so decode knows how much to inflate
-        val header = Out().apply { writeInt(raw.size) }.toByteArray()
-        val result = header + tmp.copyOf(n)
-        return Base64.getEncoder().encodeToString(result)
+        return Base64.getEncoder().withoutPadding().encodeToString(tmp.copyOf(n))
     }
 
     @JvmStatic
     fun decode(base64: String): DataVariant.ParsedVariantData {
-        val data = Base64.getDecoder().decode(base64)
-        val rawLen = In(data).readInt()
+        val data = Base64.getDecoder().decode(base64) // accepts unpadded input
 
-        val inf = Inflater()
-        inf.setInput(data, 4, data.size - 4)
-        val raw = ByteArray(rawLen)
+        val inf = Inflater(true)
+        inf.setInput(data + 0.toByte()) // extra dummy byte, required by some zlib versions in nowrap mode
+        var raw = ByteArray(1024)
+        var off = 0
         try {
-            var off = 0
-            while (off < rawLen && !inf.finished()) {
-                off += inf.inflate(raw, off, rawLen - off)
+            while (!inf.finished()) {
+                if (off == raw.size) raw = raw.copyOf(raw.size * 2)
+                val k = inf.inflate(raw, off, raw.size - off)
+                if (k == 0 && (inf.needsInput() || inf.needsDictionary())) break
+                off += k
             }
         } catch (e: DataFormatException) {
             throw IllegalStateException("Corrupt variant code", e)
@@ -156,7 +181,7 @@ object VariantCodec {
             inf.end()
         }
 
-        val c = Codec(In(raw))
+        val c = Codec(In(raw.copyOf(off)))
         val version = c.i(null)
         check(version == VERSION) { "Unsupported version $version" }
         return sync(c, null)
