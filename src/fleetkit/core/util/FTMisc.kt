@@ -43,7 +43,7 @@ internal object FTMisc {
         intel!!.endAfterDelay()
     }
 
-    fun printStackTrace(depth: Int): String {
+    /*fun printStackTrace(depth: Int): String {
         var output: String = ""
         val stack = Thread.currentThread().stackTrace
         // skip the first two elements, which are getStackTrace and this method itself
@@ -52,7 +52,10 @@ internal object FTMisc {
             output + stack[i].toString()
         }
         return output
-    }
+    }*/
+
+    fun getStackTraceString(): String =
+        Thread.currentThread().stackTrace.drop(3).joinToString("\n") { "\tat $it" }
 
     internal inline fun runSafe(block: () -> Unit) {
         try {

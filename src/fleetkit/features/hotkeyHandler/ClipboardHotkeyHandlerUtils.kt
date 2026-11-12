@@ -14,6 +14,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Factions
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes
 import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.input.InputEventAPI
+import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import com.fs.starfarer.campaign.fleet.FleetMember
@@ -97,12 +98,12 @@ internal object ClipboardHotkeyHandlerUtils {
                 ?.safeInvoke("getItems") as? MutableList<*> ?: return
 
         val hoverOfficer = officers.firstNotNullOfOrNull { officer ->
-            val selector = officer?.safeInvoke("getSelector") ?: return@firstNotNullOfOrNull null
+            val selector = officer?.safeInvoke("getSelector") as? UIComponentAPI ?: return@firstNotNullOfOrNull null
             val fader = selector.safeInvoke("getMouseoverHighlightFader") as? Fader
                 ?: return@firstNotNullOfOrNull null
 
             if (fader.isHovered()) {
-                val parent = selector.safeInvoke("getParent")
+                val parent = selector.parent
                     ?: return@firstNotNullOfOrNull null
 
                 parent.safeInvoke("getPerson") as? PersonAPI
@@ -483,6 +484,7 @@ internal object ClipboardHotkeyHandlerUtils {
                 }
                 if (!person.isAICore) {
                     playerFleet.addOfficer(person)
+                    val captainPickerDialog = UIFinder.getCaptainPickerDialog()?.safeInvoke("recreate")
                     showMessage(FTTxt.txt("added_officer_to_fleet"))
                 } else {
                     showMessage(FTTxt.txt("no_ai_core_officer"))

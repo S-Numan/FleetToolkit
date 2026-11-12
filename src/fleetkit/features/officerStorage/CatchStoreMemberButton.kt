@@ -61,7 +61,7 @@ internal class CatchStoreMemberButton : CampaignInputListener {
             val memberUI = InternalReflectionMisc.getMemberUIHoveredInFleetTabLowerPanel() ?: return null
 
             try {
-                val parent = (memberUI.safeInvoke("getParent") as? UIPanelAPI) ?: return null
+                val parent = memberUI.parent ?: return null
                 val firstChild = parent.getChildrenCopy().find { it.getFieldsMatching(name = "buyButton").isNotEmpty() } as? UIPanelAPI
                     ?: return null
 
