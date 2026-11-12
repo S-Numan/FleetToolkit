@@ -116,7 +116,8 @@ object CompressedFleet {
                 metaParts.getOrNull(0)?.ifBlank { null }
 
             val aggression =
-                metaParts.getOrNull(1)?.toIntOrNull()?.takeIf { it > 0 }?.let { DataFleet.FleetAggressionV1.fromLevel(it) }
+                metaParts.getOrNull(1)?.toIntOrNull()?.takeIf { it > 0 } // This should be >=, but a lot of the older format was saved with 0 and I can't bother to fix it.
+                    ?.let { DataFleet.FleetAggressionV1.fromLevel(it) }
 
             val factionID =
                 metaParts.getOrNull(2)?.ifBlank { null }
@@ -284,7 +285,7 @@ object CompressedFleet {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            (data.aggression?.level ?: 0).toString(),
+            (data.aggression?.level ?: -1).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 

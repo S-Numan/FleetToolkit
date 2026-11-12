@@ -6,8 +6,9 @@ import java.util.zip.Deflater
 import java.util.zip.Inflater
 
 internal object BinaryPack {
-    fun pack(raw: ByteArray): String {
-        val d = Deflater(Deflater.BEST_COMPRESSION, true) // no zlib header/checksum
+    fun pack(raw: ByteArray, dictVersion: Char = PackDictionaries.LATEST): String {
+        val d = Deflater(Deflater.BEST_COMPRESSION, true)
+        PackDictionaries.byVersion[dictVersion]?.let { d.setDictionary(it) }
         d.setInput(raw)
         d.finish()
         var tmp = ByteArray(raw.size + 64)
@@ -17,12 +18,20 @@ internal object BinaryPack {
             n += d.deflate(tmp, n, tmp.size - n)
         }
         d.end()
-        return Base64.getEncoder().withoutPadding().encodeToString(tmp.copyOf(n))
+        val usedVersion = if (dictVersion in PackDictionaries.byVersion) dictVersion else '0'
+        return usedVersion + Base64.getEncoder().withoutPadding().encodeToString(tmp.copyOf(n))
     }
 
     fun unpack(code: String): ByteArray {
-        val data = Base64.getDecoder().decode(code)
+        require(code.isNotEmpty()) { "Empty data code" }
+        val dictVersion = code[0]
+        val dict = if (dictVersion == '0') null
+        else PackDictionaries.byVersion[dictVersion]
+            ?: error("Unknown dictionary version '$dictVersion' (code from a newer version?)")
+
+        val data = Base64.getDecoder().decode(code.substring(1))
         val inf = Inflater(true)
+        if (dict != null) inf.setDictionary(dict) // must be set before inflating in raw mode
         inf.setInput(data + 0.toByte()) // dummy byte for nowrap mode
         var raw = ByteArray(1024)
         var off = 0

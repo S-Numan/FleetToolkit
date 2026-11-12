@@ -99,7 +99,9 @@ object JSONFleet {
 
         missing.gameMods.addAll(FTMisc.getModInfosFromJson(json))
 
-        val aggression = json.optInt("aggression_doctrine", 0).takeIf { it > 0 }?.let { FleetAggressionV1.fromLevel(it) }
+        val aggression =
+            if(json.has("aggressin_doctrine")) json.optInt("aggression_doctrine", -1).takeIf { it >= 0 }?.let { FleetAggressionV1.fromLevel(it) }
+            else null
 
         val factionID = json.optString("factionID", "")
 

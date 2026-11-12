@@ -20,7 +20,6 @@ import fleetkit.serialization.cargo.CompressedCargo
 import fleetkit.serialization.cargo.JSONCargo
 import fleetkit.serialization.fleet.CompressedFleet
 import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.fleet.DataFleet.FleetAggressionV1
 import fleetkit.serialization.fleet.FleetSettings
 import fleetkit.serialization.fleet.JSONFleet
 import fleetkit.serialization.person.JSONPerson

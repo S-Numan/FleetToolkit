@@ -40,6 +40,7 @@ object DataFleet {
     )
 
     enum class FleetAggressionV1(val level: Int) {
+        TIMID(0),
         CAUTIOUS(1),
         STEADY(2),
         AGGRESSIVE(3),
@@ -315,6 +316,7 @@ object DataFleet {
                 } else if (data.aggression != null && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
                     // Apply doctrinal aggression to default officers
                     val personality = when (data.aggression) {
+                        FleetAggressionV1.TIMID -> Personalities.TIMID
                         FleetAggressionV1.CAUTIOUS -> Personalities.CAUTIOUS
                         FleetAggressionV1.STEADY -> Personalities.STEADY
                         FleetAggressionV1.AGGRESSIVE -> Personalities.AGGRESSIVE
