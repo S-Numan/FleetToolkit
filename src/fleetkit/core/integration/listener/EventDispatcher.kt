@@ -32,6 +32,7 @@ import fleetkit.features.removeOldIntelUpdates.RemoveOldIntelUpdates
 import fleetkit.features.removeRefitHullMod.RemoveRefitHullmod
 import fleetkit.features.transponderOff.TransponderOff
 import fleetkit.serialization.variant.CompressedVariant
+import fleetkit.serialization.variant.DataVariant
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.util.listeners.MemberChangeEvents
 import fleetkit.util.listeners.MemberChangeTracker
@@ -136,7 +137,7 @@ internal class EventDispatcher : EveryFrameScript {
 
             val errorVariant = Global.getSettings().getVariant(Global.getSettings().getErrorVariantID())
             val encodeBaseline = CompressedVariant.saveVariantToCompString(errorVariant)
-            val encoded = VariantCodec.encode(errorVariant)
+            val encoded = VariantCodec.encode(DataVariant.getVariantDataFromVariant(errorVariant))
             val decoded = VariantCodec.decode(encoded)
 
             FTTxt.setup()
