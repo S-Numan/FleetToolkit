@@ -1415,7 +1415,7 @@ object HotkeyHandlerDialogs {
                             playerFleet.addOfficer(captain)
                         }
                     }
-                    sector.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
+                    playerFleet.fleet.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
 
                     if (repairAndSetMaxCR)
                         FleetUtils.fulfillPlayerFleet()

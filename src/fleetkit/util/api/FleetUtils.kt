@@ -120,9 +120,9 @@ object FleetUtils {
         }
 
         if (playerFleet.fleetData.getAssignedOfficers(includeMercenaries = false).size > playerFleet.getMaxOfficers())
-            sector.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
+            playerFleet.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
         else
-            sector.memoryWithoutUpdate?.unset("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL")
+            playerFleet.memoryWithoutUpdate?.unset("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL")
 
         if (playerShuttleExists()) {
             //Need to move the shuttle to the last member in the fleet, but I don't care enough to do this properly.
