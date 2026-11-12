@@ -34,10 +34,16 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
     fun float2(v: Float?): Float = int(((v ?: 0f) * 100f).roundToInt()) / 100f
     fun optFloat2(v: Float?): Float? = opt(v) { float2(it) }
 
+    private fun count(v: Int): Int {
+        val n = int(v)
+        if (input != null) check(n in 0..input.remaining()) { "Corrupt data: bad count $n" }
+        return n
+    }
+
     // ---- collections ----
     fun <T> list(v: Collection<T>?, item: (T?) -> T): List<T> {
         val src = v?.toList() ?: emptyList()
-        val n = int(src.size)
+        val n = count(src.size)
         return List(n) { k -> item(src.getOrNull(k)) }
     }
     fun <T : Any> list(v: Collection<T>?, format: Format<T>): List<T> =
@@ -48,7 +54,7 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
 
     fun <V> map(v: Map<String, V>?, value: (V?) -> V): Map<String, V> {
         val src = v?.entries?.toList() ?: emptyList()
-        val n = int(src.size)
+        val n = count(src.size)
         val result = LinkedHashMap<String, V>()
         for (k in 0 until n) {
             val e = src.getOrNull(k)

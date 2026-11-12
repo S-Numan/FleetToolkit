@@ -37,7 +37,10 @@ internal object BinaryPack {
         var off = 0
         try {
             while (!inf.finished()) {
-                if (off == raw.size) raw = raw.copyOf(raw.size * 2)
+                if (off == raw.size) {
+                    check(raw.size < 1_048_576) { "Data too large" }
+                    raw = raw.copyOf(raw.size * 2)
+                }
                 val k = inf.inflate(raw, off, raw.size - off)
                 if (k == 0 && (inf.needsInput() || inf.needsDictionary())) break
                 off += k

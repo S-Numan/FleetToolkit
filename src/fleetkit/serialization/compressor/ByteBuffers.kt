@@ -3,6 +3,8 @@ package fleetkit.serialization.compressor
 // Byte buffers (no java.io, so the script sandbox is happy)
 object ByteBuffers {
     class In(private val buf: ByteArray, private var pos: Int = 0) {
+        fun remaining(): Int = buf.size - pos
+
         fun readByte(): Int {
             check(pos < buf.size) { "Unexpected end of data" }
             return buf[pos++].toInt() and 0xFF
