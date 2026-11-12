@@ -14,13 +14,13 @@ interface Format<T : Any> {
         val c = Codec(out)
         c.int(version)
         sync(c, data)
-        return typeId + BinaryPack.pack(out.toByteArray())
+        return "${Formats.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
     }
 
     fun decode(code: String): T {
         val clean = Formats.clean(code)
-        check(clean.firstOrNull() == typeId) { "Wrong data type: expected '$typeId'" }
-        val input = ByteBuffers.In(BinaryPack.unpack(clean.substring(1)))
+        check(clean.startsWith(Formats.header(typeId))) { "Wrong data type: expected '$typeId'" }
+        val input = ByteBuffers.In(BinaryPack.unpack(clean.substring(Formats.HEADER_LENGTH)))
         val c = Codec(input)
         val ver = c.int(null)
         check(ver == version) { "Unsupported version $ver" }
@@ -30,5 +30,5 @@ interface Format<T : Any> {
         return result
     }
 
-    fun decodeOrNull(code: String): T? = try { decode(code) } catch (_: RuntimeException) { null }
+    //fun decodeOrNull(code: String): T? = try { decode(code) } catch (_: RuntimeException) { null }
 }

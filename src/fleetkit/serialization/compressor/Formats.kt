@@ -1,11 +1,18 @@
 package fleetkit.serialization.compressor
 
+import com.fs.starfarer.api.Global
 import fleetkit.serialization.compressor.formats.FleetFormat
 import fleetkit.serialization.compressor.formats.MemberFormat
 import fleetkit.serialization.compressor.formats.PersonFormat
 import fleetkit.serialization.compressor.formats.VariantFormat
 
 object Formats {
+    /** Every code starts with this, so ordinary text that happens to begin with a type letter isn't as easily mistaken for one. */
+    const val MARKER = '$'
+    const val HEADER_LENGTH = 2 // MARKER + typeId
+
+    fun header(typeId: Char): String = "$MARKER$typeId"
+
     private val all: List<Format<*>> = listOf(VariantFormat, MemberFormat, PersonFormat, FleetFormat)
 
     init {
@@ -21,13 +28,23 @@ object Formats {
             ?.substringAfterLast(' ')
             ?: ""
 
+    /** Returns the matching format, or null unless the text starts with MARKER followed by a known type id. */
     fun identify(code: String): Format<*>? {
-        val t = clean(code).firstOrNull() ?: return null
-        return all.firstOrNull { it.typeId == t }
+        val c = clean(code)
+        if (c.length <= HEADER_LENGTH || c[0] != MARKER) return null
+        return all.firstOrNull { it.typeId == c[1] }
     }
 
-    fun identifyData(code: String): Any? =
+    fun parseData(code: String): Any? =
         identify(code)?.decode(code)
+
+    fun parseDataOrNull(code: String, logError: Boolean = true): Any? = try {
+        parseData(code)
+    } catch (e: RuntimeException) {
+        if (logError)
+            Global.getLogger(this.javaClass).error("Failed to identify data", e)
+        null
+    }
 
     /**
      * Example usage:
