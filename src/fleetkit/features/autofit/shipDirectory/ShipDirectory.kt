@@ -140,8 +140,10 @@ class ShipDirectory(
         }
 
         // Delete the variant file
-        if (editVariantFile)
+        if (editVariantFile) {
             Global.getSettings().deleteTextFileFromCommon("$dir${entry.path}")
+            Global.getSettings().deleteEmptyFolderFromCommon("$dir${entry.path.substringBeforeLast('/')}")
+        }
 
         // Remove the variant from this class
         shipEntries.remove(variantId)

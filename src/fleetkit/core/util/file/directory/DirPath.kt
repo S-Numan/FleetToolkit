@@ -31,8 +31,10 @@ internal open class DirPath protected constructor(
      */
     open fun delete(): Boolean {
         val exists = exists()
-        if (exists)
+        if (exists) {
             settings.deleteTextFileFromCommon(filePath)
+            settings.deleteEmptyFolderFromCommon(filePath)
+        }
 
         manager?.removeContainingPath(this)
         return exists
