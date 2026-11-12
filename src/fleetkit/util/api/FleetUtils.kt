@@ -131,7 +131,7 @@ object FleetUtils {
         }
 
         if (aggression != null)
-            sector.playerFaction.doctrine.aggression = aggression.ordinal
+            sector.playerFaction.doctrine.aggression = aggression.level
     }
 
     /**

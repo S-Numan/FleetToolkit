@@ -270,7 +270,7 @@ object JSONFleet {
         fleetJson.put("members", membersJson)
         fleetJson.put("variants", variantsJson)
         if (data.aggression != null)
-            fleetJson.put("aggression_doctrine", data.aggression.ordinal)
+            fleetJson.put("aggression_doctrine", data.aggression.level)
 
         if (data.idleOfficers.isNotEmpty()) {
             val idleOfficers = data.idleOfficers.map { officerData ->

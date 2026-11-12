@@ -284,7 +284,7 @@ object CompressedFleet {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            (data.aggression?.ordinal ?: 0).toString(),
+            (data.aggression?.level ?: 0).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 
