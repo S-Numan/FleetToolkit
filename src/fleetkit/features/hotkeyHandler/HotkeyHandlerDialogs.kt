@@ -25,6 +25,7 @@ import com.fs.state.AppDriver
 import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.FTTxt.txtPlural
 import fleetkit.core.util.file.directory.DirFile
@@ -40,9 +41,13 @@ import fleetkit.features.recentBattles.RecentBattleReplay
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.*
+import fleetkit.serialization.compressor.formats.FleetFormat
+import fleetkit.serialization.compressor.formats.VariantFormat
+import fleetkit.serialization.fleet.CompressedFleet
 import fleetkit.serialization.fleet.DataFleet
 import fleetkit.serialization.fleet.FleetSettings
 import fleetkit.serialization.member.DataMember
+import fleetkit.serialization.variant.CompressedVariant
 import fleetkit.serialization.variant.DataVariant
 import fleetkit.ui.UIUtils
 import fleetkit.ui.addButtonD
@@ -90,6 +95,32 @@ import java.util.*
 object HotkeyHandlerDialogs {
 
     fun createDevModeDialog() {
+
+        val errorVariant = Global.getSettings().getVariant(Global.getSettings().getErrorVariantID())
+        val encodeBaselineVariant = CompressedVariant.saveVariantToCompString(errorVariant, includePrepend = false, includeModInfo = false)
+        val encodeVariant = VariantFormat.encode(DataVariant.getVariantDataFromVariant(errorVariant))
+
+        val decodeBaselineVariant = CompressedVariant.extractVariantDataFromCompString(encodeBaselineVariant)
+        val decodeVariant = VariantFormat.decode(encodeVariant)
+
+        if (decodeVariant != decodeBaselineVariant) {
+            val diffs = deepDiff(decodeVariant, decodeBaselineVariant)
+            diffs
+        }
+
+        val playerFleet = Global.getSector().playerFleet
+        val encodeBaselineFleet = CompressedFleet.saveFleetToCompString(playerFleet, includePrepend = false, includeModInfo = false)
+        val encodeFleet = FleetFormat.encode(DataFleet.getFleetDataFromFleet(playerFleet))
+
+        val decodeBaselineFleet = CompressedFleet.extractFleetDataFromCompString(encodeBaselineFleet)
+        val decodeFleet = FleetFormat.decode(encodeFleet)
+
+        if (decodeFleet != decodeBaselineFleet) {
+            val diffs = deepDiff(decodeFleet, decodeBaselineFleet)
+            diffs
+        }
+
+
         val dialog = DialogPanel(FTTxt.txt("dev_options_title"))
         dialog.animation = ModalPanel.PanelAnimation.NONE
         dialog.createUINoise = false

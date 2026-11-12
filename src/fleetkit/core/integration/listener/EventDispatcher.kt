@@ -4,11 +4,9 @@ import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.GameState
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignEventListener
-import fleetkit.VariantCodec
 import fleetkit.core.config.FTSettings
 import fleetkit.core.integration.feature.RemoveNullGoalVariants.removeNullGoalVariants
 import fleetkit.core.integration.plugin.FTCampaignPlugin
-import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.save.backup.SaveBackupManager
 import fleetkit.core.util.save.removable.MakeSaveRemovable
@@ -32,15 +30,12 @@ import fleetkit.features.recentBattles.fleetDirectory.RBFleetDirectoryService
 import fleetkit.features.removeOldIntelUpdates.RemoveOldIntelUpdates
 import fleetkit.features.removeRefitHullMod.RemoveRefitHullmod
 import fleetkit.features.transponderOff.TransponderOff
-import fleetkit.serialization.variant.CompressedVariant
-import fleetkit.serialization.variant.DataVariant
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.util.listeners.MemberChangeEvents
 import fleetkit.util.listeners.MemberChangeTracker
 import fleetkit.util.listeners.OfficerChangeEvents
 import fleetkit.util.listeners.OfficerChangeTracker
 import org.lazywizard.console.Console
-import org.magiclib.kotlin.getErrorVariantID
 import org.magiclib.util.MagicIncompatibleHullmods
 import org.magiclib.util.taskscheduler.CombatTaskScheduler
 import org.magiclib.util.taskscheduler.SectorTaskScheduler
@@ -135,18 +130,6 @@ internal class EventDispatcher : EveryFrameScript {
 
         fun onApplicationLoad() {
             Global.getLogger(this::class.java).info("onApplicationLoad")
-
-            val errorVariant = Global.getSettings().getVariant(Global.getSettings().getErrorVariantID())
-            val encodeBaseline = CompressedVariant.saveVariantToCompString(errorVariant, includePrepend = false, includeModInfo = false)
-            val encoded = VariantCodec.encode(DataVariant.getVariantDataFromVariant(errorVariant))
-
-            val decodeBaseline = CompressedVariant.extractVariantDataFromCompString(encodeBaseline)
-            val decoded = VariantCodec.decode(encoded)
-
-            if (decoded != decodeBaseline) {
-                val diffs = deepDiff(decoded, decodeBaseline)
-                diffs
-            }
 
             FTTxt.setup()
 
