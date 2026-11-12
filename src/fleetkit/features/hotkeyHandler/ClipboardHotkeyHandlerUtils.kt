@@ -484,7 +484,7 @@ internal object ClipboardHotkeyHandlerUtils {
                 }
                 if (!person.isAICore) {
                     playerFleet.addOfficer(person)
-                    val captainPickerDialog = UIFinder.getCaptainPickerDialog()?.safeInvoke("recreate")
+                    UIFinder.getCaptainPickerDialog()?.safeInvoke("recreate")
                     showMessage(FTTxt.txt("added_officer_to_fleet"))
                 } else {
                     showMessage(FTTxt.txt("no_ai_core_officer"))
