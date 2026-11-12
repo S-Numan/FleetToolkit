@@ -1,23 +1,22 @@
 package fleetkit.serialization.compressor
 
 interface Format<T : Any> {
-    val typeId: Char   // 'v' variant, 'm' member, 'p' person, 'f' fleet...
+    val typeId: Char
     val version: Int
     fun sync(c: Codec, d: T?): T
 
     fun encode(data: T): String {
         val out = ByteBuffers.Out()
         val c = Codec(out)
-        c.int(typeId.code)
         c.int(version)
         sync(c, data)
-        return BinaryPack.pack(out.toByteArray())
+        return typeId + BinaryPack.pack(out.toByteArray())
     }
 
     fun decode(code: String): T {
-        val c = Codec(ByteBuffers.In(BinaryPack.unpack(code)))
-        val type = c.int(null)
-        check(type == typeId.code) { "Wrong data type: expected '$typeId'" }
+        val clean = Formats.clean(code)
+        check(clean.firstOrNull() == typeId) { "Wrong data type: expected '$typeId'" }
+        val c = Codec(ByteBuffers.In(BinaryPack.unpack(clean.substring(1))))
         val ver = c.int(null)
         check(ver == version) { "Unsupported version $ver" }
         return sync(c, null)
