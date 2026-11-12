@@ -19,7 +19,6 @@ val modDependencies = listOf(
     "LazyLib-Kotlin.jar",
 
     "MagicLib.jar", //MagicLib
-    "MagicLib-Kotlin.jar",
 
     "LunaLib.jar", //LunaLib
 
@@ -526,7 +525,7 @@ fun stageStarsectorApi(): File {
 
     artifactDir.mkdirs()
 
-    //Only copy if the source is newer than the staged file, so repeat syncs are cheap.
+    //Only copy if the source is newer than the staged file, so rMagicLib-Kotlin.jarepeat syncs are cheap.
     fun stageIfStale(src: File, dst: File) {
         if (!src.exists()) return
         if (!dst.exists() || dst.lastModified() < src.lastModified()) {
