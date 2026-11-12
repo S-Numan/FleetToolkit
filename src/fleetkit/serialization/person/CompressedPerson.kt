@@ -285,7 +285,7 @@ object CompressedPerson {
         parts += data.personality
 
         // Level
-        parts += data.level.toString()
+        parts += (data.level ?: 0).toString()
 
         // Skills
         val skillString = data.skills.entries.joinToString(sep) {

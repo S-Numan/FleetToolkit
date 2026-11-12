@@ -22,8 +22,8 @@ object DataMember {
         val variantData: DataVariant.ParsedVariantData? = null,
         val personData: DataPerson.ParsedPersonData? = null,
         val shipName: String = "",
-        val cr: Float? = 0.7f,
-        val hullFraction: Float? = 1f,
+        val cr: Float? = 0.7f, // Min 0f, Max 1f
+        val hullFraction: Float? = 1f, // Min 0f, max 1f
         val isMothballed: Boolean = false,
         val isFlagship: Boolean = false,
         val id: String? = null

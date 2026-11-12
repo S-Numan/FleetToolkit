@@ -109,7 +109,7 @@ object JSONPerson {
             rankId = json.optString("rank", Ranks.SPACE_LIEUTENANT),
             postId = json.optString("post", Ranks.POST_OFFICER),
             personality = json.optString("personality", Personalities.STEADY),
-            level = json.optInt("level", 0),
+            level = if(!json.has("level")) null else json.optInt("level"),
             skills = skills,
             xp = json.optLong("xp", 0),
             bonusXp = json.optLong("bonusxp", 0),
@@ -158,7 +158,8 @@ object JSONPerson {
             json.put("post", data.postId)
         json.put("personality", data.personality)
 
-        json.put("level", data.level)
+        if (data.level != null)
+            json.put("level", data.level)
 
         if (data.xp != 0L) {
             json.put("xp", data.xp)

@@ -27,18 +27,13 @@ object DataPerson {
         val rankId: String = Ranks.SPACE_LIEUTENANT,
         val postId: String = Ranks.POST_OFFICER,
         val personality: String = Personalities.STEADY,
-        val level: Int = -1,
+        val level: Int? = null,
         val skills: Map<String, Float> = emptyMap(),
         val xp: Long = 0,
         val bonusXp: Long = 0,
         val points: Int = 0,
         val memKeys: Map<String, Any?> = emptyMap()
     )
-
-    @Deprecated("Use clonePerson instead")
-    fun copyPerson(person: PersonAPI): PersonAPI { // TODO, remove on new game update
-        return clonePerson(person)
-    }
 
     @JvmOverloads
     fun clonePerson(
@@ -228,7 +223,7 @@ object DataPerson {
         data.tags.forEach { person.addTag(it) }
         data.skills.forEach { (id, level) -> person.stats.setSkillLevel(id, level) }
 
-        val level = if (data.level > -1) data.level else data.skills.count { it.value >= 1f }
+        val level = data.level ?: data.skills.count { it.value >= 1f }
         person.stats.level = level
 
         person.stats.xp = data.xp
