@@ -59,7 +59,7 @@ object FleetUtils {
     @JvmStatic
     fun replacePlayerFleetWith(
         fleet: CampaignFleetAPI,
-        aggression: Int = -1,
+        aggression: DataFleet.FleetAggressionV1? = null,
         replacePlayer: Boolean = false,
         settings: FleetSettings = FleetSettings()
     ) {
@@ -130,9 +130,8 @@ object FleetUtils {
             addPlayerShuttle()
         }
 
-        if (aggression != -1) {
-            sector.playerFaction.doctrine.aggression = aggression
-        }
+        if (aggression != null)
+            sector.playerFaction.doctrine.aggression = aggression.ordinal
     }
 
     /**

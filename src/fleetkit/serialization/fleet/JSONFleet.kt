@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.FleetDataAPI
 import com.fs.starfarer.api.util.Misc
 import fleetkit.core.util.FTMisc
 import fleetkit.serialization.MissingContent
+import fleetkit.serialization.fleet.DataFleet.FleetAggressionV1
 import fleetkit.serialization.fleet.DataFleet.buildFleetFull
 import fleetkit.serialization.fleet.DataFleet.createCampaignFleetFromData
 import fleetkit.serialization.fleet.DataFleet.getFleetDataFromFleet
@@ -98,7 +99,7 @@ object JSONFleet {
 
         missing.gameMods.addAll(FTMisc.getModInfosFromJson(json))
 
-        val aggression = json.optInt("aggression_doctrine", -1)
+        val aggression = json.optInt("aggression_doctrine", 0).takeIf { it > 0 }?.let { FleetAggressionV1.fromLevel(it) }
 
         val factionID = json.optString("factionID", "")
 
@@ -268,8 +269,8 @@ object JSONFleet {
 
         fleetJson.put("members", membersJson)
         fleetJson.put("variants", variantsJson)
-        if (data.aggression != -1)
-            fleetJson.put("aggression_doctrine", data.aggression)
+        if (data.aggression != null)
+            fleetJson.put("aggression_doctrine", data.aggression.ordinal)
 
         if (data.idleOfficers.isNotEmpty()) {
             val idleOfficers = data.idleOfficers.map { officerData ->

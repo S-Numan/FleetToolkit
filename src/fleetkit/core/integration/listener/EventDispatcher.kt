@@ -8,6 +8,7 @@ import fleetkit.VariantCodec
 import fleetkit.core.config.FTSettings
 import fleetkit.core.integration.feature.RemoveNullGoalVariants.removeNullGoalVariants
 import fleetkit.core.integration.plugin.FTCampaignPlugin
+import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.save.backup.SaveBackupManager
 import fleetkit.core.util.save.removable.MakeSaveRemovable
@@ -136,9 +137,16 @@ internal class EventDispatcher : EveryFrameScript {
             Global.getLogger(this::class.java).info("onApplicationLoad")
 
             val errorVariant = Global.getSettings().getVariant(Global.getSettings().getErrorVariantID())
-            val encodeBaseline = CompressedVariant.saveVariantToCompString(errorVariant)
+            val encodeBaseline = CompressedVariant.saveVariantToCompString(errorVariant, includePrepend = false, includeModInfo = false)
             val encoded = VariantCodec.encode(DataVariant.getVariantDataFromVariant(errorVariant))
+
+            val decodeBaseline = CompressedVariant.extractVariantDataFromCompString(encodeBaseline)
             val decoded = VariantCodec.decode(encoded)
+
+            if (decoded != decodeBaseline) {
+                val diffs = deepDiff(decoded, decodeBaseline)
+                diffs
+            }
 
             FTTxt.setup()
 

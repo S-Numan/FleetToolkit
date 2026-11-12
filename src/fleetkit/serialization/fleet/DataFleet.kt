@@ -30,7 +30,7 @@ import java.util.*
 object DataFleet {
     data class ParsedFleetData(
         val fleetName: String? = null,
-        val aggression: Int = -1,
+        val aggression: FleetAggressionV1? = null,
         val factionID: String? = null,
         val commanderIfNoFlagship: DataPerson.ParsedPersonData? = null, // null if flagship exists, as commander is on flagship
         val members: List<DataMember.ParsedMemberData> = emptyList(),
@@ -38,6 +38,19 @@ object DataFleet {
         val memKeys: Map<String, Any?> = emptyMap(),
         val secondInCommandData: DataSecondInCommand.SecondInCommandData? = null,
     )
+
+    enum class FleetAggressionV1(val level: Int) {
+        CAUTIOUS(1),
+        STEADY(2),
+        AGGRESSIVE(3),
+        FEROCIOUS(4),
+        RECKLESS(5);
+
+        companion object {
+            fun fromLevel(level: Int): FleetAggressionV1 =
+                entries.firstOrNull { it.level == level } ?: STEADY
+        }
+    }
 
     @JvmOverloads
     fun cloneFleet(
@@ -72,7 +85,7 @@ object DataFleet {
 
         val data = ParsedFleetData(
             fleetName = campFleet?.name,
-            aggression = campFleet?.faction?.doctrine?.aggression ?: -1,
+            aggression = campFleet?.faction?.doctrine?.aggression?.let { FleetAggressionV1.fromLevel(it) },
             factionID = campFleet?.faction?.id,
             commanderIfNoFlagship = fleet.commander?.let { if (it.isDefault && it.stats.skillsCopy.count { skill -> skill.skill.isAdmiralSkill && skill.level > 0 } == 0) null else getPersonDataFromPerson(it, filterParsed = false) },
             members = fleet.membersListCopy.map { getMemberDataFromMember(it, filterParsed = false) },
@@ -166,7 +179,7 @@ object DataFleet {
 
         val filteredAggression = if (settings.includeAggression) {
             data.aggression
-        } else -1
+        } else null
 
         return data.copy(
             members = filteredMembers,
@@ -299,15 +312,14 @@ object DataFleet {
                 if (officer.isAICore) return@let
                 if (!officer.isDefault) {
                     fleet.addOfficer(officer)
-                } else if (data.aggression > 0 && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
+                } else if (data.aggression != null && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
                     // Apply doctrinal aggression to default officers
                     val personality = when (data.aggression) {
-                        1 -> Personalities.CAUTIOUS
-                        2 -> Personalities.STEADY
-                        3 -> Personalities.AGGRESSIVE
-                        4 -> if (random.nextBoolean()) Personalities.AGGRESSIVE else Personalities.RECKLESS
-                        5 -> Personalities.RECKLESS
-                        else -> Personalities.STEADY
+                        FleetAggressionV1.CAUTIOUS -> Personalities.CAUTIOUS
+                        FleetAggressionV1.STEADY -> Personalities.STEADY
+                        FleetAggressionV1.AGGRESSIVE -> Personalities.AGGRESSIVE
+                        FleetAggressionV1.FEROCIOUS -> if (random.nextBoolean()) Personalities.AGGRESSIVE else Personalities.RECKLESS
+                        FleetAggressionV1.RECKLESS -> Personalities.RECKLESS
                     }
 
                     officer.setPersonality(personality)

@@ -20,6 +20,7 @@ import fleetkit.serialization.cargo.CompressedCargo
 import fleetkit.serialization.cargo.JSONCargo
 import fleetkit.serialization.fleet.CompressedFleet
 import fleetkit.serialization.fleet.DataFleet
+import fleetkit.serialization.fleet.DataFleet.FleetAggressionV1
 import fleetkit.serialization.fleet.FleetSettings
 import fleetkit.serialization.fleet.JSONFleet
 import fleetkit.serialization.person.JSONPerson
@@ -311,7 +312,7 @@ object PlayerSaveUtils {
 
     data class CompiledSave(
         var fleet: CampaignFleetAPI? = null,
-        var aggressionDoctrine: Int = -1,
+        var aggressionDoctrine: DataFleet.FleetAggressionV1? = null,
         var player: PersonAPI? = null,
         var cargo: CargoAPI? = null,
         var marketCargos: List<MarketCargo>? = null,
@@ -325,7 +326,7 @@ object PlayerSaveUtils {
     ) {
         fun isEmpty(): Boolean {
             return fleet == null &&
-                    aggressionDoctrine == -1 &&
+                    aggressionDoctrine == null &&
                     player == null &&
                     cargo == null &&
                     relations.isNullOrEmpty() &&
@@ -500,10 +501,10 @@ object PlayerSaveUtils {
                     },
                     missing
                 )
-                if (parsedData.aggression != -1)
+                if (parsedData.aggression != null)
                     compiled.aggressionDoctrine = parsedData.aggression
-                else
-                    compiled.aggressionDoctrine = 2
+                //else
+                //    compiled.aggressionDoctrine = DataFleet.FleetAggressionV1.STEADY
 
                 compiled.fleet = fleet
             } catch (e: Exception) {

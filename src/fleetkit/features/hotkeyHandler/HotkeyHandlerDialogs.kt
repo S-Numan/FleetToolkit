@@ -1381,7 +1381,7 @@ object HotkeyHandlerDialogs {
 
                         FleetUtils.replacePlayerFleetWith(
                             fleet,
-                            aggression = if (setAggressionDoctrine) data.aggression else -1,
+                            aggression = if (setAggressionDoctrine) data.aggression else null,
                             replacePlayer = includeCommanderAsCommander && fleet.commander != null && !fleet.commander.isDefault && !fleet.commander.isAICore,
                         )
 

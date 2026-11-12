@@ -116,7 +116,7 @@ object CompressedFleet {
                 metaParts.getOrNull(0)?.ifBlank { null }
 
             val aggression =
-                metaParts.getOrNull(1)?.toIntOrNull() ?: -1
+                metaParts.getOrNull(1)?.toIntOrNull()?.takeIf { it > 0 }?.let { DataFleet.FleetAggressionV1.fromLevel(it) }
 
             val factionID =
                 metaParts.getOrNull(2)?.ifBlank { null }
@@ -284,7 +284,7 @@ object CompressedFleet {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            data.aggression.toString(),
+            (data.aggression?.ordinal ?: 0).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 
