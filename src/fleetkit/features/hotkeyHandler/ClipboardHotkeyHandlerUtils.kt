@@ -430,6 +430,8 @@ internal object ClipboardHotkeyHandlerUtils {
         data: Any,
         missing: MissingContent = MissingContent()
     ): DialogPanel? {
+        require(data is DataFleet.ParsedFleetData || data is DataMember.ParsedMemberData || data is DataVariant.ParsedVariantData || data is DataPerson.ParsedPersonData)
+
         var newData = data
         if (newData !is DataFleet.ParsedFleetData) {
             fun hackTogetherFleet(member: FleetMemberAPI) {
@@ -443,18 +445,23 @@ internal object ClipboardHotkeyHandlerUtils {
 
                 newData = getFleetDataFromFleet(fleet)
             }
-            if (newData is DataMember.ParsedMemberData) {
-                val member = buildMemberFull(newData as DataMember.ParsedMemberData)
-                hackTogetherFleet(member)
-            } else if (newData is DataVariant.ParsedVariantData) {
-                val member = Global.getSettings().createFleetMember(FleetMemberType.SHIP, buildVariantFull(newData as DataVariant.ParsedVariantData))
-                hackTogetherFleet(member)
-            } else if (newData is DataPerson.ParsedPersonData) {
-                showMessage(FTTxt.txt("campaign_officer_spawn"), Color.YELLOW)
-                return null
-            } else {
-                showMessage(FTTxt.txt("data_valid_but_no_campaign_paste"), Color.YELLOW)
-                return null
+            when (newData) {
+                is DataMember.ParsedMemberData -> {
+                    val member = buildMemberFull(newData as DataMember.ParsedMemberData)
+                    hackTogetherFleet(member)
+                }
+                is DataVariant.ParsedVariantData -> {
+                    val member = Global.getSettings().createFleetMember(FleetMemberType.SHIP, buildVariantFull(newData as DataVariant.ParsedVariantData))
+                    hackTogetherFleet(member)
+                }
+                is DataPerson.ParsedPersonData -> {
+                    showMessage(FTTxt.txt("campaign_officer_spawn"), Color.YELLOW)
+                    return null
+                }
+                else -> {
+                    showMessage(FTTxt.txt("data_valid_but_no_campaign_paste"), Color.YELLOW)
+                    return null
+                }
             }
         }
 

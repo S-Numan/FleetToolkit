@@ -633,10 +633,10 @@ object HotkeyHandlerDialogs {
 
         val secondInCommandModEnabled = Global.getSettings().modManager.isModEnabled("second_in_command")
 
-        val sector = Global.getSector()!!
+        val sector = Global.getSector()
         val data = inputData.copy(
             members = inputData.members.map { member ->
-                member.copy(id = sector.genUID())
+                member.copy(id = Misc.genUID())
             }
         )
         val cheatsEnabled = FTSettings.cheatsEnabled() || forceCheatsEnabled // Store this value for if some other logic temporarily enables it to mimic cheats being on without them actually being on.
@@ -1193,241 +1193,243 @@ object HotkeyHandlerDialogs {
                 totalDP.toInt().toString()
             )
 
-            rightUI.addSectionHeading(FTTxt.txt("actions"), factionColor, darkColor, Alignment.MID, 7f)
+            if (Global.getCurrentState() == GameState.CAMPAIGN) {
+                rightUI.addSectionHeading(FTTxt.txt("actions"), factionColor, darkColor, Alignment.MID, 7f)
 
-            val simulatedBattleButton = rightUI.addButton(
-                FTTxt.txt("simulated_battle"),
-                null, factionColor, darkColor,
-                rightWidth - 40f,
-                30f,
-                5f
-            ).apply {
-                setShortcut(Keyboard.KEY_T, true)
-                onClick {
-                    excludeMissingShips(fleet)
+                val simulatedBattleButton = rightUI.addButton(
+                    FTTxt.txt("simulated_battle"),
+                    null, factionColor, darkColor,
+                    rightWidth - 40f,
+                    30f,
+                    5f
+                ).apply {
+                    setShortcut(Keyboard.KEY_T, true)
+                    onClick {
+                        excludeMissingShips(fleet)
 
-                    reportMissingContentIfAny(missingEx)
+                        reportMissingContentIfAny(missingEx)
 
-                    //val battle = Global.getFactory().createBattle(Global.getSector().playerFleet, fleet)
+                        //val battle = Global.getFactory().createBattle(Global.getSector().playerFleet, fleet)
 
-                    // Fleet is not alive (location is null), so battle will see it as empty
-                    //battle.genCombinedDoNotRemoveEmpty()
+                        // Fleet is not alive (location is null), so battle will see it as empty
+                        //battle.genCombinedDoNotRemoveEmpty()
 
-                    val battleContext = BattleCreationContext(sector.playerFleet, FleetGoal.ATTACK, fleet, FleetGoal.ATTACK)
-                    battleContext.fightToTheLast = fightToTheLast
-                    battleContext.aiRetreatAllowed = !fightToTheLast
-                    battleContext.enemyDeployAll = true
-                    battleContext.objectivesAllowed = allowObjectives
-                    battleContext.forceObjectivesOnMap = forceObjectives
-                    battleContext.playerCommandPoints = 5
+                        val battleContext = BattleCreationContext(sector.playerFleet, FleetGoal.ATTACK, fleet, FleetGoal.ATTACK)
+                        battleContext.fightToTheLast = fightToTheLast
+                        battleContext.aiRetreatAllowed = !fightToTheLast
+                        battleContext.enemyDeployAll = true
+                        battleContext.objectivesAllowed = allowObjectives
+                        battleContext.forceObjectivesOnMap = forceObjectives
+                        battleContext.playerCommandPoints = 5
 
-                    val campUI = sector.campaignUI
-                    if (campUI.currentInteractionDialog == null) { // not at interaction?
-                        //Campaign Dialog Shenanigans
-                        val coreUITadId: CoreUITabId? = campUI.getActualCurrentTab()
-                        if (coreUITadId == CoreUITabId.FLEET) {
-                            dialog.forceDismiss()
-
-                            campUI.safeInvoke("setNextTransitionFast", true)
-                            val coreUI = UIFinder.getCoreUI()
-                            coreUI?.safeInvoke("dialogDismissed", coreUI, 0)
-                        }
-
-                        var dialog: DialogPanel? = dialog
-                        if (coreUITadId == CoreUITabId.FLEET) {
-                            dialog = pasteFleetDialog(inputData, inputMissing, forceCheatsEnabled = cheatsEnabled)
-                        }
-                        RecentBattleReplay.simulateBattle(battleContext) {
-                            //battle.finish(null, false)
-                            CampaignUtils.closeCampaignDummyDialog()
-                            sector.isPaused = true
+                        val campUI = sector.campaignUI
+                        if (campUI.currentInteractionDialog == null) { // not at interaction?
+                            //Campaign Dialog Shenanigans
+                            val coreUITadId: CoreUITabId? = campUI.getActualCurrentTab()
                             if (coreUITadId == CoreUITabId.FLEET) {
+                                dialog.forceDismiss()
+
                                 campUI.safeInvoke("setNextTransitionFast", true)
-                                campUI.showCoreUITab(coreUITadId)
-                                dialog?.panel?.parent?.bringComponentToTop(dialog.panel)
+                                val coreUI = UIFinder.getCoreUI()
+                                coreUI?.safeInvoke("dialogDismissed", coreUI, 0)
                             }
-                            CampaignUtils.openCampaignDummyDialog()
-                        }
 
-                    } else {
-                        RecentBattleReplay.simulateBattle(battleContext) {
-                            //battle.finish(null, false)
-                            dialog.panel.parent?.bringComponentToTop(dialog.panel)
-                        }
-                    }
-                }
-            }
+                            var dialog: DialogPanel? = dialog
+                            if (coreUITadId == CoreUITabId.FLEET) {
+                                dialog = pasteFleetDialog(inputData, inputMissing, forceCheatsEnabled = cheatsEnabled)
+                            }
+                            RecentBattleReplay.simulateBattle(battleContext) {
+                                //battle.finish(null, false)
+                                CampaignUtils.closeCampaignDummyDialog()
+                                sector.isPaused = true
+                                if (coreUITadId == CoreUITabId.FLEET) {
+                                    campUI.safeInvoke("setNextTransitionFast", true)
+                                    campUI.showCoreUITab(coreUITadId)
+                                    dialog?.panel?.parent?.bringComponentToTop(dialog.panel)
+                                }
+                                CampaignUtils.openCampaignDummyDialog()
+                            }
 
-            val fightToTheLastButton = rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.fight_to_last"),
-                fightToTheLast,
-                textColor = brightColor
-            ).apply {
-                onClick {
-                    fightToTheLast = !fightToTheLast
-                    rebuildUI(totalHeight, listUI)
-                }
-                addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
-                    it.addPara(FTTxt.txt("ui.toggle.fight_to_last.tooltip"), 0f)
-                }
-                position.belowLeft(simulatedBattleButton, 2f)
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.allow_objectives"),
-                allowObjectives,
-                textColor = brightColor
-            ).apply {
-                onClick {
-                    allowObjectives = !allowObjectives
-                    rebuildUI(totalHeight, listUI)
-                }
-                addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
-                    it.addPara(FTTxt.txt("ui.toggle.allow_objectives.tooltip"), 0f)
-                }
-                position.belowMid(simulatedBattleButton, 2f)
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.force_objectives"),
-                forceObjectives,
-                textColor = brightColor
-            ).apply {
-                onClick {
-                    forceObjectives = !forceObjectives
-                    rebuildUI(totalHeight, listUI)
-                }
-                addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
-                    it.addPara(FTTxt.txt("ui.toggle.force_objectives.tooltip"), 0f)
-                }
-                position.belowRight(simulatedBattleButton, 2f)
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.include_officers"),
-                includeOfficers,
-                textColor = brightColor
-            ).apply {
-                onClick {
-                    includeOfficers = !includeOfficers
-                    rebuildUI(totalHeight, listUI)
-                }
-                position.belowLeft(fightToTheLastButton, 3f)
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.include_commander"),
-                includeCommanderAsCommander,
-                textColor = brightColor
-            ).apply {
-                onClick {
-                    includeCommanderAsCommander = !includeCommanderAsCommander
-                    rebuildUI(totalHeight, listUI)
-                }
-                addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
-                    it.addPara(FTTxt.txt("ui.toggle.include_commander.tooltip"), 0f)
-                }
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.repair_and_cr"),
-                repairAndSetMaxCR,
-                textColor = brightColor
-            ).onClick {
-                repairAndSetMaxCR = !repairAndSetMaxCR
-                rebuildUI(totalHeight, listUI)
-            }
-
-            rightUI.addCheckboxD(
-                FTTxt.txt("ui.toggle.set_aggression"),
-                setAggressionDoctrine,
-                textColor = brightColor
-            ).onClick {
-                setAggressionDoctrine = !setAggressionDoctrine
-                rebuildUI(totalHeight, listUI)
-            }
-
-            if (cheatsEnabled) {
-                rightUI.addSectionHeading(FTTxt.txt("cheats"), factionColor, darkColor, Alignment.MID, 5f)
-                rightUI.addButton(
-                    FTTxt.txt("spawn_fleet_into_campaign"),
-                    null, factionColor, darkColor,
-                    rightWidth - 40f,
-                    30f,
-                    5f,
-                ).onClick {
-                    excludeMissingShips(fleet)
-
-                    reportMissingContentIfAny(missingEx)
-
-                    sector.playerFleet.containingLocation.spawnFleet(sector.playerFleet, 0f, 0f, fleet)
-                    //dialog.onExit {
-                    //    Global.getSector().campaignUI.showInteractionDialog(fleet)
-                    //}
-                    DisplayMessage.showMessage(FTTxt.txt("clipboard_fleet_added_to_campaign"))
-                    dialog.dismiss()
-                }
-                rightUI.addButton(
-                    FTTxt.txt("replace_player_fleet_with_this_fleet"),
-                    null, factionColor, darkColor,
-                    rightWidth - 40f,
-                    30f,
-                    5f
-                ).onClick {
-                    //excludeMissingShips(fleet)
-
-                    reportMissingContentIfAny(missingEx)
-
-                    FleetUtils.replacePlayerFleetWith(
-                        fleet,
-                        aggression = if (setAggressionDoctrine) data.aggression else -1,
-                        replacePlayer = includeCommanderAsCommander && fleet.commander != null && !fleet.commander.isDefault && !fleet.commander.isAICore,
-                    )
-
-                    if (repairAndSetMaxCR)
-                        FleetUtils.fulfillPlayerFleet()
-
-                    BoxedFleetTab.get()?.updateFleetPanelContents()
-
-                    DisplayMessage.showMessage(FTTxt.txt("player_fleet_replaced"))
-
-                    dialog.dismiss()
-                }
-                rightUI.addButton(
-                    FTTxt.txt("append_to_player_fleet"),
-                    null, factionColor, darkColor,
-                    rightWidth - 40f,
-                    30f,
-                    5f
-                ).onClick {
-                    //excludeMissingShips(fleet)
-
-                    reportMissingContentIfAny(missingEx)
-
-                    val playerFleet = sector.playerFleet.fleetData
-
-                    fleet.fleetData.membersListCopy.forEach { member ->
-                        member.id = sector.genUID()
-                        playerFleet.addFleetMember(member)
-
-                        val captain = member.captain
-                        if (!captain.isDefault && !captain.isAICore) {
-                            playerFleet.addOfficer(captain)
+                        } else {
+                            RecentBattleReplay.simulateBattle(battleContext) {
+                                //battle.finish(null, false)
+                                dialog.panel.parent?.bringComponentToTop(dialog.panel)
+                            }
                         }
                     }
-                    playerFleet.fleet.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
+                }
 
-                    if (repairAndSetMaxCR)
-                        FleetUtils.fulfillPlayerFleet()
+                val fightToTheLastButton = rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.fight_to_last"),
+                    fightToTheLast,
+                    textColor = brightColor
+                ).apply {
+                    onClick {
+                        fightToTheLast = !fightToTheLast
+                        rebuildUI(totalHeight, listUI)
+                    }
+                    addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
+                        it.addPara(FTTxt.txt("ui.toggle.fight_to_last.tooltip"), 0f)
+                    }
+                    position.belowLeft(simulatedBattleButton, 2f)
+                }
 
-                    BoxedFleetTab.get()?.updateFleetPanelContents()
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.allow_objectives"),
+                    allowObjectives,
+                    textColor = brightColor
+                ).apply {
+                    onClick {
+                        allowObjectives = !allowObjectives
+                        rebuildUI(totalHeight, listUI)
+                    }
+                    addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
+                        it.addPara(FTTxt.txt("ui.toggle.allow_objectives.tooltip"), 0f)
+                    }
+                    position.belowMid(simulatedBattleButton, 2f)
+                }
 
-                    if (fleet.fleetData.membersListCopy.size > 1)
-                        DisplayMessage.showMessage(FTTxt.txt("members_appended_into_fleet", fleet.fleetData.membersListCopy.size))
-                    else
-                        DisplayMessage.showMessage(FTTxt.txt("member_appended_into_fleet", fleet.fleetData.membersListCopy.size))
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.force_objectives"),
+                    forceObjectives,
+                    textColor = brightColor
+                ).apply {
+                    onClick {
+                        forceObjectives = !forceObjectives
+                        rebuildUI(totalHeight, listUI)
+                    }
+                    addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
+                        it.addPara(FTTxt.txt("ui.toggle.force_objectives.tooltip"), 0f)
+                    }
+                    position.belowRight(simulatedBattleButton, 2f)
+                }
 
-                    dialog.dismiss()
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.include_officers"),
+                    includeOfficers,
+                    textColor = brightColor
+                ).apply {
+                    onClick {
+                        includeOfficers = !includeOfficers
+                        rebuildUI(totalHeight, listUI)
+                    }
+                    position.belowLeft(fightToTheLastButton, 3f)
+                }
+
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.include_commander"),
+                    includeCommanderAsCommander,
+                    textColor = brightColor
+                ).apply {
+                    onClick {
+                        includeCommanderAsCommander = !includeCommanderAsCommander
+                        rebuildUI(totalHeight, listUI)
+                    }
+                    addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 400f) {
+                        it.addPara(FTTxt.txt("ui.toggle.include_commander.tooltip"), 0f)
+                    }
+                }
+
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.repair_and_cr"),
+                    repairAndSetMaxCR,
+                    textColor = brightColor
+                ).onClick {
+                    repairAndSetMaxCR = !repairAndSetMaxCR
+                    rebuildUI(totalHeight, listUI)
+                }
+
+                rightUI.addCheckboxD(
+                    FTTxt.txt("ui.toggle.set_aggression"),
+                    setAggressionDoctrine,
+                    textColor = brightColor
+                ).onClick {
+                    setAggressionDoctrine = !setAggressionDoctrine
+                    rebuildUI(totalHeight, listUI)
+                }
+
+                if (cheatsEnabled) {
+                    rightUI.addSectionHeading(FTTxt.txt("cheats"), factionColor, darkColor, Alignment.MID, 5f)
+                    rightUI.addButton(
+                        FTTxt.txt("spawn_fleet_into_campaign"),
+                        null, factionColor, darkColor,
+                        rightWidth - 40f,
+                        30f,
+                        5f,
+                    ).onClick {
+                        excludeMissingShips(fleet)
+
+                        reportMissingContentIfAny(missingEx)
+
+                        sector.playerFleet.containingLocation.spawnFleet(sector.playerFleet, 0f, 0f, fleet)
+                        //dialog.onExit {
+                        //    Global.getSector().campaignUI.showInteractionDialog(fleet)
+                        //}
+                        DisplayMessage.showMessage(FTTxt.txt("clipboard_fleet_added_to_campaign"))
+                        dialog.dismiss()
+                    }
+                    rightUI.addButton(
+                        FTTxt.txt("replace_player_fleet_with_this_fleet"),
+                        null, factionColor, darkColor,
+                        rightWidth - 40f,
+                        30f,
+                        5f
+                    ).onClick {
+                        //excludeMissingShips(fleet)
+
+                        reportMissingContentIfAny(missingEx)
+
+                        FleetUtils.replacePlayerFleetWith(
+                            fleet,
+                            aggression = if (setAggressionDoctrine) data.aggression else -1,
+                            replacePlayer = includeCommanderAsCommander && fleet.commander != null && !fleet.commander.isDefault && !fleet.commander.isAICore,
+                        )
+
+                        if (repairAndSetMaxCR)
+                            FleetUtils.fulfillPlayerFleet()
+
+                        BoxedFleetTab.get()?.updateFleetPanelContents()
+
+                        DisplayMessage.showMessage(FTTxt.txt("player_fleet_replaced"))
+
+                        dialog.dismiss()
+                    }
+                    rightUI.addButton(
+                        FTTxt.txt("append_to_player_fleet"),
+                        null, factionColor, darkColor,
+                        rightWidth - 40f,
+                        30f,
+                        5f
+                    ).onClick {
+                        //excludeMissingShips(fleet)
+
+                        reportMissingContentIfAny(missingEx)
+
+                        val playerFleet = sector.playerFleet.fleetData
+
+                        fleet.fleetData.membersListCopy.forEach { member ->
+                            member.id = sector.genUID()
+                            playerFleet.addFleetMember(member)
+
+                            val captain = member.captain
+                            if (!captain.isDefault && !captain.isAICore) {
+                                playerFleet.addOfficer(captain)
+                            }
+                        }
+                        playerFleet.fleet.memoryWithoutUpdate?.set("\$${FTVariables.PREFIX}_NO-OVER-OFFICER-LIMIT-MOTHBALL", true)
+
+                        if (repairAndSetMaxCR)
+                            FleetUtils.fulfillPlayerFleet()
+
+                        BoxedFleetTab.get()?.updateFleetPanelContents()
+
+                        if (fleet.fleetData.membersListCopy.size > 1)
+                            DisplayMessage.showMessage(FTTxt.txt("members_appended_into_fleet", fleet.fleetData.membersListCopy.size))
+                        else
+                            DisplayMessage.showMessage(FTTxt.txt("member_appended_into_fleet", fleet.fleetData.membersListCopy.size))
+
+                        dialog.dismiss()
+                    }
                 }
             }
 

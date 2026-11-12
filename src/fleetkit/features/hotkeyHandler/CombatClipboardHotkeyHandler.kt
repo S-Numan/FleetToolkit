@@ -17,6 +17,7 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.ClipboardMisc
 import fleetkit.serialization.MissingContent
+import fleetkit.serialization.fleet.DataFleet
 import fleetkit.serialization.member.DataMember
 import fleetkit.serialization.reportMissingContentIfAny
 import fleetkit.serialization.variant.DataVariant
@@ -65,10 +66,20 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
                             pasteShipIntoCombat(engine, event)
                             event.consume(); continue
                         } else if (event.eventValue == Keyboard.KEY_V) {
-                            if (Global.getCurrentState() != GameState.COMBAT && !Global.getSettings().isShowingCodex && !DialogUtils.isModalPanelOpen()) {
-                                if (ClipboardHotkeyHandlerUtils.handleRefitPaste()) {
-                                    event.consume(); continue
+                            if (Global.getCurrentState() == GameState.TITLE && !Global.getSettings().isShowingCodex && !DialogUtils.isModalPanelOpen()) {
+                                val missing = MissingContent()
+                                val data = ClipboardMisc.extractDataFromClipboard(missing) ?: continue
+
+                                if(UIFinder.getRefitTab() != null || data is DataVariant.ParsedVariantData || (data is DataMember.ParsedMemberData && data.variantData != null)) {
+                                    if (ClipboardHotkeyHandlerUtils.handleRefitPaste()) {
+                                        event.consume(); continue;
+                                    }
+                                } else if (data is DataFleet.ParsedFleetData) {
+                                    if (ClipboardHotkeyHandlerUtils.pasteFleet(data, missing) != null) {
+                                        event.consume(); continue;
+                                    }
                                 }
+                                event.consume()
                             }
                         }
                     }
