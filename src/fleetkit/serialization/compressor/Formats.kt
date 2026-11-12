@@ -13,13 +13,21 @@ object Formats {
         check(all.map { it.typeId }.toSet().size == all.size) { "Duplicate Format typeId" }
     }
 
-    // Returns the last non-blank line with leading and trailing whitespace removed
-    fun clean(code: String): String = code.lines().lastOrNull { it.isNotBlank() }?.trim() ?: ""
+    /** Returns the last non-blank line, trimmed, keeping only the trailing sequence of characters after the last space. */
+    fun clean(code: String): String =
+        code.lines()
+            .lastOrNull { it.isNotBlank() }
+            ?.trim()
+            ?.substringAfterLast(' ')
+            ?: ""
 
     fun identify(code: String): Format<*>? {
         val t = clean(code).firstOrNull() ?: return null
         return all.firstOrNull { it.typeId == t }
     }
+
+    fun identifyData(code: String): Any? =
+        identify(code)?.decode(code)
 
     /**
      * Example usage:
