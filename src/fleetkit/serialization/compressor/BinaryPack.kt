@@ -35,8 +35,8 @@ object BinaryPack {
         }
     }
 
-    fun pack(raw: ByteArray, dictVersion: Char = PackDictionaries.LATEST): String {
-        val dict = PackDictionaries.byVersion[dictVersion]
+    fun pack(raw: ByteArray, dictVersion: Char = PackDictionariesV1.LATEST): String {
+        val dict = PackDictionariesV1.byVersion[dictVersion]
         val usedVersion = if (dict != null) dictVersion else '0'
 
         // Try every strategy and keep the smallest result
@@ -53,7 +53,7 @@ object BinaryPack {
         require(code.isNotEmpty()) { "Empty data code" }
         val dictVersion = code[0]
         val dict = if (dictVersion == '0') null
-        else PackDictionaries.byVersion[dictVersion]
+        else PackDictionariesV1.byVersion[dictVersion]
             ?: error("Unknown dictionary version '$dictVersion' (code from a newer version?)")
 
         val data = Base64.getDecoder().decode(code.substring(1))
