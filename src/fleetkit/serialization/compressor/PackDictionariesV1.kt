@@ -14,6 +14,12 @@ object PackDictionariesV1 {
 
     // Rarely used: fleet/person memory keys, fleet types, variant tags
     private val rareKeys: List<String> = listOf(
+        "\$resourceSalvageMult", "\$makeNonHostileTakesPriority", "\$tempNotAvoidingAbyssal",
+        "\$avoidingAbyssalHyperspace", "\$exceptionalSleeperPodOfficerOnSectorGen",
+        "\$canOnlyBeEngagedWhenVisibleToPlayer", "\$stationBaseFleet", "\$stationMarket", "\$core_fightToTheLast",
+        "\$fleetBuysStuff", "\$fleetBuysStuffRate", "\$skipTInfo", "\$cfai_makeFleePlayer",
+        "\$sawPlayerTransponderOff", "\$sawPlayerTransponderOn", "\$alwaysSpreadTOffHostility",
+        "\$shownFleetDescAlready", "\$overrideNoAutofit", "\$requiresDiscretionToDeal",
         "\$willHasslePlayer", "\$hassleType", "\$doNotTryToAvoidNearbyFleets", "\$shrinePilgrimFleet",
         "\$academyFleet", "\$mayGoIntoAbyss", "\$officerSkillPicksPerLevel", "\$officerMaxLevel",
         "\$officerMaxEliteSkills", "\$exceptionalSleeperPodOfficer", "\$suspectedAI", "\$story_critical",
@@ -62,14 +68,21 @@ object PackDictionariesV1 {
         "graphics/portraits/portrait43.png", "graphics/portraits/portrait44.png",
         "graphics/portraits/portrait45.png", "graphics/portraits/portrait46.png",
         "graphics/portraits/portrait47.png", "graphics/portraits/portrait48.png",
-        "graphics/portraits/portrait49.png", "graphics/portraits/portrait_ai1b.png",
+        "graphics/portraits/portrait49.png", "graphics/portraits/portrait_ai1.png",
+        "graphics/portraits/portrait_ai1b.png", "graphics/portraits/portrait_ai2.png",
         "graphics/portraits/portrait_ai2b.png", "graphics/portraits/portrait_ai3b.png",
         "graphics/portraits/portrait_corporate01.png", "graphics/portraits/portrait_corporate02.png",
         "graphics/portraits/portrait_corporate03.png", "graphics/portraits/portrait_corporate04.png",
         "graphics/portraits/portrait_corporate05.png", "graphics/portraits/portrait_corporate06.png",
         "graphics/portraits/portrait_corporate07.png", "graphics/portraits/portrait_corporate08.png",
         "graphics/portraits/portrait_corporate09.png", "graphics/portraits/portrait_corporate10.png",
-        "graphics/portraits/portrait_corporate11.png", "graphics/portraits/portrait_diktat01.png",
+        "graphics/portraits/portrait_corporate11.png", "graphics/portraits/portrait_corporate12.png",
+        "graphics/portraits/portrait_corporate13.png", "graphics/portraits/portrait_corporate14.png",
+        "graphics/portraits/portrait_defactioned00.png", "graphics/portraits/portrait_defactioned01.png",
+        "graphics/portraits/portrait_defactioned02.png", "graphics/portraits/portrait_defactioned03.png",
+        "graphics/portraits/portrait_defactioned04.png", "graphics/portraits/portrait_defactioned05.png",
+        "graphics/portraits/portrait_defactioned06.png", "graphics/portraits/portrait_defactioned07.png",
+        "graphics/portraits/portrait_diktat01.png",
         "graphics/portraits/portrait_diktat02.png", "graphics/portraits/portrait_diktat03.png",
         "graphics/portraits/portrait_diktat04.png", "graphics/portraits/portrait_diktat05.png",
         "graphics/portraits/portrait_diktat06.png", "graphics/portraits/portrait_diktat07.png",
@@ -77,7 +90,8 @@ object PackDictionariesV1 {
         "graphics/portraits/portrait_diktat10.png", "graphics/portraits/portrait_diktat11.png",
         "graphics/portraits/portrait_diktat12.png", "graphics/portraits/portrait_diktat13.png",
         "graphics/portraits/portrait_diktat14.png", "graphics/portraits/portrait_diktat15.png",
-        "graphics/portraits/portrait_diktat16.png", "graphics/portraits/portrait_hegemony01.png",
+        "graphics/portraits/portrait_diktat16.png", "graphics/portraits/portrait_generic_grayscale.png",
+        "graphics/portraits/portrait_hegemony01.png",
         "graphics/portraits/portrait_hegemony02.png", "graphics/portraits/portrait_hegemony03.png",
         "graphics/portraits/portrait_hegemony04.png", "graphics/portraits/portrait_hegemony05.png",
         "graphics/portraits/portrait_hegemony06.png", "graphics/portraits/portrait_hegemony07.png",
@@ -223,6 +237,7 @@ object PackDictionariesV1 {
 
     // Ranks
     private val ranks: List<String> = listOf(
+        "artificialIntelligence", "fugitive",
         "houseLeader", "houseLeaderMale", "houseLeaderFemale", "spaceSailor", "spaceChief", "spaceEnsign",
         "spaceCaptain", "spaceAdmiral", "spaceMarshal", "groundPrivate", "groundSergeant", "groundLieutenant",
         "groundCaptain", "groundMajor", "groundColonel", "groundGeneral", "knightCaptain", "chiefHighInspector",
@@ -232,6 +247,8 @@ object PackDictionariesV1 {
 
     // Posts
     private val posts: List<String> = listOf(
+        "personnelOfficer", "underworldBoss", "exile", "assistant_academician", "associate_academician",
+        "alphaCore", "betaCore", "gammaCore",
         "factionLeader", "patrolCommander", "fleetCommander", "baseCommander", "stationCommander",
         "outpostCommander", "portmaster", "intelligenceDirector", "guardLeader", "supplyOfficer", "supplyManager",
         "medicalSupplier", "administrator", "militaryAdministrator", "freeAdmin", "guildMaster", "communeLeader",
@@ -256,7 +273,8 @@ object PackDictionariesV1 {
         "erratic_injector", "escort_package", "ex_phase_coils", "expanded_cargo_holds", "faulty_auto", "fluxshunt",
         "fourteenth", "fragile_subsystems", "glitched_sensors", "ground_support", "hbi", "heg_militarized",
         "high_maintenance", "high_scatter_amp", "hiressensors", "ill_advised", "increased_maintenance",
-        "malfunctioning_comms", "missile_reload", "nav_relay", "neural_integrator", "neural_interface",
+        "low_maintenance", "malfunctioning_comms", "manual_systems", "missile_reload", "nav_relay",
+        "neural_integrator", "neural_interface",
         "never_detaches", "no_weapon_flux", "operations_center", "phase_anchor", "phasefield", "reduced_explosion",
         "repair_gantry", "rugged", "shard_spawner", "shared_flux_sink", "shield_always_on", "shielded_holds",
         "shrouded_lens", "shrouded_mantle", "shrouded_thunderhead", "solar_shielding", "stealth_minefield",
@@ -275,6 +293,7 @@ object PackDictionariesV1 {
 
     // Factions
     private val factions: List<String> = listOf(
+        "diktat_achilles",
         "neutral", "player", "pirates", "hegemony", "independent", "tritachyon", "sindrian_diktat", "lions_guard",
         "knights_of_ludd", "luddic_church", "luddic_path", "persean_league", "derelict", "remnants", "omega",
         "threat", "dweller", "scavengers", "sleeper", "poor", "mercenary"
