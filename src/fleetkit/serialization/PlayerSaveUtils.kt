@@ -500,8 +500,8 @@ object PlayerSaveUtils {
                     },
                     missing
                 )
-                if (parsedData.aggression != null)
-                    compiled.aggressionDoctrine = parsedData.aggression
+                if (parsedData.fleetAggression != null)
+                    compiled.aggressionDoctrine = parsedData.fleetAggression
                 //else
                 //    compiled.aggressionDoctrine = DataFleet.FleetAggressionV1.STEADY
 

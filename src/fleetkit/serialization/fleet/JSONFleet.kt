@@ -125,7 +125,7 @@ object JSONFleet {
 
         return DataFleet.ParsedFleetData(
             fleetName = fleetName,
-            aggression = aggression,
+            fleetAggression = aggression,
             factionID = factionID,
             commanderIfNoFlagship = commander,
             members = members,
@@ -271,8 +271,8 @@ object JSONFleet {
 
         fleetJson.put("members", membersJson)
         fleetJson.put("variants", variantsJson)
-        if (data.aggression != null)
-            fleetJson.put("aggression_doctrine", data.aggression.level)
+        if (data.fleetAggression != null)
+            fleetJson.put("aggression_doctrine", data.fleetAggression.level)
 
         if (data.idleOfficers.isNotEmpty()) {
             val idleOfficers = data.idleOfficers.map { officerData ->

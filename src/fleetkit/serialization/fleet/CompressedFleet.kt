@@ -223,7 +223,7 @@ object CompressedFleet {
 
             return DataFleet.ParsedFleetData(
                 fleetName = fleetName,
-                aggression = aggression,
+                fleetAggression = aggression,
                 factionID = factionID,
                 commanderIfNoFlagship = commander,
                 members = members,
@@ -285,7 +285,7 @@ object CompressedFleet {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            (data.aggression?.level ?: -1).toString(),
+            (data.fleetAggression?.level ?: -1).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 
