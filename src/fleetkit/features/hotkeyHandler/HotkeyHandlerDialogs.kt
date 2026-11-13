@@ -96,35 +96,6 @@ import java.util.*
 object HotkeyHandlerDialogs {
 
     fun createDevModeDialog() {
-
-        val errorVariant = Global.getSettings().getVariant(Global.getSettings().getErrorVariantID())
-        val encodeBaselineVariant = CompressedVariant.saveVariantToCompString(errorVariant, includePrepend = false, includeModInfo = false)
-        val encodeVariant = VariantFormat.encode(DataVariant.getVariantDataFromVariant(errorVariant))
-
-        val decodeBaselineVariant = CompressedVariant.extractVariantDataFromCompString(encodeBaselineVariant)
-        val decodeVariant = VariantFormat.decode(encodeVariant)
-
-        if (decodeVariant != decodeBaselineVariant) {
-            val diffs = deepDiff(decodeVariant, decodeBaselineVariant)
-            diffs
-        }
-
-
-        val playerFleet = Global.getSector().playerFleet
-        val encodeBaselineFleet = CompressedFleet.saveFleetToCompString(playerFleet, includePrepend = false, includeModInfo = false)
-
-        val encodeFleetDescription = FleetFormat.encode(playerFleet)
-
-        val decodeBaselineFleet = CompressedFleet.extractFleetDataFromCompString(encodeBaselineFleet)
-        val decodeFleet = FleetFormat.decode(encodeFleetDescription)
-
-        if (decodeFleet != decodeBaselineFleet) {
-            val diffs = deepDiff(decodeFleet, decodeBaselineFleet)
-            diffs
-        }
-
-
-
         val dialog = DialogPanel(FTTxt.txt("dev_options_title"))
         dialog.animation = ModalPanel.PanelAnimation.NONE
         dialog.createUINoise = false
@@ -269,7 +240,9 @@ object HotkeyHandlerDialogs {
         rightPanel.buildUI(withScroller = true) { rightUI ->
             rightUI.setParaFont(getFontPath(Font.ARIAL_16_BOLD))
             rightUI.addPara("Files:\n", 0f).position.inTL(0f, 10f)
-            (rightPanel.customData as? DirectoryManager)?.getContainingPaths()?.filterIsInstance<DirFile>()?.forEach { path ->
+            val directoryManager = rightPanel.customData as? DirectoryManager
+            val containingPaths = directoryManager?.getContainingPaths()
+            containingPaths?.filterIsInstance<DirFile>()?.forEach { path ->
                 val width = rightUI.computeStringWidth(path.fileName)
                 val button = rightUI.addButtonD(path.fileName, width, style = CutStyle.NONE, pad = 4f)
             }

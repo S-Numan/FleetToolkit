@@ -33,7 +33,30 @@ object DataPerson {
         val bonusXp: Long = 0,
         val points: Int = 0,
         val memKeys: Map<String, Any?> = emptyMap()
-    )
+    ) {
+        @JvmOverloads
+        fun filtered(
+            settings: PersonSettings = PersonSettings(),
+            missing: MissingContent = MissingContent()
+        ): ParsedPersonData = filterParsedPersonData(this, settings, missing)
+
+        @JvmOverloads
+        fun validated(
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): ParsedPersonData = validateAndCleanPersonData(this, missing, random)
+
+        @JvmOverloads
+        fun toPersonUnchecked(random: Random = Random()): PersonAPI = buildPerson(this, random)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun toPerson(
+            settings: PersonSettings = PersonSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): PersonAPI = buildPersonFull(this, settings, missing, random)
+    }
 
     @JvmOverloads
     fun clonePerson(
@@ -95,7 +118,7 @@ object DataPerson {
     ): ParsedPersonData {
         fun shouldKeepSkill(skillId: String): Boolean {
             if (skillId in settings.excludeSkillsWithID) return false
-            if ((data.skills[skillId] ?: 0f) <= 0f) return false
+            //if ((data.skills[skillId] ?: 0f) <= 0f) return false
 
             val skillSpec = MagicLookup.getSkillSpec(skillId)
             if (skillSpec != null) {
@@ -148,7 +171,7 @@ object DataPerson {
         }
 
         val filteredTags = if (!settings.includeTags) emptySet() else
-            data.tags.filter(::shouldKeepTag)
+            data.tags.filterTo(LinkedHashSet()) { shouldKeepTag(it) }
 
         return data.copy(
             skills = newSkills,
@@ -158,7 +181,7 @@ object DataPerson {
             points = if (settings.handleXpAndPoints) data.points else 0,
             rankId = if (settings.handleRankAndPost) data.rankId else Ranks.SPACE_LIEUTENANT,
             postId = if (settings.handleRankAndPost) data.postId else Ranks.POST_OFFICER,
-            tags = filteredTags.toSet()
+            tags = filteredTags
         )
     }
 
@@ -194,6 +217,7 @@ object DataPerson {
         )
     }
 
+    @JvmOverloads
     fun buildPerson(data: ParsedPersonData, random: Random = Random()): PersonAPI {
         val person = if (data.aiCoreId.isNotEmpty()) {
             try {

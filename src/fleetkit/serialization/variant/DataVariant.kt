@@ -39,6 +39,26 @@ object DataVariant {
         val moduleVariants: Map<String, ParsedVariantData> = emptyMap(),
     ) {
         fun allHullMods() = (hullMods + sMods + sModdedBuiltIns + permaMods).toSet()
+
+        @JvmOverloads
+        fun filtered(
+            settings: VariantSettings = VariantSettings(),
+            missing: MissingContent = MissingContent()
+        ): ParsedVariantData = filterParsedVariantData(this, settings, missing)
+
+        @JvmOverloads
+        fun validated(
+            missing: MissingContent = MissingContent()
+        ): ParsedVariantData = validateAndCleanVariantData(this, missing)
+
+        fun toVariantUnchecked(): ShipVariantAPI = buildVariant(this)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun toVariant(
+            settings: VariantSettings = VariantSettings(),
+            missing: MissingContent = MissingContent()
+        ): ShipVariantAPI = buildVariantFull(this, settings, missing)
     }
 
     data class ParsedWeaponGroup(
@@ -238,7 +258,14 @@ object DataVariant {
             }
 
         val filteredTags: List<String> = if (!settings.includeTags) emptyList() else
-            data.tags.filter(::shouldKeepTag)
+            data.tags.filter(::shouldKeepTag) // TODO, filter without shifting slots
+
+        // Module Variants
+        val filteredModuleVariants = mutableMapOf<String, ParsedVariantData>()
+        data.moduleVariants.forEach { (slotId, moduleData) ->
+            val cleanedModule = filterParsedVariantData(moduleData, settings, missing)
+            filteredModuleVariants[slotId] = cleanedModule
+        }
 
         return data.copy(
             hullMods = filteredHullMods,
@@ -250,7 +277,8 @@ object DataVariant {
             tags = filteredTags,
             fluxCapacitors = if (!settings.includeFlux) -1 else data.fluxCapacitors,
             fluxVents = if (!settings.includeFlux) -1 else data.fluxVents,
-            variantId = if (!settings.includeVariantID) "" else data.variantId
+            variantId = if (!settings.includeVariantID) "" else data.variantId,
+            moduleVariants = filteredModuleVariants
         )
     }
 
@@ -324,7 +352,7 @@ object DataVariant {
         val cleanWings = data.wings.mapIndexed { _, wingId ->
             if (wingId !in allWingIds && wingId.isNotBlank()) {
                 missing.wingIds.add(wingId)
-                ""
+                "" // TODO, check for make sure this isn't problematic behavior setting this to an empty string.
             } else wingId
         }
 

@@ -9,10 +9,6 @@ data class ModHeader(
     val mods: List<GameModInfo>,
     val gameVersion: String = Global.getSettings().gameVersion
 ) {
-    /**
-     * The same shape the old text format produced: a Starsector entry (id "SS") first, then the mods.
-     * Feed this straight into MissingContent.gameMods; it already filters "SS" and enabled mods.
-     */
     fun toGameModInfos(): Set<GameModInfo> =
         LinkedHashSet<GameModInfo>().apply {
             add(GameModInfo(STARSECTOR_ID, "Starsector", gameVersion))
@@ -20,8 +16,8 @@ data class ModHeader(
         }
 
     /** Mods this code needs that the predicate says aren't enabled, e.g. `missing(modManager::isModEnabled)`. */
-    //fun missing(isEnabled: (String) -> Boolean): List<GameModInfo> =
-    //    mods.filterNot { isEnabled(it.id) }
+    fun missing(isEnabled: (String) -> Boolean): List<GameModInfo> =
+        mods.filterNot { isEnabled(it.id) }
 
     /**
      * One-line text for the user, same shape as the old format: "(0.98a-RC8) : <prefix>(Mod A) , (Mod B)".

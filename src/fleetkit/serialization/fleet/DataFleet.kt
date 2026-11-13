@@ -46,12 +46,39 @@ object DataFleet {
             get() = fleetAggression?.level ?: -1
 
         @JvmOverloads
-        fun createCampaignFleet(
+        fun filtered(
+            settings: FleetSettings = FleetSettings(),
+            missing: MissingContent = MissingContent()
+        ): ParsedFleetData = filterParsedFleetData(this, settings, missing)
+
+        @JvmOverloads
+        fun validated(
+            settings: FleetSettings = FleetSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): ParsedFleetData = validateAndCleanFleetData(this, settings, missing, random)
+
+        @JvmOverloads
+        fun applyToUnchecked(fleet: FleetDataAPI, random: Random = Random()) =
+            buildFleet(this, fleet, random)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun applyTo(
+            fleet: FleetDataAPI,
+            settings: FleetSettings = FleetSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ) = buildFleetFull(this, fleet, settings, missing, random)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun toCampaignFleet(
             aiMode: Boolean,
             settings: FleetSettings = FleetSettings(),
             missing: MissingContent = MissingContent(),
             random: Random = Random()
-        ): CampaignFleetAPI = createCampaignFleetFromData(data = this, aiMode = aiMode, settings = settings, missing = missing, random = random)
+        ): CampaignFleetAPI = createCampaignFleetFromData(this, aiMode, settings, missing, random)
     }
 
     enum class FleetAggressionV1(val level: Int) {
@@ -265,14 +292,15 @@ object DataFleet {
             if (MagicLookup.getAllFactionIds().contains(data.factionID)) data.factionID
             else null
 
-        if (data.secondInCommandData != null)
+        val validatedSIC = data.secondInCommandData?.let {
             DataSecondInCommand.validateSecondInCommandData(data.secondInCommandData, missing, random)
+        }
 
         return data.copy(
             members = validatedMembers,
             commanderIfNoFlagship = validatedCommander,
             idleOfficers = validatedIdleOfficers,
-            secondInCommandData = data.secondInCommandData,
+            secondInCommandData = validatedSIC,
             factionID = validatedFaction
         )
     }

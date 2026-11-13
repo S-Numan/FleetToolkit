@@ -27,7 +27,30 @@ object DataMember {
         val isMothballed: Boolean = false,
         val isFlagship: Boolean = false,
         val id: String? = null
-    )
+    ) {
+        @JvmOverloads
+        fun filtered(
+            settings: MemberSettings = MemberSettings(),
+            missing: MissingContent = MissingContent()
+        ): ParsedMemberData = filterParsedMemberData(this, settings, missing)
+
+        @JvmOverloads
+        fun validated(
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): ParsedMemberData = validateAndCleanMemberData(this, missing, random)
+
+        @JvmOverloads
+        fun toMemberUnchecked(random: Random = Random()): FleetMemberAPI = buildMember(this, random)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun toMember(
+            settings: MemberSettings = MemberSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): FleetMemberAPI = buildMemberFull(this, settings, missing, random)
+    }
 
     @JvmOverloads
     fun cloneMember(
@@ -56,7 +79,7 @@ object DataMember {
         )
 
         if (filterParsed)
-            return filterParsedMemberData(data)
+            return filterParsedMemberData(data, settings)
         else
             return data
     }
@@ -132,7 +155,7 @@ object DataMember {
         if (data.hullFraction != null && data.hullFraction < 1f) {
             member.status.disable()
             member.status.repairDisabledABit()
-            member.status.repairFraction(data.hullFraction);
+            member.status.repairFraction(data.hullFraction)
             member.status.hullFraction = data.hullFraction
             /*for (i in 1..<member.status.numStatuses) {
                 val rand = Math.random()
@@ -150,6 +173,7 @@ object DataMember {
         return member
     }
 
+    @JvmStatic
     fun buildMemberFull(
         data: ParsedMemberData,
         settings: MemberSettings = MemberSettings(),
