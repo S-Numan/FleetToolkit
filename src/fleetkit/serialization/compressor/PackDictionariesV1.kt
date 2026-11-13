@@ -12,6 +12,113 @@ object PackDictionariesV1 {
 
     // Never edit any of the below or it'll break all past compression.
 
+    // Person names: least likely first. Small name pools last since each name there is likelier to appear.
+    private val personNames: List<String> = listOf(
+        // first names: old english / modern
+        "Thomas", "Jackson", "Martin", "Lewis", "Lee", "Allen", "Scott", "Nelson", "Stewart", "Morgan", "Howard",
+        "Ward", "James", "Kelly", "Bennett", "Alexander", "Jordan", "Henry", "Mason", "Kennedy", "Warren", "Dixon",
+        "Gordon", "Grant", "Rose", "Spencer", "Pierce", "Arnold", "Ray", "Bradley", "Lane", "Riley", "Lawrence",
+        "Elliott", "Ryan", "Oliver", "George", "Kim", "Gilbert", "Day", "Douglas", "May", "Terry", "Wade", "Curtis",
+        "Neal", "Gregory", "Leonard", "Dennis", "Todd", "Blair", "Reese", "Joseph", "Francis", "Conner", "Norman",
+        "Quinn", "Blake", "Paul", "Lindsey", "Tyler", "Sherman", "Gill", "Simon", "Roy", "Logan", "Patrick",
+        "Norton", "Lloyd", "Carson", "Lamb", "Casey", "Clarke", "Cain", "Bryan", "Allison", "Richard", "Chase",
+        "Roman", "Randall", "Charles", "Bruce", "Cameron", "Christian", "Wyatt", "Keith", "Keir", "Rich", "John",
+        "Moses", "Tanner", "Walter", "Nixon", "Leon", "Lara", "Shannon", "Ashley", "Frost", "William", "Solomon",
+        "Dudley", "Nolan", "Kane", "Joyce", "Haley", "Valentine", "Buck", "Moon", "Barry", "Avery", "Whitney",
+        "Terrell", "Spence", "Case", "Farley", "Bernard", "Benjamin", "Travis", "Hayden", "Lynn", "Riddle", "David",
+        "Duke", "Guy", "Michael", "Frederick", "Compton", "Raymond", "Stuart", "Holden", "Conrad", "Tyson", "Dale",
+        "Burt", "Lindsay", "Noel", "Alastair", "Esther", "Abigail", "Betony", "Emma", "Alice", "Anna", "Arthur",
+        "Adam", "Eugenia", "Maud", "Rosemary", "Luna", "Miranda", "River", "Ocean", "Freya", "Emmanuel", "Gabriel",
+        "Harrier", "Athena", "Helen", "Monday", "Wednesday", "Friday", "Olivia", "Louise", "Lina", "Sofia", "Mia",
+        "Juliette", "Jules", "Louis", "Liam", "Victor", "Gabriela", "Zhi", "Lihua", "Zhuo", "Gao", "Chao", "Ao",
+        "Aidan", "Julia", "Claudia", "Anastasia", "Paolo", "Cosimo", "Sunday", "Summer",
+        // first names: world / future
+        "Voronya", "Malka", "Uther", "Zun", "Korshid", "Tir", "Bulan", "Kebe", "Temitope", "Nzube", "Ayomide",
+        "Olabisi", "Kemi", "Chimdalu", "Idris", "Olawale", "Adewale", "Opeyemi", "Uche", "Ayodele", "Abaeze",
+        "Zoputa", "Osa", "Oba", "Fana", "Genat", "Iskander", "Dawit", "Gabra", "Hakim", "Negasi", "Zala", "Yacob",
+        "Lapis", "Hu", "Rania", "Sabra", "Nour", "Gamal", "Abasi", "Putri", "Intan", "Nurul", "Ayu", "Amalia", "Rio",
+        "Fauzi", "Fajar", "Haliim", "Chaiya", "Chanthira", "Aran", "Anurak", "Hom", "Fa Ying", "Daw", "Bogdan",
+        "Andon", "Boyana", "Filipa", "Gavril", "Lazar", "Rada", "Yoan", "Sava", "Nevena", "Zhivko", "Anh", "Linh",
+        "Thanh", "Tuan", "Nam", "Trang", "Nat", "Vantu", "Khuyet", "Sim", "Aisha", "Amina", "Moussa", "Abdou",
+        "Halima", "Zaliya", "Rama", "Marya", "Addo", "Zada", "Sama", "Salha", "Irene", "Farah", "Nadya", "Vania",
+        "Nisa", "Kezia", "Farel", "Dimas", "Bayu", "Ansel", "Arinna", "Estan", "Ishtanu", "Ara", "Anath", "Chandra",
+        "Allat", "Petra", "Nin", "Makeda", "Ezana", "Amon", "Ali", "Boudicca", "Cador", "Brigid", "Finnian",
+        "Valeri", "Octavia", "Andronica", "Titus", "Tiberius", "Otho", "Julian", "Gaius", "Olympia", "Vittoria",
+        "Catalina", "Amaru", "Drogo", "Lothar", "Clovis", "Mira", "Mir", "Kuma", "Soraya", "Juneau", "Neda",
+        "Raheleh", "Future", "Nasa", "America", "Alaska", "Soyuz", "Volna", "Diziet", "Sol", "Pluto", "Eris",
+        "Sedna", "Charon", "Ceres", "Mercury", "Mars", "Venus", "Ard", "Ares", "Jupiter", "Saturn", "Uranus",
+        "Neptune", "Orion", "Orcus", "Varuna", "Io", "Europa", "Callisto", "Ganymede", "Titan", "Titania", "Triton",
+        "Mimas", "Volta", "Miras", "Yurania", "Elim", "Trinity", "Egypt", "Persia", "Arafura", "Campion", "Adrana",
+        "Purslane", "Galingale", "Hesperus", "Cadence", "Cascade", "Fescue", "Oberon", "Megas", "Megale", "Dajeil",
+        "Canada", "Mexico", "Second", "Third", "Fourth", "Two", "Three", "Four", "Artifice", "Symbiote", "Ultra",
+        "Perihelion", "Aphelion", "Hygiea", "Cybele", "Aurora", "Nil", "Zero", "Prozor", "Hasper", "Zosma", "Wezen",
+        "Sheliak", "Meridiana", "Izar", "Vela", "Umbriel", "Nassun", "Essun", "Innon", "Schaffa", "Damaya", "Aeolis",
+        "Chiron", "Nessus", "Arise", "Light", "Spring", "Autumn", "Winter", "Magnetic", "Thisbe", "Themis", "Psyche",
+        "Eunomia", "Elektra", "Hebe", "Pyramus", "Kleopatra", "Urania", "Hektor", "Eulalia", "Volga", "Charm",
+        "Neva", "Zec", "Altair", "Lucida", "Heka", "Tertia",
+        // pirate
+        "Sharkey", "Bones", "Skull", "Rage", "Radleak", "Glowing", "Airlock", "Trigger-finger", "Escape Pod",
+        "Itchy", "Butcher", "Ray-gun", "Rusty", "Blood", "Hijack", "Radiation", "Bomber", "Antimatter", "Jolly",
+        "Dancer", "Grifter", "High Burn", "Jump", "Ambush", "Gunstreet", "Sabot", "Slaughterhouse", "Socor",
+        "Marietta", "Kennit", "Ultragamma", "Bombard", "Blitz", "Cuno", "Cunoesse", "Amra", "Pom", "Sham", "Naphi",
+        "Cutter", "Snip", "Slash", "Shrapnel", "Zigzag", "Automatic", "Dysnomia", "Knife", "Luff", "Clew", "Jib",
+        "Worm", "Sny", "Sprig", "Skeg", "Run", "Rig", "Deader", "Hex", "Five Aces", "Crossbones", "Plunder",
+        "Massacre", "Furious", "Rotten", "Gold", "No Prisoners", "No-Credits", "Faller", "Master-blaster", "Jumper",
+        "Madness", "Bloodwine", "Coldwind", "Sunrise", "Charming", "Maudite", "Turn", "Blackgoat", "Volley", "Salvo",
+        "Shelby", "Rackham", "Mocker", "Shroak", "Rask", "Sirocco", "Crashblossom", "Flatline", "Millions",
+        "Antigrav", "Screwfloss", "Blaze", "Scribb", "Slygrog", "Spinnaker", "Halyard", "Zabra", "Yuloh", "Yaw",
+        "Wherry", "Voyol", "Tomkin", "Sweep", "Strake", "Spale", "Tafferel", "Scuttle", "Skcupper", "Sarve", "Rigol",
+        "Quoin", "Prize", "Orlop", "Kevel", "Flitch", "Cascabel", "Carling", "Quick", "Runner", "Rumbustion",
+        "Strongwater", "Screech",
+        // luddic
+        "Juniper", "Aneda", "Malichus", "Dawn", "Faith-my-joy", "Confidence", "Weep-not", "Deliverance", "Grace",
+        "Zion", "Promise", "Mercy", "Redeem", "Favour", "Faith", "Sacrifice", "Praise-god", "Fear-god", "Makepeace",
+        "Balance", "Silence", "Amity", "Verity", "Prudence", "Hope", "Virtue", "Experience", "Ashes", "Dust",
+        "Blessing", "Amen", "Exult", "Dutiful", "Emerson", "Fall", "Elipha", "Cleophas", "Obedience", "Zachariah",
+        "Obediah", "Thaddeus", "Cyrus", "Azariah", "Theophilus", "Virgil", "Malachi", "Anise", "Yarrow", "Marigold",
+        "Jubal", "Zillah", "Mahlah", "Nemuel", "Oren", "Pinon", "Rezon", "Salu", "Uriel", "Pine", "Cypress",
+        "Poplar", "Cedars", "Hemlock", "Humble", "Lively", "Seekwisdom", "Smallhope", "Barebones", "Memory",
+        "Lament", "Given-to-god", "Greenearth", "Holyoak", "Psalm-of-earth", "Cherish-life", "Rite-of-earth",
+        "Pleasant", "Shire", "Spruce", "Gardener", "Arkwright", "Latimer", "Laster", "Bolt", "Brazier", "Buckler",
+        "Painter", "Carder", "Cutler", "Roper", "Salter", "Shriver", "Sixsmith", "Soper", "Stringer", "Threadgold",
+        "Harrower", "Larimer", "Borozan", "Bondar", "Cioban", "Chayat", "Bijl", "Charbonnier", "Basumatary",
+        "Carnera", "Bandler", "Calderone", "Quail", "Sage", "Chervil", "Chive", "Clove", "Fennel", "Galangal",
+        "Mace", "Pepper", "Savory", "Sorrel", "Sumac", "Tarragon", "Thyme", "Wintergreen", "Summerblue", "Sorghum",
+        "Barley", "Rye", "Teff", "Flax", "Burdock", "Chaparral", "Cress",
+        // fringe
+        "Tegus", "Arslar", "Nol", "Thrar", "Gal", "Shrial", "Boral", "Brux", "Dux", "Dol", "Dal", "Tor", "Gor",
+        "Aladax", "Vor", "Bor", "Vox", "Tal", "Bok", "Teg", "Bur", "Qor", "Kor", "Vach", "Osol", "Delg", "Sur",
+        "Sor", "Dulg", "Darg", "Gan", "Qach", "Chag", "Ulag", "Quch", "Dolg", "Bolg", "Balg", "Bruxa", "Duxal",
+        "Dolal", "Dala", "Tora", "Gora", "Alada", "Voral", "Bora", "Voxa", "Talla", "Boka", "Tegga", "Burra", "Qora",
+        "Kora", "Vacha", "Osola", "Delga", "Sural", "Sora", "Dulga", "Darga", "Gana", "Qacha", "Chaga", "Ulaga",
+        "Qucha", "Dolga", "Bolga", "Balga", "Thrax", "Grak", "Braxx", "Adax", "Nox", "Prax", "Solax", "Zol",
+        "Subedar", "Temujax", "Jamux", "Toghrol", "Qadax", "Arighar", "Batox", "Arslax", "Chechal", "Erdenol",
+        "Batak", "Arighax", "Subedax", "Zor", "Surax", "Oyungar", "Oyungax", "Borax", "Shriax", "Altax", "Altarax",
+        "Chagar", "Chagax", "Batax", "Batar", "Brutar", "Brutax", "Dochal", "Volgor", "Volgax", "Atalax", "Atalar",
+        "Gurbax", "Gurbal", "Dologar", "Dologax", "Dalax", "Naimar", "Naimal", "Tabar", "Jagax", "Jagar", "Chinax",
+        // myth
+        "Thor", "Zeus", "Isis", "Ishtar", "Min", "Ra", "Osiris", "Anubis", "Set", "Hathor", "Wadjet", "Kali", "Enyo",
+        "Minerva", "Varda", "Zorya", "Enki", "Gilgamesh", "Hercules", "Hector", "Paris", "Aeneas", "Artemis",
+        "Hermes", "Poseidon", "Apollo", "Hera", "Ixchel", "Pollux", "Arcturus", "Ursa", "Chaac", "Cabrakan", "Akna",
+        "Alom", "Gula", "Zarine", "Elysium", "Olympus", "Phobos", "Deimos", "Kyugu",
+        // ai
+        "Eureka", "Alabaster", "Crimson", "Amber", "Green", "Blue", "White", "Fuchsia", "Yellow", "Gray", "Azure",
+        "Silver", "Black", "Magenta", "Violet", "Ultraviolet", "Infrared", "Cerulean", "Maroon", "Brown", "Burgundy",
+        "Orange", "Celadon", "Cerise", "Chartreuse", "Cyan", "Puce", "Scarlet", "Sienna", "Aquamarine", "Mauve",
+        "Ebony", "Viridian", "Gunmetal", "Icterine", "Octarine", "Ecru", "Indigo", "Ivory", "Jade", "Lavender",
+        "Navy", "Ochre", "Heliotrope", "Olive", "Onyx", "Pearl", "Umber", "Ruby", "Russet", "Saffron", "Sapphire",
+        "Slate", "Teal", "Turquoise", "Ultramarine", "Vermillion", "Exalted", "Melodic", "Ancient", "Velocious",
+        "Tenacious", "Sagacious", "Draconian", "Prevailing", "Palatial", "Optimal", "Paramount", "Transcendent",
+        "Ascendant", "Palatinate", "Ethereal", "Intangible", "Inscrutable", "Resplendent", "Glorious", "Radiant",
+        "Splendorous", "Unequaled", "Boundless", "Endless", "Infinite", "Unthinkable", "Ultimate", "Terminal",
+        "Optimum", "Superlative", "Supreme", "Wintermute", "Ghostwheel", "Xerxes"
+    )
+
+    // Faction ship-name prefixes (shipNamePrefix in .faction files), with the trailing space seen in ship names
+    private val shipNamePrefixes: List<String> = listOf(
+        "SDS ", "TTDS ", "PLS ", "01011001 ", "CGR ", "LGS ", "LSS ", "RSDS ", "DSS ", "TTS ", "HSS ", "ISS "
+    )
+
     // Rarely used: fleet/person memory keys, fleet types, variant tags
     private val rareKeys: List<String> = listOf(
         "\$resourceSalvageMult", "\$makeNonHostileTakesPriority", "\$tempNotAvoidingAbyssal",
@@ -45,7 +152,12 @@ object PackDictionariesV1 {
         "mercArmada", "battlestation", "personBounty", "skip_for_default_hull_modules",
         "variant_allow_excess_op_etc", "variant_always_retain_smods_on_salvage", "consistent_weapon_drops",
         "always_recoverable", "unboardable", "unrestorable", "fx_drone", "military", "trade", "underworld",
-        "science", "pather", "ai_core", "no_ai_core_drop"
+        "science", "pather", "ai_core", "no_ai_core_drop",
+        // Person memory keys
+        "\$Post", "\$Rank", "\$id", "\$importance", "\$importanceAtLeastHigh", "\$importanceAtMostLow",
+        "\$isContact", "\$isPerson", "\$level", "\$menuState", "\$name", "\$option", "\$personName",
+        "\$personality", "\$post", "\$postAOrAn", "\$postId", "\$rank", "\$rankAOrAn", "\$rankId",
+        "\$relName", "\$rel", "\$relValue"
     )
 
     // Portraits
@@ -264,7 +376,7 @@ object PackDictionariesV1 {
     // Hullmods: ascending stock usage
     private val hullMods: List<String> = listOf(
         "ablative_armor", "adaptive_coils", "adaptiveshields", "additional_berthing", "advanced_ground_support",
-        "advancedcore", "all point-defense weapons deal %s more damage to all targets.\"", "always_detaches",
+        "advancedcore", "always_detaches",
         "anchorrotation", "andrada_mods", "assault_package", "axialrotation", "bdeck", "chassis_storage", "civgrade",
         "coherer", "comp_armor", "comp_hull", "comp_storage", "converted_bay", "converted_fighterbay",
         "damaged_deck", "damaged_mounts", "defective_manufactory", "degraded_drive_field", "degraded_life_support",
@@ -322,8 +434,8 @@ object PackDictionariesV1 {
 
     // NEVER edit this list after codes have shipped. Make a new version instead.
     val v1: ByteArray = build(
-        rareKeys + portraits + wings + hulls + weapons + skills + ranks + posts +
-                hullMods + factions + variantNaming + officerBasics + slotIds
+        personNames + rareKeys + portraits + wings + hulls + weapons + skills + ranks + posts +
+                hullMods + factions + shipNamePrefixes + variantNaming + officerBasics + slotIds
     )
 
     // When adding new dictionary: add v2 to byVersion, set LATEST = '2'
