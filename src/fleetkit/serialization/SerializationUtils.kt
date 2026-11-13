@@ -1,7 +1,9 @@
 package fleetkit.serialization
 
+import com.fs.starfarer.api.Global
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.DisplayMessage
+import fleetkit.serialization.compressor.Formats
 import fleetkit.serialization.fleet.CompressedFleet
 import fleetkit.serialization.fleet.CompressedFleet.isCompressedFleet
 import fleetkit.serialization.fleet.JSONFleet.extractFleetDataFromJson
@@ -115,7 +117,24 @@ object SerializationUtils {
                     DisplayMessage.showMessage(FTTxt.txt("failed_extract_fleet"), Color.YELLOW)
                 comp
             }
-            else -> null
+            else -> {
+                val format = Formats.identify(text)
+                if (format != null) {
+                    try {
+                        val decoded = format.decodeWithMods(text)
+                        val data = decoded.data
+                        decoded.mods?.toGameModInfos()?.let {
+                            missing.gameMods.addAll(it)
+                        }
+                        data
+                    } catch (e: Exception) {
+                        DisplayMessage.showMessage(FTTxt.txt("failed_extract", format.javaClass.simpleName), Color.YELLOW)
+                        Global.getLogger(this.javaClass).error(e)
+                        null
+                    }
+                } else
+                    null
+            }
         }
     }
 

@@ -61,6 +61,7 @@
   "failed_extract_person": "Failed to extract the detected person",
   "failed_extract_member": "Failed to extract the detected member",
   "failed_extract_fleet": "Failed to extract the detected fleet",
+  "failed_extract": "Failed to extract the detected %s",
   # Paste fleet dialog
   "pasted_fleet_members_only_one": "Pasted fleet contains %s member",
   "pasted_fleet_members_only_many": "Pasted fleet contains %s members",

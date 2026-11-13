@@ -250,7 +250,7 @@ object DataVariant {
             } else emptySet()
 
         val filteredWings = if (!settings.includeWings) emptyList() else
-            data.wings.filter(::shouldKeepWing)
+            data.wings.map { if (shouldKeepWing(it)) it else "" }
 
         val filteredWeaponGroups = if (!settings.includeWeapons) emptyList() else
             data.weaponGroups.map { group ->
@@ -352,7 +352,7 @@ object DataVariant {
         val cleanWings = data.wings.mapIndexed { _, wingId ->
             if (wingId !in allWingIds && wingId.isNotBlank()) {
                 missing.wingIds.add(wingId)
-                "" // TODO, check for make sure this isn't problematic behavior setting this to an empty string.
+                ""
             } else wingId
         }
 

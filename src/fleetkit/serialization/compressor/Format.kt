@@ -51,4 +51,3 @@ interface Format<T : Any> {
         return input to c
     }
 }
-
