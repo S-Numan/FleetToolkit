@@ -4,6 +4,7 @@ import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
 import fleetkit.serialization.fleet.DataFleet
 
+// Composite: embeds PersonFormat and MemberFormat. Bump this version whenever either changes.
 @Suppress("EnumValuesSoftDeprecate")
 object FleetFormat : Format<DataFleet.ParsedFleetData> {
     override val typeId = 'f'

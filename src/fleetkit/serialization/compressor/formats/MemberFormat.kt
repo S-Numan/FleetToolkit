@@ -4,6 +4,7 @@ import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
 import fleetkit.serialization.member.DataMember
 
+// Composite: embeds VariantFormat and PersonFormat. Bump this version whenever either changes.
 object MemberFormat : Format<DataMember.ParsedMemberData> {
     override val typeId = 'm'
     override val version = 1

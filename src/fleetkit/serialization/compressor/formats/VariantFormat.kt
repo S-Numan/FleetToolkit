@@ -4,6 +4,7 @@ import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
 import fleetkit.serialization.variant.DataVariant
 
+// Composite: embeds WeaponGroupFormat. Bump this version whenever WeaponGroupFormat's layout changes.
 object VariantFormat : Format<DataVariant.ParsedVariantData> {
     override val typeId = 'v'
     override val version = 1

@@ -35,16 +35,20 @@ object Formats {
         return all.firstOrNull { it.typeId == c[1] }
     }
 
+    /** Mod header of any recognised code without decoding its body; null if unrecognised or it has none. */
+    fun parseModHeader(code: String): ModHeader? =
+        identify(code)?.readMods(code)
+
     fun parseData(code: String): Any? =
         identify(code)?.decode(code)
 
-    fun parseDataOrNull(code: String, logError: Boolean = true): Any? = try {
+    /*fun parseDataOrNull(code: String, logError: Boolean = true): Any? = try {
         parseData(code)
     } catch (e: RuntimeException) {
         if (logError)
             Global.getLogger(this.javaClass).error("Failed to identify data", e)
         null
-    }
+    }*/
 
     /**
      * Example usage:
