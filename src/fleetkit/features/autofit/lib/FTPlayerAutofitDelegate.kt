@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CargoAPI
 import com.fs.starfarer.api.campaign.CoreUIAPI
 import com.fs.starfarer.api.campaign.FactionAPI
+import com.fs.starfarer.api.campaign.SubmarketPlugin
 import com.fs.starfarer.api.campaign.econ.MarketAPI
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI
 import com.fs.starfarer.api.combat.ShipAPI
@@ -195,7 +196,23 @@ internal class FTPlayerAutofitDelegate(
         return weapons.toList()
     }
 
+    // Submarket items are offered and priced like the vanilla refit pickers (WeaponPickerDialog, FighterPickerDialog):
+    // - items the submarket won't sell to the player are skipped, e.g. military market items that need a
+    //   better reputation or a commission (SubmarketPlugin.isIllegalOnSubmarket with PLAYER_BUY);
+    // - the price passed to setPrice() is the buy cost before tariff, as computeBuyCostOfItem() gives it:
+    //   base value * "shipWeaponBuyPriceMult" (used for both weapons and fighter wings). setPrice() itself then
+    //   applies the submarket tariff, rounds, and makes free-transfer submarkets (storage) cost nothing.
+    private fun isBuyable(submarket: SubmarketAPI, type: CargoAPI.CargoItemType, id: String): Boolean {
+        val stack = Global.getSettings().createCargoStack(type, id, null)
+        return !submarket.plugin.isIllegalOnSubmarket(stack, SubmarketPlugin.TransferAction.PLAYER_BUY)
+    }
+
+    private fun buyCostBeforeTariff(baseValue: Float): Float =
+        baseValue * Global.getSettings().getFloat("shipWeaponBuyPriceMult")
+
     fun addAvailableWeapon(weaponSpec: WeaponSpecAPI, count: Int, cargo: CargoAPI, submarket: SubmarketAPI?) {
+        if (submarket != null && !isBuyable(submarket, CargoAPI.CargoItemType.WEAPONS, weaponSpec.weaponId)) return
+
         val weap = WeaponPickerDialog.o(
             count,
             cargo,
@@ -208,8 +225,7 @@ internal class FTPlayerAutofitDelegate(
         if (submarket == null) {//Player cargo
             weapons.add(0, weap)//Put first
         } else {//Submarket
-            if (!submarket.plugin.isFreeTransfer)
-                weap.setPrice(weaponSpec.baseValue * (1 + submarket.tariff))
+            weap.setPrice(if (submarket.plugin.isFreeTransfer) 0f else buyCostBeforeTariff(weaponSpec.baseValue))
             weapons.add(weap)//Put last
         }
     }
@@ -219,6 +235,8 @@ internal class FTPlayerAutofitDelegate(
     }
 
     fun addAvailableFighter(fighterSpec: FighterWingSpecAPI, count: Int, cargo: CargoAPI, submarket: SubmarketAPI?) {
+        if (submarket != null && !isBuyable(submarket, CargoAPI.CargoItemType.FIGHTER_CHIP, fighterSpec.id)) return
+
         val wing = FighterPickerDialog.o(
             count,
             cargo,
@@ -231,8 +249,7 @@ internal class FTPlayerAutofitDelegate(
         if (submarket == null) {//Player cargo
             fighters.add(0, wing)//Put first
         } else {//Submarket
-            if (!submarket.plugin.isFreeTransfer)
-                wing.setPrice(fighterSpec.baseValue * (1 + submarket.tariff))
+            wing.setPrice(if (submarket.plugin.isFreeTransfer) 0f else buyCostBeforeTariff(fighterSpec.baseValue))
             fighters.add(wing)//Put last
         }
     }
