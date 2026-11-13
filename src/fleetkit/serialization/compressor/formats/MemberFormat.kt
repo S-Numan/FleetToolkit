@@ -1,8 +1,15 @@
 package fleetkit.serialization.compressor.formats
 
+import com.fs.starfarer.api.campaign.FleetDataAPI
+import com.fs.starfarer.api.fleet.FleetMemberAPI
+import fleetkit.serialization.GameModInfo
 import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
+import fleetkit.serialization.compressor.ModHeader
+import fleetkit.serialization.fleet.DataFleet
 import fleetkit.serialization.member.DataMember
+import fleetkit.util.api.FleetUtils
+import fleetkit.util.api.MemberUtils
 
 // Composite: embeds VariantFormat and PersonFormat. Bump this version whenever either changes.
 object MemberFormat : Format<DataMember.ParsedMemberData> {
@@ -18,4 +25,9 @@ object MemberFormat : Format<DataMember.ParsedMemberData> {
         isFlagship = c.bool(d?.isFlagship),
         id = c.optStr(d?.id)
     )
+    fun encode(member: FleetMemberAPI, withPrepend: Boolean = true): String {
+        val data = DataMember.getMemberDataFromMember(member)
+        val header = ModHeader(MemberUtils.getAllSourceModsFromMember(data).map { GameModInfo(it.id, it.name, it.version) })
+        return encode(data, header, withPrepend)
+    }
 }

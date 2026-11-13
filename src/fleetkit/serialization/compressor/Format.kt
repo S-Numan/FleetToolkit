@@ -9,19 +9,23 @@ interface Format<T : Any> {
     val version: Int
     fun sync(c: Codec, d: T?): T
 
-    /** Bare code. Pass [mods] to embed the game version and required mods. */
-    fun encode(data: T, mods: ModHeader? = null): String {
+    /**
+     * Pass [mods] to embed the game version and required mods.
+     *
+     * @param withPrepend Add a description line for the user, a line break, then the code. Safe to paste back into decode().
+     */
+    fun encode(data: T, mods: ModHeader? = null, withPrepend: Boolean = true): String {
         val out = ByteBuffers.Out()
         val c = Codec(out)
         c.int(version)
         c.optModHeader(mods)
         sync(c, data)
-        return "${Formats.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
+        val output = "${Formats.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
+        return if (withPrepend && mods != null)
+            mods.describe() + "\n" + output
+        else
+            output
     }
-
-    /** Description line for the user, a line break, then the code. Safe to paste back into decode(). */
-    fun encodeWithDescription(data: T, mods: ModHeader): String =
-        mods.describe() + "\n" + encode(data, mods)
 
     fun decode(code: String): T = decodeWithMods(code).data
 

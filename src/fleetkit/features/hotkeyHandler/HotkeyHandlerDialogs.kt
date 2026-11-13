@@ -41,6 +41,7 @@ import fleetkit.features.recentBattles.RecentBattleReplay
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.*
+import fleetkit.serialization.compressor.ModHeader
 import fleetkit.serialization.compressor.formats.FleetFormat
 import fleetkit.serialization.compressor.formats.VariantFormat
 import fleetkit.serialization.fleet.CompressedFleet
@@ -108,17 +109,20 @@ object HotkeyHandlerDialogs {
             diffs
         }
 
+
         val playerFleet = Global.getSector().playerFleet
         val encodeBaselineFleet = CompressedFleet.saveFleetToCompString(playerFleet, includePrepend = false, includeModInfo = false)
-        val encodeFleet = FleetFormat.encode(DataFleet.getFleetDataFromFleet(playerFleet))
+
+        val encodeFleetDescription = FleetFormat.encode(playerFleet)
 
         val decodeBaselineFleet = CompressedFleet.extractFleetDataFromCompString(encodeBaselineFleet)
-        val decodeFleet = FleetFormat.decode(encodeFleet)
+        val decodeFleet = FleetFormat.decode(encodeFleetDescription)
 
         if (decodeFleet != decodeBaselineFleet) {
             val diffs = deepDiff(decodeFleet, decodeBaselineFleet)
             diffs
         }
+
 
 
         val dialog = DialogPanel(FTTxt.txt("dev_options_title"))
@@ -1412,7 +1416,7 @@ object HotkeyHandlerDialogs {
 
                         FleetUtils.replacePlayerFleetWith(
                             fleet,
-                            aggression = if (setAggressionDoctrine) data.aggression else null,
+                            aggression = if (setAggressionDoctrine) data.fleetAggression else null,
                             replacePlayer = includeCommanderAsCommander && fleet.commander != null && !fleet.commander.isDefault && !fleet.commander.isAICore,
                         )
 

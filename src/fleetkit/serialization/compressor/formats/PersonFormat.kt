@@ -1,9 +1,16 @@
 package fleetkit.serialization.compressor.formats
 
 import com.fs.starfarer.api.characters.FullName
+import com.fs.starfarer.api.characters.PersonAPI
+import com.fs.starfarer.api.combat.ShipVariantAPI
+import fleetkit.serialization.GameModInfo
 import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
+import fleetkit.serialization.compressor.ModHeader
 import fleetkit.serialization.person.DataPerson
+import fleetkit.serialization.variant.DataVariant
+import fleetkit.util.api.PersonUtils
+import fleetkit.util.api.VariantUtils
 
 @Suppress("EnumValuesSoftDeprecate")
 object PersonFormat : Format<DataPerson.ParsedPersonData> {
@@ -26,4 +33,9 @@ object PersonFormat : Format<DataPerson.ParsedPersonData> {
         points = c.int(d?.points),
         memKeys = c.map(d?.memKeys) { c.any(it) }
     )
+    fun encode(person: PersonAPI, withPrepend: Boolean = true): String {
+        val data = DataPerson.getPersonDataFromPerson(person)
+        val header = ModHeader(PersonUtils.getAllSourceModsFromPerson(data).map { GameModInfo(it.id, it.name, it.version) })
+        return encode(data, header, withPrepend)
+    }
 }

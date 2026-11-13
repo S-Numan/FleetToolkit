@@ -44,6 +44,14 @@ object DataFleet {
         )
         val aggression: Int
             get() = fleetAggression?.level ?: -1
+
+        @JvmOverloads
+        fun createCampaignFleet(
+            aiMode: Boolean,
+            settings: FleetSettings = FleetSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): CampaignFleetAPI = createCampaignFleetFromData(data = this, aiMode = aiMode, settings = settings, missing = missing, random = random)
     }
 
     enum class FleetAggressionV1(val level: Int) {

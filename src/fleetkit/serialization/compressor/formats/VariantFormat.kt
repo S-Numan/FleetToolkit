@@ -1,8 +1,15 @@
 package fleetkit.serialization.compressor.formats
 
+import com.fs.starfarer.api.combat.ShipVariantAPI
+import com.fs.starfarer.api.fleet.FleetMemberAPI
+import fleetkit.serialization.GameModInfo
 import fleetkit.serialization.compressor.Codec
 import fleetkit.serialization.compressor.Format
+import fleetkit.serialization.compressor.ModHeader
+import fleetkit.serialization.member.DataMember
 import fleetkit.serialization.variant.DataVariant
+import fleetkit.util.api.MemberUtils
+import fleetkit.util.api.VariantUtils
 
 // Composite: embeds WeaponGroupFormat. Bump this version whenever WeaponGroupFormat's layout changes.
 object VariantFormat : Format<DataVariant.ParsedVariantData> {
@@ -25,4 +32,10 @@ object VariantFormat : Format<DataVariant.ParsedVariantData> {
             weaponGroups = c.list(d?.weaponGroups, WeaponGroupFormat),
             moduleVariants = c.map(d?.moduleVariants) { c.nested { sync(c, it) } }
         )
+
+    fun encode(variant: ShipVariantAPI, withPrepend: Boolean = true): String {
+        val data = DataVariant.getVariantDataFromVariant(variant)
+        val header = ModHeader(VariantUtils.getAllSourceModsFromVariant(data).map { GameModInfo(it.id, it.name, it.version) })
+        return encode(data, header, withPrepend)
+    }
 }
