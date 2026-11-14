@@ -8,7 +8,9 @@ import fleetkit.serialization.compressor.Format
 import fleetkit.serialization.compressor.ModHeader
 import fleetkit.serialization.compressor.formats.sic.SecondInCommandFormat
 import fleetkit.serialization.fleet.DataFleet
+import fleetkit.serialization.member.DataMember
 import fleetkit.util.api.FleetUtils
+import fleetkit.util.api.MemberUtils
 
 // Composite: embeds PersonFormat and MemberFormat. Bump this version whenever either changes.
 @Suppress("EnumValuesSoftDeprecate")
@@ -25,10 +27,12 @@ object FleetFormat : Format<DataFleet.ParsedFleetData> {
         memKeys = c.map(d?.memKeys) { c.any(it) },
         secondInCommandData = c.opt(d?.secondInCommandData, SecondInCommandFormat)
     )
-    fun encode(data: FleetDataAPI, withPrepend: Boolean = true): String {
-        val data = DataFleet.getFleetDataFromFleet(data)
-        val header = ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { GameModInfo(it.id, it.name, it.version) })
-        return encode(data, header, withPrepend)
+    /** If [mods] is null, it will automatically be generated */
+    override fun encode(data: DataFleet.ParsedFleetData, withPrepend: Boolean, mods: ModHeader?): String? {
+        return super.encode(data, withPrepend, mods ?: ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { GameModInfo(it.id, it.name, it.version) }))
+    }
+    fun encode(data: FleetDataAPI, withPrepend: Boolean = true): String? {
+        return encode(DataFleet.getFleetDataFromFleet(data), withPrepend)
     }
     fun encode(data: CampaignFleetAPI, withPrepend: Boolean = true) =
         encode(data.fleetData, withPrepend)

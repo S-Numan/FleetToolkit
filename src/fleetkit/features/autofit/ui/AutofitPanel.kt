@@ -29,6 +29,7 @@ import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.ClipboardMisc
 import fleetkit.serialization.MissingContent
+import fleetkit.serialization.compressor.ModHeader
 import fleetkit.serialization.variant.DataVariant.cloneVariant
 import fleetkit.serialization.variant.VariantSettings
 import fleetkit.ui.UIUtils
@@ -267,6 +268,7 @@ internal object AutofitPanel {
                 baseVariant.hullSpec,
                 coreEffectiveHullAutofitSpecs.size
             )
+
 
         // Combine core (with nulls) + loadout specs
         val combinedSpecs: List<AutofitSpec?> = coreEffectiveHullAutofitSpecs + loadoutEffectiveHullAutofitSpecs
@@ -1285,9 +1287,19 @@ internal object AutofitPanel {
 
                 val missingMods = mutableSetOf<Triple<String, String, String>>()
                 val haveModsEqVer = mutableSetOf<Triple<String, String, String>>()
+                val haveModsCeVer = mutableSetOf<Triple<String, String, String>>()
                 val haveModsDifVer = mutableSetOf<Triple<String, String, String>>()
 
                 for ((modId, modName, modVersion) in missingFromVariant.gameMods) {
+                    if (modId == ModHeader.STARSECTOR_ID) {
+                        if (Global.getSettings().gameVersion == modVersion)
+                            haveModsEqVer.add(Triple("", modName, modVersion))
+                        else if (Global.getSettings().gameVersion.substringBefore('a') == modVersion.substringBefore('a'))
+                            haveModsCeVer.add(Triple("", modName, modVersion))
+                        else
+                            haveModsDifVer.add(Triple("", modName, modVersion))
+                        continue
+                    }
                     val matchedMod = enabledMods.find { it.id == modId }
 
                     when {
@@ -1297,23 +1309,24 @@ internal object AutofitPanel {
                     }
                 }
 
-                if (missingMods.isNotEmpty()) {
-                    tooltip.addPara(txt("tooltip_required_mods_header"), 16f)
+                tooltip.addPara(txt("tooltip_required_header"), 16f)
 
-                    for ((modId, modName, modVersion) in missingMods) {
-                        tooltip.addPara(txt("tooltip_missing_mod", modName, modId, modVersion), Color.RED, 0f)
-                    }
-                    for ((modId, modName, modVersion) in haveModsDifVer) {
-                        tooltip.addPara(txt("tooltip_version_diff_mod", modName, modId, modVersion), Color.LIGHT_GRAY, 0f)
-                    }
-                    for ((modId, modName, modVersion) in haveModsEqVer) {
-                        tooltip.addPara(txt("tooltip_exact_mod", modName, modId, modVersion), 0f)
-                    }
+                for ((modId, modName, modVersion) in missingMods) {
+                    tooltip.addPara(txt("tooltip_missing_mod", modName, modId, modVersion), Color.RED, 0f)
+                }
+                for ((modId, modName, modVersion) in haveModsDifVer) {
+                    tooltip.addPara(txt("tooltip_version_diff_mod", modName, modId, modVersion), Color.LIGHT_GRAY, 0f)
+                }
+                for ((modId, modName, modVersion) in haveModsCeVer) {
+                    tooltip.addPara(txt("tooltip_compatible_mod", modName, modId, modVersion), 0f)
+                }
+                for ((modId, modName, modVersion) in haveModsEqVer) {
+                    tooltip.addPara(txt("tooltip_exact_mod", modName, modId, modVersion), 0f)
                 }
 
                 tooltip.addPara(
                     txt(
-                        "tooltip_failed_to_load",
+                        "tooltip_autofit_failed_to_load",
                         missingFromVariant.weaponIds,
                         missingFromVariant.weaponSlotIds,
                         missingFromVariant.wingIds,

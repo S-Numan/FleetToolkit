@@ -122,7 +122,7 @@ object SerializationUtils {
                 if (format != null) {
                     try {
                         val decoded = format.decodeWithMods(text)
-                        val data = decoded.data
+                        val data = decoded!!.data
                         decoded.mods?.toGameModInfos()?.let {
                             missing.gameMods.addAll(it)
                         }

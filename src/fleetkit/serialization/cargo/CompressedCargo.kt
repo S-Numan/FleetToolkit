@@ -18,13 +18,19 @@ import org.lazywizard.console.Console
 import org.magiclib.util.MagicLookup
 import java.awt.Color
 
-object CompressedCargo {
+internal object CompressedCargo {
     fun isCompressedCargo(comp: String): Boolean {
-        val metaIndexStart = comp.indexOf(metaSep)
-        if (metaIndexStart == -1) return false
-
-        val metaVersion = comp.getOrNull(metaIndexStart + 1)
-        return metaVersion?.equals('c', ignoreCase = true) == true
+        var start = comp.indexOf(metaSep)
+        while (start != -1) {
+            val v = comp.getOrNull(start + 1)
+            if (v == 'c' || v == 'C') {
+                var i = start + 2
+                while (comp.getOrNull(i)?.isDigit() == true) i++
+                if (i > start + 2 && comp.getOrNull(i) == '$') return true
+            }
+            start = comp.indexOf(metaSep, start + 1)
+        }
+        return false
     }
 
     @JvmOverloads

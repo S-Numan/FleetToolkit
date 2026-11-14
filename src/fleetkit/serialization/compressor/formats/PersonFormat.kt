@@ -33,9 +33,12 @@ object PersonFormat : Format<DataPerson.ParsedPersonData> {
         points = c.int(d?.points),
         memKeys = c.map(d?.memKeys) { c.any(it) }
     )
-    fun encode(person: PersonAPI, withPrepend: Boolean = true): String {
-        val data = DataPerson.getPersonDataFromPerson(person)
-        val header = ModHeader(PersonUtils.getAllSourceModsFromPerson(data).map { GameModInfo(it.id, it.name, it.version) })
-        return encode(data, header, withPrepend)
+    /** If [mods] is null, it will automatically be generated */
+    override fun encode(data: DataPerson.ParsedPersonData, withPrepend: Boolean, mods: ModHeader?): String? {
+        return super.encode(data, withPrepend, mods ?: ModHeader(PersonUtils.getAllSourceModsFromPerson(data).map { GameModInfo(it.id, it.name, it.version) }))
+    }
+
+    fun encode(person: PersonAPI, withPrepend: Boolean = true): String? {
+        return encode(DataPerson.getPersonDataFromPerson(person), withPrepend)
     }
 }

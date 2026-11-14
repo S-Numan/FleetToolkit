@@ -1,5 +1,7 @@
 package fleetkit.serialization.compressor
 
+import com.fs.starfarer.api.Global
+
 /**
  * RULE: if you change the layout of a format, bump its `version` AND the `version` of every format that
  * embeds it, directly or indirectly. Otherwise old codes pass the version check and decode into garbage.
@@ -10,11 +12,12 @@ interface Format<T : Any> {
     fun sync(c: Codec, d: T?): T
 
     /**
-     * Pass [mods] to embed the game version and required mods.
      *
      * @param withPrepend Add a description line for the user, a line break, then the code. Safe to paste back into decode().
+     * @param mods to embed the game version and required mods.
      */
-    fun encode(data: T, mods: ModHeader? = null, withPrepend: Boolean = true): String {
+    fun encode(data: T, withPrepend: Boolean = true, mods: ModHeader? = null): String? {
+        try {
         val out = ByteBuffers.Out()
         val c = Codec(out)
         c.int(version)
@@ -25,17 +28,26 @@ interface Format<T : Any> {
             mods.describe() + "\n" + output
         else
             output
+        } catch (e: Exception) {
+            Global.getLogger(this.javaClass).error("Failed to decode", e)
+        }
+        return null
     }
 
-    fun decode(code: String): T = decodeWithMods(code).data
+    fun decode(code: String): T? = decodeWithMods(code)?.data
 
-    fun decodeWithMods(code: String): Decoded<T> {
-        val (input, c) = openCodec(code)
-        val mods = c.optModHeader(null)
-        val result = sync(c, null)
-        // Raw deflate has no checksum; leftover bytes mean a mistyped or mismatched code
-        check(input.remaining() == 0) { "Corrupt data: trailing bytes" }
-        return Decoded(result, mods)
+    fun decodeWithMods(code: String): Decoded<T>? {
+        try {
+            val (input, c) = openCodec(code)
+            val mods = c.optModHeader(null)
+            val result = sync(c, null)
+            // Raw deflate has no checksum; leftover bytes mean a mistyped or mismatched code
+            check(input.remaining() == 0) { "Corrupt data: trailing bytes" }
+            return Decoded(result, mods)
+        } catch (e: Exception) {
+            Global.getLogger(this.javaClass).error("Failed to decode", e)
+        }
+        return null
     }
 
     /** Reads only the mod header (null if the code has none). Use it to warn about missing mods before importing. */

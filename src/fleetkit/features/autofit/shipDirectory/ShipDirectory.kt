@@ -7,10 +7,8 @@ import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.serialization.MissingContent
-import fleetkit.serialization.variant.CompressedVariant
-import fleetkit.serialization.variant.CompressedVariant.extractVariantDataFromCompString
+import fleetkit.serialization.compressor.formats.VariantFormat
 import fleetkit.serialization.variant.DataVariant
-import fleetkit.serialization.variant.DataVariant.buildVariantFull
 import fleetkit.serialization.variant.DataVariant.filterParsedVariantData
 import fleetkit.serialization.variant.JSONVariant
 import fleetkit.serialization.variant.VariantSettings
@@ -167,10 +165,11 @@ class ShipDirectory(
             hullVariantId = setVariantID ?: makeVariantID(inputVariant)
         }
 
-        val comp = CompressedVariant.saveVariantToCompString(variantToSave, settings, includePrepend = false)
+        val comp = VariantFormat.encode(DataVariant.getVariantDataFromVariant(variantToSave, settings), withPrepend = false)
 
         //Ensures end result is readable, and uses the saved version of the variant to guarantee consistency across game restarts.
-        val parsedVariant = extractVariantDataFromCompString(comp) ?: run {
+        val parsedVariant = comp?.let { VariantFormat.decode(it) }
+        if (parsedVariant == null) {
             DisplayMessage.showError("Failed to save variant", "Failed to extract variant data from comp string after just saving: $comp")
             return ""
         }
@@ -196,7 +195,7 @@ class ShipDirectory(
             }
         }
 
-        val savedVariant = buildVariantFull(parsedVariant, VariantSettings(includeVariantID = true))
+        val savedVariant = parsedVariant.toVariant(VariantSettings(includeVariantID = true))
 
 
         val shipPath = "${savedVariant.hullSpec.getEffectiveHullId()}/${savedVariant.hullVariantId}"
@@ -231,7 +230,7 @@ class ShipDirectory(
         val data = shipEntry.variantData.copy(variantId = variantID)
         val variant = shipEntry.getVariant()?.apply { hullVariantId = variantID }
 
-        val comp = CompressedVariant.saveVariantToCompString(data, includePrepend = false)
+        val comp = VariantFormat.encode(data, withPrepend = false)
 
         val shipPath = "${shipEntry.path.substringBefore("/")}/${data.variantId}"
 

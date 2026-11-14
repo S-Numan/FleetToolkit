@@ -120,8 +120,8 @@ object JSONVariant {
         //Vanilla method for storing ship modules, Module variants are stored in a separate file
         json.optJSONArray("modules")?.let { arr ->
             repeat(arr.length()) { i ->
-                arr.optJSONObject(i)?.names()?.optString(0)?.let { key ->
-                    arr.optJSONObject(i)?.optString(key)?.let { moduleVariantID ->
+                arr.optJSONObject(i)?.names()?.optString(0, null)?.let { key ->
+                    arr.optJSONObject(i)?.optString(key, null)?.let { moduleVariantID ->
                         val module: ShipVariantAPI
                         try {
                             module = Global.getSettings().getVariant(moduleVariantID)

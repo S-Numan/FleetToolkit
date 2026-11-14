@@ -643,7 +643,7 @@ internal object FTMisc {
 
     fun getModInfosFromJson(json: JSONObject, onlyMissing: Boolean = false): MutableSet<GameModInfo> {
         val gameMods = mutableSetOf<GameModInfo>()
-        json.optString("gameVersion")?.let {
+        json.optString("gameVersion", null)?.let {
             gameMods.add(GameModInfo("SS", "Starsector", it))
         }
         json.optJSONArray("mod_info")?.let {

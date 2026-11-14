@@ -34,7 +34,7 @@ internal fun UIPanelAPI.findChildWithPlugin(clazz: Class<*>): CustomPanelAPI? {
 
 internal fun JSONArray.containsString(value: String): Boolean {
     for (i in 0 until this.length()) {
-        if (this.optString(i) == value) return true
+        if (this.optString(i, null) == value) return true
     }
     return false
 }

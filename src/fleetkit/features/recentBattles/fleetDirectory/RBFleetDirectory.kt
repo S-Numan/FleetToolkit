@@ -7,8 +7,8 @@ import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
 import fleetkit.serialization.MissingContent
+import fleetkit.serialization.compressor.formats.FleetFormat
 import fleetkit.serialization.fleet.CompressedFleet
-import fleetkit.serialization.fleet.CompressedFleet.extractFleetDataFromCompString
 import fleetkit.serialization.fleet.DataFleet
 import fleetkit.serialization.fleet.DataFleet.filterParsedFleetData
 import fleetkit.serialization.fleet.FleetSettings
@@ -78,13 +78,10 @@ class RBFleetDirectory(
         val currentTime = Date()
         var fleetID = setFleetID
 
-        var comp = CompressedFleet.saveFleetToCompString(
-            inputFleet,
-            settings,
-            includePrepend = false
-        )
+        var comp = FleetFormat.encode(DataFleet.getFleetDataFromFleet(inputFleet, settings), withPrepend = false)
 
-        var parsedFleet = extractFleetDataFromCompString(comp) ?: run {
+        var parsedFleet = comp?.let { FleetFormat.decode(it) }
+        if (parsedFleet == null) {
             DisplayMessage.showError(
                 "Failed to save fleet",
                 "Failed to extract fleet data from comp string after just saving: $comp"
@@ -100,14 +97,10 @@ class RBFleetDirectory(
         }
 
         if (additionalMemKeysToAdd.isNotEmpty()) {
-            val newComp = CompressedFleet.saveFleetToCompString(
-                parsedFleet.copy(
-                    memKeys = parsedFleet.memKeys + additionalMemKeysToAdd
-                ),
-                includePrepend = false
-            )
+            val newComp = FleetFormat.encode((parsedFleet.copy(memKeys = parsedFleet.memKeys + additionalMemKeysToAdd)), withPrepend = false)
 
-            val newParsedFleet = extractFleetDataFromCompString(newComp) ?: run {
+            val newParsedFleet = newComp?.let { FleetFormat.decode(it) }
+            if (newParsedFleet == null) {
                 DisplayMessage.showError(
                     "Failed to save fleet",
                     "Failed to extract fleet data from comp string after just saving: $newComp"
@@ -134,13 +127,16 @@ class RBFleetDirectory(
             val fleetUnJSON = filterParsedFleetData(JSONFleet.extractFleetDataFromJson(fleetJSON), comparisonSettings)
             val parsedFleetFiltered = filterParsedFleetData(parsedFleet, comparisonSettings)
             if (fleetUnJSON != parsedFleetFiltered) { // If not equal, this means the logic somewhere when saving and getting the fleet to/from JSON or COMP is not correct
-                DisplayMessage.showError("DEBUG: Fleet data mismatch", "\nfleetUnJSON:\n${fleetUnJSON}\n\nparsedFleetFiltered:\n${parsedFleet}\n")
-
+                DisplayMessage.showError("DEBUG: Fleet data mismatch", "\nfleetUnJSON:\n${fleetUnJSON}\n\nparsedFleetFiltered:\n${parsedFleetFiltered}\n")
                 val diffs = deepDiff(parsedFleetFiltered, fleetUnJSON)
+                DisplayMessage.showError("DEBUG: Fleet data mismatch. DEEP DIFF", diffs.joinToString("\n"))
+            }
 
-                DisplayMessage.showError(
-                    "DEBUG: Fleet data mismatch. DEEP DIFF", diffs.joinToString("\n")
-                )
+            val compressedParsedFleet = filterParsedFleetData(CompressedFleet.extractFleetDataFromCompString(CompressedFleet.saveFleetToCompString(parsedFleet, includePrepend = false, includeModInfo = false))!!, settings = comparisonSettings)
+            if (fleetUnJSON != compressedParsedFleet) { // If not equal, this means the logic somewhere when saving and getting the fleet to/from JSON or COMP is not correct
+                DisplayMessage.showError("DEBUG: Fleet data mismatch", "\nfleetUnJSON:\n${fleetUnJSON}\n\ncompressedParsedFleet:\n${compressedParsedFleet}\n")
+                val diffs = deepDiff(compressedParsedFleet, fleetUnJSON)
+                DisplayMessage.showError("DEBUG: Fleet data mismatch. DEEP DIFF", diffs.joinToString("\n"))
             }
         }
 
@@ -257,7 +253,7 @@ class RBFleetDirectory(
             val obj = fleetsJson.optJSONObject(id) ?: continue
 
             val date = try {
-                formatter.parse(obj.optString("modifyTime")) ?: Date(0)
+                obj.optString("modifyTime", null)?.let { formatter.parse(it) } ?: Date(0)
             } catch (_: Exception) {
                 Date(0)
             }

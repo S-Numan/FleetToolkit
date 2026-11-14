@@ -174,6 +174,7 @@ object ShipDirectoryService {
                         directory.put("shipPaths", shipJsonPaths)
                         Global.getSettings().writeJSONToCommon(configFilePath, directory, false)
 
+                        i++
                         continue
                     }
 
@@ -205,16 +206,19 @@ object ShipDirectoryService {
                             "Failed to read ship variant at /saves/common/$dirPath$prefix/$shipPath\n",
                             e
                         )
+                        i++
                         continue
                     }
                     val tempData = SerializationUtils.extractDataFromString(variantString, missing)
                     if (tempData == null) {
                         Global.getLogger(this.javaClass).error("Failed to get ship variant at /saves/common/$dirPath$prefix/$shipPath\n")
+                        i++
                         continue
                     } else if (tempData is DataVariant.ParsedVariantData) {
                         data = tempData
                     } else {
                         Global.getLogger(this.javaClass).error("Ship variant was not of data type ParsedVariantData at /saves/common/$dirPath$prefix/$shipPath\nHow?")
+                        i++
                         continue
                     }
 

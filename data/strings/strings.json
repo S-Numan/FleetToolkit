@@ -249,11 +249,12 @@
   "tooltip_flux_capacitors": "flux capacitors",
   "tooltip_flux_vents": "flux vents",
   "tooltip_copy_instruction": "Hold CTRL and click to copy loadout to clipboard",
-  "tooltip_required_mods_header": "Required Mods:",
+  "tooltip_required_header": "Required:",
   "tooltip_missing_mod": "%s (MISSING)\n       %s %s",
   "tooltip_version_diff_mod": "%s (VERSION DIFFERENCE)\n        %s %s",
   "tooltip_exact_mod": "%s (EXACT)\n     %s %s",
-  "tooltip_failed_to_load": "Failed to load:\nWeapons: %s\nWeapon Slots: %s\nWings: %s\nHullMods: %s",
+  "tooltip_compatible_mod": "%s (COMPATIBLE)\n     %s %s",
+  "tooltip_autofit_failed_to_load": "Failed to load:\nWeapons: %s\nWeapon Slots: %s\nWings: %s\nHullMods: %s",
   "tag_hidden": "(Hidden)",
 
 

@@ -11,7 +11,8 @@ data class ModHeader(
 ) {
     fun toGameModInfos(): Set<GameModInfo> =
         LinkedHashSet<GameModInfo>().apply {
-            add(GameModInfo(STARSECTOR_ID, "Starsector", gameVersion))
+            if (gameVersion.isNotEmpty())
+                add(GameModInfo(STARSECTOR_ID, "Starsector", gameVersion))
             addAll(mods)
         }
 

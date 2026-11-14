@@ -20,15 +20,20 @@ import fleetkit.util.lib.CompressionUtil
 import org.magiclib.util.MagicLookup
 import java.util.*
 
-/** Note: this code is poorly made. If you intended to use this as library, it is suggested to use the JSON version instead */
-
-object CompressedMember {
+// Deprecated, avoid usage
+internal object CompressedMember {
     fun isCompressedMember(comp: String): Boolean {
-        val metaIndexStart = comp.indexOf(metaSep)
-        if (metaIndexStart == -1) return false
-
-        val metaVersion = comp.getOrNull(metaIndexStart + 1)
-        return metaVersion?.equals('m', ignoreCase = true) == true
+        var start = comp.indexOf(metaSep)
+        while (start != -1) {
+            val v = comp.getOrNull(start + 1)
+            if (v == 'm' || v == 'M') {
+                var i = start + 2
+                while (comp.getOrNull(i)?.isDigit() == true) i++
+                if (i > start + 2 && comp.getOrNull(i) == '$') return true
+            }
+            start = comp.indexOf(metaSep, start + 1)
+        }
+        return false
     }
 
     @JvmOverloads

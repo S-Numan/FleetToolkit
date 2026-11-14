@@ -33,9 +33,12 @@ object VariantFormat : Format<DataVariant.ParsedVariantData> {
             moduleVariants = c.map(d?.moduleVariants) { c.nested { sync(c, it) } }
         )
 
-    fun encode(variant: ShipVariantAPI, withPrepend: Boolean = true): String {
-        val data = DataVariant.getVariantDataFromVariant(variant)
-        val header = ModHeader(VariantUtils.getAllSourceModsFromVariant(data).map { GameModInfo(it.id, it.name, it.version) })
-        return encode(data, header, withPrepend)
+    /** If [mods] is null, it will automatically be generated */
+    override fun encode(data: DataVariant.ParsedVariantData, withPrepend: Boolean, mods: ModHeader?): String? {
+        return super.encode(data, withPrepend, mods ?: ModHeader(VariantUtils.getAllSourceModsFromVariant(data).map { GameModInfo(it.id, it.name, it.version) }))
+    }
+
+    fun encode(variant: ShipVariantAPI, withPrepend: Boolean = true): String? {
+        return encode(DataVariant.getVariantDataFromVariant(variant), withPrepend)
     }
 }
