@@ -1294,7 +1294,7 @@ internal object AutofitPanel {
                     if (modId == ModHeader.STARSECTOR_ID) {
                         if (Global.getSettings().gameVersion == modVersion)
                             haveModsEqVer.add(Triple("", modName, modVersion))
-                        else if (Global.getSettings().gameVersion.substringBefore('a') == modVersion.substringBefore('a'))
+                        else if (Global.getSettings().gameVersion.substringBeforeLast('-') == modVersion.substringBeforeLast('-'))
                             haveModsCeVer.add(Triple("", modName, modVersion))
                         else
                             haveModsDifVer.add(Triple("", modName, modVersion))
