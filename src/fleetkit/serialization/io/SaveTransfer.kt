@@ -809,14 +809,14 @@ object SaveTransfer {
                     sector.characterData.addAbility(spec.id)
             }
 
-            val savedBars = compiled.abilityBars ?: return
+            val savedBars = compiled.abilityBars ?: emptyList()
 
             val bars: Array<Array<CampaignUIPersistentData.AbilitySlot>> = try {
                 @Suppress("UNCHECKED_CAST")
                 sector.uiData.abilitySlotsAPI.safeInvoke("getSlots") as Array<Array<CampaignUIPersistentData.AbilitySlot>>
             } catch (e: Exception) {
                 DisplayMessage.showError(FTTxt.txt("failed_to_load_ability_bars"), e)
-                return
+                emptyArray<Array<CampaignUIPersistentData.AbilitySlot>>()
             }
 
             // Vanilla abilities that a modded/renamed ability id can fall back to when its own id is unavailable.
