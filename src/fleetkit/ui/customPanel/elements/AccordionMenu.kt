@@ -230,7 +230,7 @@ class AccordionMenu(
 
     // ── Panel ─────────────────────────────────────────────────────────────────
 
-    /** The viewport panel; it is attached to [parentPanel] in the init block. */
+    /** The viewport panel; it is attached to parentPanel in the init block. */
     val panel: CustomPanelAPI
 
     private val plugin = object : StarUIPanelPlugin() {

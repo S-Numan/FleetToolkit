@@ -198,11 +198,10 @@ internal class DirectoryManager private constructor(
         if (exists) {
             _containingPaths.toList().forEach { it.delete() }
         }
-        // TODO: remove now empty folder once starsector 0.98.5 comes out with the remove folder API
 
         val deleted = super.delete()
 
-        settings.deleteEmptyFolderFromCommon(filePath) // TODO: make sure this correctly solves the above todo.
+        settings.deleteEmptyFolderFromCommon(folderPath)
 
         removeInstance(filePath)
 

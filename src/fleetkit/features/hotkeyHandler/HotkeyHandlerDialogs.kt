@@ -39,11 +39,14 @@ import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteFleet
 import fleetkit.features.recentBattles.RecentBattleReplay
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.*
-import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.fleet.FleetSettings
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.variant.DataVariant
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.content.MissingContentExtended
+import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.entities.fleet.FleetSettings
+import fleetkit.serialization.entities.member.DataMember
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.io.ClipboardIO
+import fleetkit.serialization.io.SaveTransfer
 import fleetkit.ui.UIUtils
 import fleetkit.ui.addButtonD
 import fleetkit.ui.addCheckboxD
@@ -234,7 +237,9 @@ object HotkeyHandlerDialogs {
         rightPanel.buildUI(withScroller = true) { rightUI ->
             rightUI.setParaFont(getFontPath(Font.ARIAL_16_BOLD))
             rightUI.addPara("Files:\n", 0f).position.inTL(0f, 10f)
-            (rightPanel.customData as? DirectoryManager)?.getContainingPaths()?.filterIsInstance<DirFile>()?.forEach { path ->
+            val directoryManager = rightPanel.customData as? DirectoryManager
+            val containingPaths = directoryManager?.getContainingPaths()
+            containingPaths?.filterIsInstance<DirFile>()?.forEach { path ->
                 val width = rightUI.computeStringWidth(path.fileName)
                 val button = rightUI.addButtonD(path.fileName, width, style = CutStyle.NONE, pad = 4f)
             }
@@ -706,8 +711,7 @@ object HotkeyHandlerDialogs {
             val deterministicRandom = Random(seed)
 
             val fleet = DataFleet.createCampaignFleetFromData(
-                data,
-                true, settings = settings, missing = missingEx, random = deterministicRandom
+                data, settings = settings, missing = missingEx, random = deterministicRandom
             )
 
             fleet.memoryWithoutUpdate["\$#${FTVariables.PREFIX}_customBattleCreationPlugin"] = true
@@ -860,7 +864,7 @@ object HotkeyHandlerDialogs {
                 preview.onClick { event ->
                     if (!event.isLMBDownEvent) return@onClick
                     if (event.isCtrlDown) {
-                        ClipboardMisc.saveMemberToClipboard(member!!, event.isShiftDown)
+                        ClipboardIO.saveToClipboard(member!!, event.isShiftDown)
                     } else {
                         isPressedMemberID = if (isPressedMemberID == member.id) null else member.id
 
@@ -942,7 +946,7 @@ object HotkeyHandlerDialogs {
                 }
                 preview.onClick { event ->
                     if (event.isLMBDownEvent && event.isCtrlDown) {
-                        ClipboardMisc.saveMemberToClipboard(member, event.isShiftDown)
+                        ClipboardIO.saveToClipboard(member, event.isShiftDown)
                     }
                 }
                 preview.onHoverEnter {
@@ -1207,7 +1211,7 @@ object HotkeyHandlerDialogs {
                     onClick {
                         excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         //val battle = Global.getFactory().createBattle(Global.getSector().playerFleet, fleet)
 
@@ -1359,7 +1363,7 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         sector.playerFleet.containingLocation.spawnFleet(sector.playerFleet, 0f, 0f, fleet)
                         //dialog.onExit {
@@ -1377,11 +1381,11 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         //excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         FleetUtils.replacePlayerFleetWith(
                             fleet,
-                            aggression = if (setAggressionDoctrine) data.aggression else -1,
+                            aggression = if (setAggressionDoctrine) data.aggression else null,
                             replacePlayer = includeCommanderAsCommander && fleet.commander != null && !fleet.commander.isDefault && !fleet.commander.isAICore,
                         )
 
@@ -1403,7 +1407,7 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         //excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         val playerFleet = sector.playerFleet.fleetData
 
@@ -1438,7 +1442,7 @@ object HotkeyHandlerDialogs {
                 if (event.isCtrlDown) {
                     if (event.eventValue == Keyboard.KEY_C) {
                         //excludeMissingShips(fleet)
-                        ClipboardMisc.saveFleetToClipboard(
+                        ClipboardIO.saveToClipboard(
                             inputData, event.isShiftDown,
                             settings.apply {
                                 memberSettings.includeID = false
@@ -1447,7 +1451,7 @@ object HotkeyHandlerDialogs {
                     } else if (event.eventValue == Keyboard.KEY_V) {
                         dialog.forceDismiss()
                         val missing = MissingContent()
-                        val data = ClipboardMisc.extractDataFromClipboard(missing)
+                        val data = ClipboardIO.loadDataFromClipboard(missing)
                         if (data != null && (data is DataFleet.ParsedFleetData || data is DataMember.ParsedMemberData || data is DataVariant.ParsedVariantData)) {
                             SystemTaskScheduler.performLater {
                                 pasteFleet(data, missing)
@@ -1818,7 +1822,7 @@ object HotkeyHandlerDialogs {
             ui.addSpacer(buttonHeight)
 
             ui.addButton(FTTxt.txt("copy_save_to_clipboard"), null, ui.width, buttonHeight, 3f).onClick {
-                val json = PlayerSaveUtils.createSaveJson(
+                val json = SaveTransfer.createSaveJson(
                     handleCargo = isEnabled(SaveOption.CARGO),
                     handleSubmarketCargo = isEnabled(SaveOption.SUBMARKETCARGO),
                     handleRelations = isEnabled(SaveOption.REPUTATION),
@@ -1842,10 +1846,10 @@ object HotkeyHandlerDialogs {
                 val saveTransfer = ClipboardUtil.getClipboardContentsAutoJSON()
 
                 val missing = MissingContentExtended()
-                val compiled = PlayerSaveUtils.compileSaveAny(saveTransfer, missing)
+                val compiled = SaveTransfer.compileSaveAny(saveTransfer, missing)
 
                 if (compiled.isEmpty()) {
-                    reportMissingContentIfAny(missing)
+                    missing.reportMissingContentIfAny()
                     DisplayMessage.showMessage(
                         FTTxt.txt("failed_to_find_save_in_clipboard"),
                         Color.YELLOW
@@ -1853,7 +1857,7 @@ object HotkeyHandlerDialogs {
                     return@onClick
                 }
 
-                PlayerSaveUtils.loadCompiledSave(
+                SaveTransfer.loadCompiledSave(
                     compiled,
                     handleCargo = isEnabled(SaveOption.CARGO),
                     handleSubmarketCargo = isEnabled(SaveOption.SUBMARKETCARGO),
@@ -1868,7 +1872,7 @@ object HotkeyHandlerDialogs {
                 )
 
                 DisplayMessage.showMessage(FTTxt.txt("save_loaded_from_clipboard"))
-                reportMissingContentIfAny(missing)
+                missing.reportMissingContentIfAny()
 
                 dialog.dismiss()
             }

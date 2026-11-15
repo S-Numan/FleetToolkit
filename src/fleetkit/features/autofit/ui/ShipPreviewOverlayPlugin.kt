@@ -9,7 +9,7 @@ import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import fleetkit.core.config.FTVariables
 import fleetkit.otherMods.starficz.*
-import fleetkit.serialization.MissingContent
+import fleetkit.serialization.content.MissingContent
 import fleetkit.ui.UIUtils
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11.*

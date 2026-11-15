@@ -378,13 +378,20 @@ internal object RemoveFromSave {
         override fun removeWings(value: String) {
             if (variant == null) return
 
-            variant.wings.removeMatching(value)
             variant.getModules().forEach { (_, variant) ->
-                variant.wings.removeMatching(value)
+                variant.wings.forEachIndexed { index, wing ->
+                    if (wing == value) variant.setWingId(index, "")
+                }
             }
             if (perShipData?.variant != null) {
-                perShipData.variant.wings.removeMatching(value)
-                perShipData.variant.getModules().forEach { it.value.wings.removeMatching(value) }
+                perShipData.variant.wings.forEachIndexed { index, wing ->
+                    if (wing == value) perShipData.variant.setWingId(index, "")
+                }
+                perShipData.variant.getModules().forEach {
+                    it.value.wings.forEachIndexed { index, wing ->
+                        if (wing == value) it.value.setWingId(index, "")
+                    }
+                }
             }
         }
 
@@ -430,9 +437,13 @@ internal object RemoveFromSave {
         }
 
         override fun removeWings(value: String) {
-            member.variant.wings.removeMatching(value)
+            member.variant.wings.forEachIndexed { index, wing ->
+                if (wing == value) member.variant.setWingId(index, "")
+            }
             member.variant.getModules().forEach { (_, variant) ->
-                variant.wings.removeMatching(value)
+                variant.wings.forEachIndexed { index, wing ->
+                    if (wing == value) variant.setWingId(index, "")
+                }
             }
         }
 

@@ -9,11 +9,11 @@ import fleetkit.core.config.FTVariables
 import fleetkit.features.commanderShuttle.CommanderShuttle.addPlayerShuttle
 import fleetkit.features.commanderShuttle.CommanderShuttle.playerShuttleExists
 import fleetkit.features.commanderShuttle.CommanderShuttle.removePlayerShuttle
-import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.fleet.DataFleet.buildFleetFull
-import fleetkit.serialization.fleet.DataFleet.getFleetDataFromFleet
-import fleetkit.serialization.fleet.FleetSettings
-import fleetkit.serialization.person.DataPerson
+import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.entities.fleet.DataFleet.buildFleetFull
+import fleetkit.serialization.entities.fleet.DataFleet.getFleetDataFromFleet
+import fleetkit.serialization.entities.fleet.FleetSettings
+import fleetkit.serialization.entities.person.DataPerson
 import fleetkit.util.api.CargoUtils.getFractionHoldableSupplies
 import fleetkit.util.api.MemberUtils.getAllSourceModsFromMember
 import fleetkit.util.api.PersonUtils.copyOfficerDataTo
@@ -59,7 +59,7 @@ object FleetUtils {
     @JvmStatic
     fun replacePlayerFleetWith(
         fleet: CampaignFleetAPI,
-        aggression: Int = -1,
+        aggression: Int? = null,
         replacePlayer: Boolean = false,
         settings: FleetSettings = FleetSettings()
     ) {
@@ -130,9 +130,8 @@ object FleetUtils {
             addPlayerShuttle()
         }
 
-        if (aggression != -1) {
+        if (aggression != null)
             sector.playerFaction.doctrine.aggression = aggression
-        }
     }
 
     /**

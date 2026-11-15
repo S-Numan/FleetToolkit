@@ -11,10 +11,10 @@ import fleetkit.core.config.FTVariables.DIRECTORY_CONFIG_FILE_NAME
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.features.autofit.ui.AutofitSpec
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.SerializationUtils
-import fleetkit.serialization.variant.DataVariant
-import fleetkit.serialization.variant.VariantSettings
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.io.CodeImporter
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.entities.variant.VariantSettings
 import fleetkit.util.api.HullUtils
 import fleetkit.util.api.VariantUtils.compareVariantContents
 import fleetkit.util.api.VariantUtils.isVariantKnownToPlayer
@@ -35,7 +35,8 @@ object ShipDirectoryService {
     fun getShipDirectoriesNotEmpty(): List<ShipDirectory> = shipDirectories.filter { it.getRawShipEntries().isNotEmpty() }
 
     fun generatePrefixes(): List<String> {
-        val letters = ('A'..'Z') + ('a'..'z')
+        val letters = ('A'..'Z').toList() + ('a'..'z').toList()
+
 
         return letters.flatMap { c1 ->
             listOf(c1.toString()) + letters.map { c2 -> "$c1$c2" }
@@ -174,6 +175,7 @@ object ShipDirectoryService {
                         directory.put("shipPaths", shipJsonPaths)
                         Global.getSettings().writeJSONToCommon(configFilePath, directory, false)
 
+                        i++
                         continue
                     }
 
@@ -205,16 +207,19 @@ object ShipDirectoryService {
                             "Failed to read ship variant at /saves/common/$dirPath$prefix/$shipPath\n",
                             e
                         )
+                        i++
                         continue
                     }
-                    val tempData = SerializationUtils.extractDataFromString(variantString, missing)
+                    val tempData = CodeImporter.extractDataFromString(variantString, missing)
                     if (tempData == null) {
                         Global.getLogger(this.javaClass).error("Failed to get ship variant at /saves/common/$dirPath$prefix/$shipPath\n")
+                        i++
                         continue
                     } else if (tempData is DataVariant.ParsedVariantData) {
                         data = tempData
                     } else {
                         Global.getLogger(this.javaClass).error("Ship variant was not of data type ParsedVariantData at /saves/common/$dirPath$prefix/$shipPath\nHow?")
+                        i++
                         continue
                     }
 

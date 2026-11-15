@@ -61,6 +61,7 @@
   "failed_extract_person": "Failed to extract the detected person",
   "failed_extract_member": "Failed to extract the detected member",
   "failed_extract_fleet": "Failed to extract the detected fleet",
+  "failed_extract": "Failed to extract the detected %s",
   # Paste fleet dialog
   "pasted_fleet_members_only_one": "Pasted fleet contains %s member",
   "pasted_fleet_members_only_many": "Pasted fleet contains %s members",
@@ -192,9 +193,9 @@
 
 
   # Human readable compression prepend
-  "shipReadableWithPerson": "%s (Pilot: %s) – %s %s : %s",
-  "shipReadableNoPerson": "%s – %s %s : %s",
-  "fleet_summary": "%s - '%s dp' '%s ships' : %s",
+  "shipReadableWithPerson": "%s (Pilot: %s) – %s %s",
+  "shipReadableNoPerson": "%s – %s %s",
+  "fleet_summary": "%s - '%s dp' '%s ships'",
 
 
 
@@ -248,11 +249,12 @@
   "tooltip_flux_capacitors": "flux capacitors",
   "tooltip_flux_vents": "flux vents",
   "tooltip_copy_instruction": "Hold CTRL and click to copy loadout to clipboard",
-  "tooltip_required_mods_header": "Required Mods:",
+  "tooltip_required_header": "Required:",
   "tooltip_missing_mod": "%s (MISSING)\n       %s %s",
   "tooltip_version_diff_mod": "%s (VERSION DIFFERENCE)\n        %s %s",
   "tooltip_exact_mod": "%s (EXACT)\n     %s %s",
-  "tooltip_failed_to_load": "Failed to load:\nWeapons: %s\nWeapon Slots: %s\nWings: %s\nHullMods: %s",
+  "tooltip_compatible_mod": "%s (COMPATIBLE)\n     %s %s",
+  "tooltip_autofit_failed_to_load": "Failed to load:\nWeapons: %s\nWeapon Slots: %s\nWings: %s\nHullMods: %s",
   "tag_hidden": "(Hidden)",
 
 

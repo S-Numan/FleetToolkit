@@ -5,8 +5,8 @@ import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.campaign.ui.UITable
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.otherMods.starficz.getChildrenCopy
 
 class ModPickerFilterPanel(
     width: Float,

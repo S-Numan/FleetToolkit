@@ -2,7 +2,7 @@ package fleetkit.features.autofit.ui
 
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import fleetkit.features.autofit.shipDirectory.ShipDirectory
-import fleetkit.serialization.MissingContent
+import fleetkit.serialization.content.MissingContent
 
 data class AutofitSpec @JvmOverloads constructor(
     val variant: ShipVariantAPI,

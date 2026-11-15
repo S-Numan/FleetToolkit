@@ -6,8 +6,8 @@ import com.fs.starfarer.api.combat.MutableShipStatsAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.impl.campaign.ids.Stats
 import com.fs.starfarer.api.util.Misc
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.member.MemberSettings
+import fleetkit.serialization.entities.member.DataMember
+import fleetkit.serialization.entities.member.MemberSettings
 import java.util.*
 
 object MemberUtils {

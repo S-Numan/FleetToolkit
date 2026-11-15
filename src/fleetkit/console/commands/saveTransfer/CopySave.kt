@@ -1,7 +1,7 @@
 package fleetkit.console.commands.saveTransfer
 
 import fleetkit.core.util.FTTxt
-import fleetkit.serialization.PlayerSaveUtils
+import fleetkit.serialization.io.SaveTransfer
 import fleetkit.util.lib.ClipboardUtil.setClipboardText
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.CommonStrings
@@ -27,7 +27,7 @@ class CopySave : BaseCommand {
         }
 
         val argList = args.lowercase().split(" ")
-        val json = PlayerSaveUtils.createSaveJson(
+        val json = SaveTransfer.createSaveJson(
             handleCargo = !argList.contains(NO_CARGO),
             handleSubmarketCargo = !argList.contains(NO_SUBMARKET_CARGO),
             handleRelations = !argList.contains(NO_REP),

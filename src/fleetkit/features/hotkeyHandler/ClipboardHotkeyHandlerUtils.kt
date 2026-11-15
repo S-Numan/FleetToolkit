@@ -32,20 +32,20 @@ import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.serialization.ClipboardMisc
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.fleet.CompressedFleet
-import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.fleet.DataFleet.getFleetDataFromFleet
-import fleetkit.serialization.fleet.FleetSettings
-import fleetkit.serialization.fleet.JSONFleet.saveFleetToJson
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.member.DataMember.buildMemberFull
-import fleetkit.serialization.person.DataPerson
-import fleetkit.serialization.person.DataPerson.buildPersonFull
-import fleetkit.serialization.reportMissingContentIfAny
-import fleetkit.serialization.variant.DataVariant
-import fleetkit.serialization.variant.DataVariant.buildVariantFull
+import fleetkit.serialization.io.ClipboardIO
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.fleet.LegacyFleetCode
+import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.entities.fleet.DataFleet.getFleetDataFromFleet
+import fleetkit.serialization.entities.fleet.DataFleet.toParsedData
+import fleetkit.serialization.entities.fleet.FleetSettings
+import fleetkit.serialization.entities.fleet.FleetJson.saveFleetToJson
+import fleetkit.serialization.entities.member.DataMember
+import fleetkit.serialization.entities.member.DataMember.buildMemberFull
+import fleetkit.serialization.entities.person.DataPerson
+import fleetkit.serialization.entities.person.DataPerson.buildPersonFull
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.entities.variant.DataVariant.buildVariantFull
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.ui.customPanel.patterns.DialogPanel
 import fleetkit.util.api.MemberUtils.randomizeMemberCosmetics
@@ -208,7 +208,7 @@ internal object ClipboardHotkeyHandlerUtils {
                 else -> "copied_visible_submarket_to_clipboard"
             }
         } else {
-            val comp = CompressedFleet.saveFleetToCompString(fleetToCopy)
+            val comp = fleetToCopy.toParsedData().toCode()
             ClipboardUtil.setClipboardText(comp)
             when {
                 settings.excludeMembersWithID.isEmpty() && !uiShowsSubmarketFleet -> "copied_entire_fleet_to_clipboard_compressed"
@@ -239,7 +239,7 @@ internal object ClipboardHotkeyHandlerUtils {
     }
 
     fun handleCreateOfficer(event: InputEventAPI, ui: CampaignUIAPI) {
-        if (UIFinder.getCodexDialog() != null || DialogUtils.isModalPanelOpen()) return
+        if (Global.getSettings().isShowingCodex || DialogUtils.isModalPanelOpen()) return
 
         if (ui.getActualCurrentTab() == CoreUITabId.FLEET ||
             (ui.getActualCurrentTab() == null && ui.currentInteractionDialog == null)
@@ -269,7 +269,7 @@ internal object ClipboardHotkeyHandlerUtils {
         }
 
         fleet?.let { fleetToCopy ->
-            val txt = if (!isShiftDown) {
+            val txt = if (isShiftDown) {
                 val json = saveFleetToJson(
                     fleetToCopy,
                     FleetSettings().apply {
@@ -284,12 +284,11 @@ internal object ClipboardHotkeyHandlerUtils {
                 else
                     FTTxt.txt("copied_interaction_fleet_to_clipboard")
             } else {
-                val comp = CompressedFleet.saveFleetToCompString(
-                    fleetToCopy.fleetData,
+                val comp = fleetToCopy.fleetData.toParsedData(
                     settings = FleetSettings().apply {
                         memberSettings.personSettings.handleXpAndPoints = false
                     }
-                )
+                ).toCode()
                 ClipboardUtil.setClipboardText(comp)
 
                 if (!isAltDown && (battle?.nonPlayerSide?.size ?: 1) > 1)
@@ -308,7 +307,7 @@ internal object ClipboardHotkeyHandlerUtils {
     fun handleRefitPaste(): Boolean {
         val missing = MissingContent()
 
-        var data = ClipboardMisc.extractDataFromClipboard(missing) ?: return false
+        var data = ClipboardIO.loadDataFromClipboard(missing) ?: return false
 
         if (data is DataMember.ParsedMemberData && data.variantData != null) {
             data = data.variantData
@@ -372,7 +371,7 @@ internal object ClipboardHotkeyHandlerUtils {
     fun handleRefitCopy(isShiftDown: Boolean): Boolean {
         val baseVariant = BoxedRefitTab.get()?.getCurrentVariant() ?: return false
 
-        ClipboardMisc.saveVariantToClipboard(baseVariant, isShiftDown)
+        ClipboardIO.saveToClipboard(baseVariant, isShiftDown)
         return true
     }
 
@@ -380,7 +379,7 @@ internal object ClipboardHotkeyHandlerUtils {
 
         if (event.isLMBDownEvent) {
             if (event.isCtrlDown) {
-                ClipboardMisc.savePersonToClipboard(person, event.isShiftDown)
+                ClipboardIO.saveToClipboard(person, event.isShiftDown)
                 event.consume()
             }
         }
@@ -421,7 +420,7 @@ internal object ClipboardHotkeyHandlerUtils {
 
     fun memberClick(event: InputEventAPI, member: FleetMemberAPI) {
         if (event.isCtrlDown) {
-            ClipboardMisc.saveMemberToClipboard(member, event.isShiftDown)
+            ClipboardIO.saveToClipboard(member, event.isShiftDown)
             event.consume()
         }
     }
@@ -503,7 +502,7 @@ internal object ClipboardHotkeyHandlerUtils {
                 val variant = buildVariantFull(data, missing = missing)
 
                 if (missing.hullIds.size > 1) {
-                    reportMissingContentIfAny(missing, FTTxt.txt("could_not_find_hullid_when_variant", missing.hullIds.first()))
+                    missing.reportMissingContentIfAny(FTTxt.txt("could_not_find_hullid_when_variant", missing.hullIds.first()))
                     return
                 }
 
@@ -531,7 +530,7 @@ internal object ClipboardHotkeyHandlerUtils {
                 val member = buildMemberFull(data, missing = missing)
 
                 if (missing.hullIds.size > 1) {
-                    reportMissingContentIfAny(missing, FTTxt.txt("could_not_find_hullid_when_member", missing.hullIds.first()))
+                    missing.reportMissingContentIfAny(FTTxt.txt("could_not_find_hullid_when_member", missing.hullIds.first()))
                     return
                 }
 
@@ -571,6 +570,6 @@ internal object ClipboardHotkeyHandlerUtils {
             }
         }
 
-        reportMissingContentIfAny(missing)
+        missing.reportMissingContentIfAny()
     }
 }

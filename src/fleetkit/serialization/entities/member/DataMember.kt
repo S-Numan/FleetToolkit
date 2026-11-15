@@ -1,0 +1,206 @@
+package fleetkit.serialization.entities.member
+
+import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.fleet.FleetMemberAPI
+import com.fs.starfarer.api.fleet.FleetMemberType
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.core.ConvertibleToEntity
+import fleetkit.serialization.entities.person.DataPerson
+import fleetkit.serialization.entities.person.DataPerson.buildPerson
+import fleetkit.serialization.entities.person.DataPerson.filterParsedPersonData
+import fleetkit.serialization.entities.person.DataPerson.getPersonDataFromPerson
+import fleetkit.serialization.entities.person.DataPerson.validateAndCleanPersonData
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.entities.variant.DataVariant.buildVariant
+import fleetkit.serialization.entities.variant.DataVariant.filterParsedVariantData
+import fleetkit.serialization.entities.variant.DataVariant.getVariantDataFromVariant
+import fleetkit.serialization.entities.variant.DataVariant.validateAndCleanVariantData
+import fleetkit.util.api.VariantUtils
+import java.util.*
+
+object DataMember {
+
+    @JvmOverloads
+    @JvmStatic
+    fun FleetMemberAPI.toParsedData(settings: MemberSettings = MemberSettings(), filterParsed: Boolean = true) =
+        getMemberDataFromMember(this, settings, filterParsed)
+
+    /**
+     * Creates a copy of this member with the specified settings.
+     *
+     * If [filterParsed] is true, this will apply a filter pass based on the settings, enabling this to be serializable. This will remove non value types memKeys if present.
+     */
+    @JvmOverloads
+    @JvmStatic
+    fun FleetMemberAPI.clone(settings: MemberSettings = MemberSettings(), filterParsed: Boolean = true): FleetMemberAPI {
+        return this.toParsedData(settings, filterParsed).toMemberUnchecked()
+    }
+
+    data class ParsedMemberData(
+        val variantData: DataVariant.ParsedVariantData? = null,
+        val personData: DataPerson.ParsedPersonData? = null,
+        val shipName: String = "",
+        val cr: Float? = 0.7f, // Min 0f, Max 1f
+        val hullFraction: Float? = 1f, // Min 0f, max 1f
+        val isMothballed: Boolean = false,
+        val isFlagship: Boolean = false,
+        val id: String? = null
+    ) : ConvertibleToEntity<FleetMemberAPI> {
+        @JvmOverloads
+        fun filtered(
+            settings: MemberSettings = MemberSettings(),
+            missing: MissingContent = MissingContent()
+        ): ParsedMemberData = filterParsedMemberData(this, settings, missing)
+
+        @JvmOverloads
+        fun validated(
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): ParsedMemberData = validateAndCleanMemberData(this, missing, random)
+
+        @JvmOverloads
+        fun toMemberUnchecked(random: Random = Random()): FleetMemberAPI = buildMember(this, random)
+
+        /** Validates then filters automatically. */
+        @JvmOverloads
+        fun toMember(
+            settings: MemberSettings = MemberSettings(),
+            missing: MissingContent = MissingContent(),
+            random: Random = Random()
+        ): FleetMemberAPI = buildMemberFull(this, settings, missing, random)
+
+        @JvmOverloads
+        fun toCode(withPrepend: Boolean = true) =
+            MemberCode.encode(this, withPrepend)
+
+        @JvmOverloads
+        fun toJSON(includeModInfo: Boolean = true) =
+            MemberJson.saveMemberToJson(this, includeModInfo)
+
+        override fun toEntity(missing: MissingContent, random: Random): FleetMemberAPI =
+            toMember(MemberSettings(), missing, random)
+    }
+
+    internal fun getMemberDataFromMember(
+        member: FleetMemberAPI,
+        settings: MemberSettings = MemberSettings(),
+        filterParsed: Boolean = true
+    ): ParsedMemberData {
+        val data = ParsedMemberData(
+            variantData = getVariantDataFromVariant(member.variant, filterParsed = false),
+            personData = if (member.captain != null && !member.captain.isDefault && settings.includeOfficer) getPersonDataFromPerson(member.captain, filterParsed = false) else null,
+            shipName = member.shipName ?: "",
+            cr = member.repairTracker?.baseCR ?: 0f, // Use .baseCR over .cr, as .cr takes into account crewFraction. Copying a member stored in a submarket would result in a CR of 0 always, which is not desired.
+            hullFraction = member.status?.hullFraction ?: 0f,
+            isMothballed = member.repairTracker?.isMothballed ?: false,
+            isFlagship = member.isFlagship,
+            id = if (settings.includeID) member.id else null
+        )
+
+        if (filterParsed)
+            return filterParsedMemberData(data, settings)
+        else
+            return data
+    }
+
+    internal fun filterParsedMemberData(
+        data: ParsedMemberData,
+        settings: MemberSettings = MemberSettings(),
+        missing: MissingContent = MissingContent()
+    ): ParsedMemberData {
+        val personData = if (data.personData != null && settings.includeOfficer) filterParsedPersonData(data.personData, settings.personSettings, missing) else null
+        val variantData = if (data.variantData != null) filterParsedVariantData(data.variantData, settings.variantSettings, missing) else null
+
+        return data.copy(
+            personData = personData,
+            variantData = variantData,
+            cr = if (settings.includeCR) data.cr else null,
+            hullFraction = if (settings.includeHullFraction) data.hullFraction else null,
+            id = if (settings.includeID) data.id else null
+        )
+    }
+
+    internal fun validateAndCleanMemberData(
+        data: ParsedMemberData,
+        missing: MissingContent = MissingContent(),
+        random: Random = Random()
+    ): ParsedMemberData {
+        val personData = if (data.personData != null) validateAndCleanPersonData(data.personData, missing, random) else null
+
+        val variantData = if (data.variantData != null) {
+            validateAndCleanVariantData(data.variantData, missing)
+        } else {
+            missing.hullIds.add("")
+            null
+        }
+
+        return data.copy(
+            personData = personData,
+            variantData = variantData,
+            cr = data.cr?.coerceIn(0f, 1f),
+            hullFraction = data.hullFraction?.coerceIn(0f, 1f)
+        )
+    }
+
+    internal fun buildMember(
+        data: ParsedMemberData,
+        random: Random = Random()
+    ): FleetMemberAPI {
+        // Variant
+        val variant = if (data.variantData != null)
+            buildVariant(data.variantData)
+        else
+            VariantUtils.createErrorVariant()
+
+        val member = Global.getSettings().createFleetMember(FleetMemberType.SHIP, variant)
+        if (data.id != null)
+            member.id = data.id
+
+        // Officer
+        if (data.personData != null)
+            member.captain = buildPerson(data.personData, random)
+
+        // Set name and CR
+        member.shipName = data.shipName
+        member.repairTracker.isMothballed = data.isMothballed
+        if (data.cr != null)
+            member.repairTracker.cr = data.cr
+        else
+            member.repairTracker.cr = member.repairTracker.maxCR
+
+        if (data.hullFraction != null && data.hullFraction < 1f) {
+            member.status.disable()
+            member.status.repairDisabledABit()
+            member.status.repairFraction(data.hullFraction)
+            member.status.hullFraction = data.hullFraction
+            /*for (i in 1..<member.status.numStatuses) {
+                val rand = Math.random()
+                if (rand < 0.5f && rand > data.hullFraction) {
+                    member.status.setDetached(i, true)
+                } else {
+                    member.status.setDetached(i, false)
+                    member.status.setHullFraction(i, data.hullFraction)
+                }
+            }*/
+        }
+
+        member.setStatUpdateNeeded(true)
+
+        return member
+    }
+
+    internal fun buildMemberFull(
+        data: ParsedMemberData,
+        settings: MemberSettings = MemberSettings(),
+        missing: MissingContent = MissingContent(),
+        random: Random = Random()
+    ): FleetMemberAPI {
+        val ourMissing = MissingContent()
+
+        val cleaned = validateAndCleanMemberData(data, ourMissing, random)
+        val filtered = filterParsedMemberData(cleaned, settings, ourMissing)
+
+        missing.add(ourMissing)
+        return buildMember(filtered, random)
+    }
+}

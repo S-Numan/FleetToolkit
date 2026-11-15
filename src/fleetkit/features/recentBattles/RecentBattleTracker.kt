@@ -8,7 +8,7 @@ import com.fs.starfarer.campaign.fleet.FleetMember
 import com.fs.starfarer.campaign.fleet.FleetMemberStatus
 import fleetkit.core.util.DisplayMessage
 import fleetkit.features.recentBattles.fleetDirectory.RBFleetDirectoryService
-import fleetkit.serialization.fleet.FleetSettings
+import fleetkit.serialization.entities.fleet.FleetSettings
 
 
 class RecentBattleTracker : BaseCampaignEventListener(false) {

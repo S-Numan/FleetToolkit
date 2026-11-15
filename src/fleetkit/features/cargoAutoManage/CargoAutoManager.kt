@@ -9,8 +9,8 @@ import com.fs.starfarer.api.campaign.econ.SubmarketAPI
 import com.fs.starfarer.api.campaign.impl.items.BlueprintProviderItem
 import com.fs.starfarer.api.campaign.impl.items.ModSpecItemPlugin
 import fleetkit.core.config.FTSettings
-import fleetkit.core.util.FTTxt
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTTxt
 import fleetkit.features.cargoAutoManage.CargoAutoManage.loadCargoAutoManageFromSubmarket
 import fleetkit.util.api.kotlin.moveItem
 import fleetkit.util.api.kotlin.moveStack

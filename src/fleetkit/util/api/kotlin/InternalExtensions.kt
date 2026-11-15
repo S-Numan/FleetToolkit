@@ -5,8 +5,6 @@ import com.fs.starfarer.api.ui.*
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.addButton
 import fleetkit.otherMods.starficz.getChildrenCopy
-import fleetkit.otherMods.starficz.height
-import fleetkit.otherMods.starficz.width
 import org.json.JSONArray
 import org.json.JSONObject
 import org.magiclib.kotlin.setAlpha
@@ -34,7 +32,7 @@ internal fun UIPanelAPI.findChildWithPlugin(clazz: Class<*>): CustomPanelAPI? {
 
 internal fun JSONArray.containsString(value: String): Boolean {
     for (i in 0 until this.length()) {
-        if (this.optString(i) == value) return true
+        if (this.optString(i, null) == value) return true
     }
     return false
 }

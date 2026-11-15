@@ -15,11 +15,9 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.features.autofit.ui.AutofitPanel
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
+import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
 import fleetkit.otherMods.starficz.getChildrenCopy
-import fleetkit.otherMods.starficz.height
-import fleetkit.otherMods.starficz.width
-import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.lwjgl.util.vector.Vector2f
 import org.magiclib.util.MagicLookup

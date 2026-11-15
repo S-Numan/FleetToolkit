@@ -7,68 +7,84 @@ import java.util.zip.Inflater
 object CompressionUtil {
     const val BLOCK_SIZE = 1024
 
-    /**
-     * Compresses a string using the DEFLATE algorithm and encodes it in Base64.
-     */
-    fun base64Deflate(input: String): String {
-        val data = input.toByteArray(Charsets.UTF_8)
-        val fullOutput = mutableListOf<ByteArray>()
-        var result: ByteArray
-        val compresser = Deflater()
-        compresser.setInput(data)
-        compresser.finish()
-        var compressedDataLength: Int
+    /** Minimal growable byte buffer. java.io I miss you. */
+    private class ByteSink {
+        private var data = ByteArray(BLOCK_SIZE)
+        private var size = 0
 
-        while (true) {
-            result = ByteArray(BLOCK_SIZE)
-            compressedDataLength = compresser.deflate(result)
-            if (compressedDataLength == BLOCK_SIZE) {
-                fullOutput.add(result)
-            } else {
-                break
+        fun write(src: ByteArray, offset: Int, length: Int) {
+            val needed = size + length
+            if (needed > data.size) {
+                var newCapacity = data.size * 2
+                while (newCapacity < needed) newCapacity *= 2
+                val grown = ByteArray(newCapacity)
+                System.arraycopy(data, 0, grown, 0, size)
+                data = grown
             }
+            System.arraycopy(src, offset, data, size, length)
+            size += length
         }
-        compresser.end()
 
-        val output = ByteArray(compressedDataLength + BLOCK_SIZE * fullOutput.size)
-        for ((index, chunk) in fullOutput.withIndex()) {
-            System.arraycopy(chunk, 0, output, index * BLOCK_SIZE, BLOCK_SIZE)
+        fun toByteArray(): ByteArray {
+            val result = ByteArray(size)
+            System.arraycopy(data, 0, result, 0, size)
+            return result
         }
-        System.arraycopy(result, 0, output, fullOutput.size * BLOCK_SIZE, compressedDataLength)
-
-        val base64 = Base64.getEncoder().encodeToString(output)
-        return base64
     }
 
-    fun base64Inflate(input: String): String? {
+    /** Compresses a string with DEFLATE and encodes it in Base64, optionally using a preset dictionary. */
+    fun base64Deflate(input: String, dictionary: String? = null): String {
+        val data = input.toByteArray(Charsets.UTF_8)
+        val compresser = Deflater()
+        try {
+            if (!dictionary.isNullOrEmpty()) {
+                compresser.setDictionary(dictionary.toByteArray(Charsets.UTF_8))
+            }
+            compresser.setInput(data)
+            compresser.finish()
+
+            val sink = ByteSink()
+            val buffer = ByteArray(BLOCK_SIZE)
+            while (!compresser.finished()) {
+                val count = compresser.deflate(buffer)
+                sink.write(buffer, 0, count)
+            }
+            return Base64.getEncoder().encodeToString(sink.toByteArray())
+        } finally {
+            compresser.end()
+        }
+    }
+
+    /** Decodes Base64 and inflates it; returns null on invalid input or a missing/mismatched dictionary. */
+    fun base64Inflate(input: String, dictionary: String? = null): String? {
+        val decompresser = Inflater()
         try {
             val compressed = Base64.getDecoder().decode(input)
-            val fullOutput = mutableListOf<ByteArray>()
-            var result: ByteArray
-            val decompresser = Inflater()
             decompresser.setInput(compressed)
-            var resultLength: Int
 
-            while (true) {
-                result = ByteArray(BLOCK_SIZE)
-                resultLength = decompresser.inflate(result)
-                if (resultLength == BLOCK_SIZE) {
-                    fullOutput.add(result)
-                } else {
-                    break
+            val dictBytes = dictionary?.takeIf { it.isNotEmpty() }?.toByteArray(Charsets.UTF_8)
+            val sink = ByteSink()
+            val buffer = ByteArray(BLOCK_SIZE)
+
+            while (!decompresser.finished()) {
+                val count = decompresser.inflate(buffer)
+                if (count > 0) {
+                    sink.write(buffer, 0, count)
+                } else if (decompresser.needsDictionary()) {
+                    // Throws IllegalArgumentException if the dictionary doesn't match.
+                    if (dictBytes == null) return null
+                    decompresser.setDictionary(dictBytes)
+                } else if (decompresser.needsInput()) {
+                    return null // Truncated data.
                 }
             }
-            decompresser.end()
 
-            val builder = StringBuilder()
-            for (bytes in fullOutput) {
-                builder.append(String(bytes, Charsets.UTF_8))
-            }
-            builder.append(String(result, 0, resultLength, Charsets.UTF_8))
-
-            return builder.toString()
+            // Decode once at the end so multibyte characters aren't split across blocks.
+            return String(sink.toByteArray(), Charsets.UTF_8)
         } catch (_: Exception) {
             return null
+        } finally {
+            decompresser.end()
         }
     }
 }
