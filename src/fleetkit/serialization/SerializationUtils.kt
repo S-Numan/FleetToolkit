@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package fleetkit.serialization
 
 import fleetkit.serialization.content.MissingContent

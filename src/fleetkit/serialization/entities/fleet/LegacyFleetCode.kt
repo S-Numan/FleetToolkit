@@ -229,7 +229,7 @@ internal object LegacyFleetCode {
 
             return DataFleet.ParsedFleetData(
                 fleetName = fleetName,
-                fleetAggression = aggression,
+                aggression = aggression,
                 factionID = factionID,
                 commanderIfNoFlagship = commander,
                 members = members,
@@ -291,7 +291,7 @@ internal object LegacyFleetCode {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            (data.fleetAggression ?: -1).toString(),
+            (data.aggression ?: -1).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 

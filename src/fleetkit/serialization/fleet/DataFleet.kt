@@ -32,7 +32,7 @@ object DataFleet {
     ) {
         fun toNew() = NewDataFleet.ParsedFleetData(
             fleetName = fleetName,
-            fleetAggression = aggression.takeIf { it > -1 },
+            aggression = aggression.takeIf { it > -1 },
             factionID = factionID,
             commanderIfNoFlagship = commanderIfNoFlagship,
             members = members,
@@ -44,7 +44,7 @@ object DataFleet {
             @Suppress("DEPRECATION")
             fun fromNew(new: NewDataFleet.ParsedFleetData) = ParsedFleetData(
                 fleetName = new.fleetName,
-                aggression = new.fleetAggression ?: 2,
+                aggression = new.aggression ?: 2,
                 factionID = new.factionID,
                 commanderIfNoFlagship = new.commanderIfNoFlagship,
                 members = new.members,

@@ -20,6 +20,7 @@ import org.magiclib.util.MagicLookup
 import java.util.*
 
 object DataPerson {
+    @JvmOverloads
     @JvmStatic
     fun PersonAPI.toParsedData(settings: PersonSettings = PersonSettings(), filterParsed: Boolean = true) =
         getPersonDataFromPerson(this, settings, filterParsed)
@@ -31,6 +32,7 @@ object DataPerson {
      *
      * If [filterParsed] is true, this will apply a filter pass based on the settings, enabling this person to be serializable. This will remove non value type memKeys if present
      */
+    @JvmOverloads
     @JvmStatic
     fun PersonAPI.clone(settings: PersonSettings = PersonSettings(), filterParsed: Boolean = true): PersonAPI =
         this.toParsedData(settings, filterParsed).toPersonUnchecked()

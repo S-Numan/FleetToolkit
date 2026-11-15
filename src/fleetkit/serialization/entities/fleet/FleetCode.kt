@@ -4,7 +4,6 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.FleetDataAPI
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.Format
 import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.serialization.content.GameModInfo
@@ -19,7 +18,7 @@ object FleetCode : EntityFormat<DataFleet.ParsedFleetData> {
     override val version = 1
     override fun sync(c: Codec, d: DataFleet.ParsedFleetData?) = DataFleet.ParsedFleetData(
         fleetName = c.optStr(d?.fleetName),
-        fleetAggression = c.int(d?.fleetAggression),
+        aggression = c.int(d?.aggression),
         factionID = c.optStr(d?.factionID),
         commanderIfNoFlagship = c.opt(d?.commanderIfNoFlagship, PersonCode),
         members = c.list(d?.members, MemberCode),

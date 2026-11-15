@@ -2,6 +2,11 @@ package fleetkit.serialization.dictionaries
 
 import fleetkit.serialization.core.ByteBuffers
 
+/**
+ * Preset zlib dictionary for serialized VariantAPI / FleetMemberAPI / PersonAPI / CampaignFleetAPI data.
+ *
+ * NEVER edit this once codes have shipped. Make a new version instead.
+ */
 object PackDictionaryV1 {
     /** Builds a dictionary from strings ordered least common -> most common. Max 32 KB. */
     fun build(strings: List<String>): ByteArray {
@@ -152,9 +157,8 @@ object PackDictionaryV1 {
         "supplyFleet", "commerceRaiders", "raider", "inspectionFleet", "taskForce", "scavengerSmall",
         "scavengerMedium", "scavengerLarge", "mercScout", "mercBountyHunter", "mercPrivateer", "mercPatrol",
         "mercArmada", "battlestation", "personBounty", "skip_for_default_hull_modules",
-        "variant_allow_excess_op_etc", "variant_always_retain_smods_on_salvage", "consistent_weapon_drops",
-        "always_recoverable", "unboardable", "unrestorable", "fx_drone", "military", "trade", "underworld",
-        "science", "pather", "ai_core", "no_ai_core_drop",
+        "military", "trade", "underworld",
+        "science", "pather", "ai_core",
         // Person memory keys
         "\$Post", "\$Rank", "\$id", "\$importance", "\$importanceAtLeastHigh", "\$importanceAtMostLow",
         "\$isContact", "\$isPerson", "\$level", "\$menuState", "\$name", "\$option", "\$personName",
@@ -353,7 +357,7 @@ object PackDictionaryV1 {
     val ranks: List<String> = listOf(
         "artificialIntelligence", "fugitive",
         "houseLeader", "houseLeaderMale", "houseLeaderFemale", "spaceSailor", "spaceChief", "spaceEnsign",
-        "spaceCaptain", "spaceAdmiral", "spaceMarshal", "groundPrivate", "groundSergeant", "groundLieutenant",
+        "spaceAdmiral", "spaceMarshal", "groundPrivate", "groundSergeant", "groundLieutenant",
         "groundCaptain", "groundMajor", "groundColonel", "groundGeneral", "knightCaptain", "chiefHighInspector",
         "deputyStarMarshal", "guardHighDeputyExecutor", "pilot", "brother", "sister", "father", "mother", "elder",
         "freedomFighter", "clone"
@@ -363,7 +367,7 @@ object PackDictionaryV1 {
     val posts: List<String> = listOf(
         "personnelOfficer", "underworldBoss", "exile", "assistant_academician", "associate_academician",
         "alphaCore", "betaCore", "gammaCore",
-        "factionLeader", "patrolCommander", "fleetCommander", "baseCommander", "stationCommander",
+        "factionLeader", "baseCommander", "stationCommander",
         "outpostCommander", "portmaster", "intelligenceDirector", "guardLeader", "supplyOfficer", "supplyManager",
         "medicalSupplier", "administrator", "militaryAdministrator", "freeAdmin", "guildMaster", "communeLeader",
         "executive", "seniorExecutive", "minorCriminal", "criminal", "spacer", "genericMilitary",
@@ -414,29 +418,33 @@ object PackDictionaryV1 {
     )
 
     // Variant naming
-    val variantNaming: List<String> = listOf(
+    val variantBasics: List<String> = listOf(
         "_Hull", "_Standard", "_Strike", "_Assault", "_Attack", "_Support", "_Elite", "_Starting", "_Balanced",
         "_Overdriven", "_Escort", "_Outdated", "_Custom", "Close Support", "Fire Support", "Shieldbreaker",
         "Overdriven", "Outdated", "Escort", "Balanced", "Elite", "Support", "Assault", "Strike", "Attack", "Custom",
-        "Standard"
+        "Standard",
+        "fx_drone", "unboardable", "unrestorable", "no_ai_core_drop", "always_recoverable",
+        "consistent_weapon_drops", "variant_allow_excess_op_etc", "variant_always_retain_smods_on_salvage",
     )
 
     // Officer basics
     val officerBasics: List<String> = listOf(
         "omega_core", "gamma_core", "beta_core", "alpha_core", "reckless", "aggressive", "steady", "cautious",
-        "timid", "spaceLieutenant", "spaceCommander", "officer"
+        "timid", "spaceLieutenant", "spaceCaptain", "spaceCommander", "officer", "patrolCommander", "fleetCommander", "voice",
+        "pather", "aristo", "spacer", "villain", "soldier", "official", "faithful", "business", "scientist",
     )
 
     // Weapon slot ids: ascending usage
     val slotIds: List<String> = listOf(
-        "WS 028", "WS 029", "WS 031", "WS 032", "WS 026", "WS 024", "WS 022", "WS 023", "WS 021", "WS 019", "WS 017",
-        "WS 020", "WS 018", "WS 016", "WS 015", "WS 014", "WS 013", "WS 012", "WS 011", "WS 010", "WS 000", "WS 009",
-        "WS 008", "WS 007", "WS 006", "WS 005", "WS 004", "WS 003", "WS 002", "WS 001"
+        "WS 040", "WS 039", "WS 038", "WS 037", "WS 036", "WS 035", "WS 034", "WS 033", "WS 030", "WS 027", "WS 025",
+        "WS 032", "WS 031", "WS 029", "WS 028", "WS 026", "WS 024", "WS 022", "WS 023", "WS 021", "WS 019", "WS 020",
+        "WS 017", "WS 018", "WS 016", "WS 015", "WS 014", "WS 013", "WS 012", "WS 011", "WS 010", "WS 000", "WS 009",
+        "WS 008", "WS 007", "WS 006", "WS 005", "WS 004", "WS 003", "WS 002", "WS 001",
     )
 
     // NEVER edit this list after codes have shipped. Make a new version instead.
     val v1: ByteArray = build(
-        personNames + rareKeys + portraits + wings + hulls + weapons + skills + ranks + posts +
-                hullMods + factions + shipNamePrefixes + variantNaming + officerBasics + slotIds
+        personNames + rareKeys + portraits + factions + hulls + ranks + posts +
+                shipNamePrefixes + wings + weapons + slotIds + variantBasics + skills + officerBasics + hullMods
     )
 }

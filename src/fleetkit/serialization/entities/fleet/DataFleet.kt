@@ -29,17 +29,20 @@ import org.magiclib.util.MagicLookup
 import java.util.*
 
 object DataFleet {
+
+    @JvmOverloads
     @JvmStatic
     fun CampaignFleetAPI.toParsedData(settings: FleetSettings = FleetSettings(), filterParsed: Boolean = true) =
         getFleetDataFromFleet(this, settings, filterParsed)
 
+    @JvmOverloads
     @JvmStatic
     fun FleetDataAPI.toParsedData(settings: FleetSettings = FleetSettings(), filterParsed: Boolean = true) =
         getFleetDataFromFleet(this, settings, filterParsed)
 
     data class ParsedFleetData(
         val fleetName: String? = null,
-        val fleetAggression: Int? = null,
+        val aggression: Int? = null,
         val factionID: String? = null,
         val commanderIfNoFlagship: DataPerson.ParsedPersonData? = null, // null if flagship exists, as commander is on flagship
         val members: List<DataMember.ParsedMemberData> = emptyList(),
@@ -115,7 +118,7 @@ object DataFleet {
 
         val data = ParsedFleetData(
             fleetName = campFleet?.name,
-            fleetAggression = campFleet?.faction?.doctrine?.aggression,
+            aggression = campFleet?.faction?.doctrine?.aggression,
             factionID = campFleet?.faction?.id,
             commanderIfNoFlagship = fleet.commander?.let { if (it.isDefault && it.stats.skillsCopy.count { skill -> skill.skill.isAdmiralSkill && skill.level > 0 } == 0) null else getPersonDataFromPerson(it, filterParsed = false) },
             members = fleet.membersListCopy.map { getMemberDataFromMember(it, filterParsed = false) },
@@ -207,14 +210,14 @@ object DataFleet {
         } else emptyList()
 
         val filteredAggression = if (settings.includeAggression) {
-            data.fleetAggression
+            data.aggression
         } else null
 
         return data.copy(
             members = filteredMembers,
             commanderIfNoFlagship = filteredCommander,
             idleOfficers = filteredIdleOfficers,
-            fleetAggression = filteredAggression,
+            aggression = filteredAggression,
             memKeys = filteredMemory
         )
     }
@@ -342,9 +345,9 @@ object DataFleet {
                 if (officer.isAICore) return@let
                 if (!officer.isDefault) {
                     fleet.addOfficer(officer)
-                } else if (data.fleetAggression != null && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
+                } else if (data.aggression != null && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
                     // Apply doctrinal aggression to default officers
-                    val personality = when (data.fleetAggression) {
+                    val personality = when (data.aggression) {
                         0 -> Personalities.TIMID
                         1 -> Personalities.CAUTIOUS
                         2 -> Personalities.STEADY
@@ -352,7 +355,7 @@ object DataFleet {
                         4 -> if (random.nextBoolean()) Personalities.AGGRESSIVE else Personalities.RECKLESS
                         5 -> Personalities.RECKLESS
                         else -> {
-                            Global.getLogger(this.javaClass).warn("Personality of value '${data.fleetAggression}' was out of bounds when building fleet. Defaulting to STEADY")
+                            Global.getLogger(this.javaClass).warn("Personality of value '${data.aggression}' was out of bounds when building fleet. Defaulting to STEADY")
                             Personalities.STEADY
                         }
                     }

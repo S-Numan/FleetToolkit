@@ -19,6 +19,8 @@ import fleetkit.util.api.VariantUtils
 import java.util.*
 
 object DataMember {
+
+    @JvmOverloads
     @JvmStatic
     fun FleetMemberAPI.toParsedData(settings: MemberSettings = MemberSettings(), filterParsed: Boolean = true) =
         getMemberDataFromMember(this, settings, filterParsed)
@@ -28,6 +30,7 @@ object DataMember {
      *
      * If [filterParsed] is true, this will apply a filter pass based on the settings, enabling this to be serializable. This will remove non value types memKeys if present.
      */
+    @JvmOverloads
     @JvmStatic
     fun FleetMemberAPI.clone(settings: MemberSettings = MemberSettings(), filterParsed: Boolean = true): FleetMemberAPI {
         return this.toParsedData(settings, filterParsed).toMemberUnchecked()

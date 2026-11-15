@@ -14,7 +14,6 @@ import com.fs.starfarer.api.util.Misc
 import com.fs.starfarer.campaign.CampaignUIPersistentData
 import fleetkit.core.config.FTVariables
 import fleetkit.core.util.DisplayMessage
-import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.content.MissingContentExtended
@@ -534,8 +533,8 @@ object SaveTransfer {
                     },
                     missing
                 )
-                if (parsedData.fleetAggression != null)
-                    compiled.aggressionDoctrine = parsedData.fleetAggression
+                if (parsedData.aggression != null)
+                    compiled.aggressionDoctrine = parsedData.aggression
                 //else
                 //    compiled.aggressionDoctrine = DataFleet.FleetAggressionV1.STEADY
 

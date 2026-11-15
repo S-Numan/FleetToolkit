@@ -3,6 +3,7 @@ package fleetkit.serialization.io
 import org.json.JSONObject
 
 object JSONInput {
+    @JvmStatic
     fun cleanJsonStringInput(raw: String): String {
         return raw.lines()
             .map { line ->
@@ -32,6 +33,7 @@ object JSONInput {
             .joinToString("\n")
     }
 
+    @JvmStatic
     fun getJSONFromStringSafe(inputText: String): JSONObject? {
         var text = inputText
         text = cleanJsonStringInput(text)

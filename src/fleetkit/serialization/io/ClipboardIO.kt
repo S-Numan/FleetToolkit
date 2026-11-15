@@ -40,6 +40,7 @@ import java.awt.Color
 
 object ClipboardIO {
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         variant: ShipVariantAPI,
@@ -50,6 +51,7 @@ object ClipboardIO {
         return saveToClipboard(data, shift, settings)
     }
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         variant: DataVariant.ParsedVariantData,
@@ -83,6 +85,7 @@ object ClipboardIO {
         return true
     }
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         person: PersonAPI,
@@ -96,6 +99,8 @@ object ClipboardIO {
         val data = getPersonDataFromPerson(person, settings)
         return saveToClipboard(data, shift)
     }
+
+    @JvmStatic
 
     @JvmOverloads
     fun saveToClipboard(
@@ -126,6 +131,7 @@ object ClipboardIO {
         return true
     }
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         member: FleetMemberAPI,
@@ -136,6 +142,7 @@ object ClipboardIO {
         return saveToClipboard(data, shift)
     }
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         member: DataMember.ParsedMemberData,
@@ -165,14 +172,17 @@ object ClipboardIO {
         return true
     }
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(fleet: CampaignFleetAPI, shift: Boolean = false, settings: FleetSettings = FleetSettings()): Boolean =
         saveToClipboard(getFleetDataFromFleet(fleet, settings), shift)
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(fleet: FleetDataAPI, shift: Boolean = false, settings: FleetSettings = FleetSettings()): Boolean =
         saveToClipboard(getFleetDataFromFleet(fleet, settings), shift)
 
+    @JvmStatic
     @JvmOverloads
     fun saveToClipboard(
         fleet: DataFleet.ParsedFleetData,
@@ -197,6 +207,7 @@ object ClipboardIO {
         return true
     }
 
+    @JvmStatic
     fun codexEntryToClipboard() {
         val param = BoxedCodexDialog.get()?.getEntryParam() ?: return
 

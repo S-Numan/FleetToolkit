@@ -26,6 +26,7 @@ import java.util.Random
 
 object DataVariant {
 
+    @JvmOverloads
     @JvmStatic
     fun ShipVariantAPI.toParsedData(settings: VariantSettings = VariantSettings(), filterParsed: Boolean = true) =
         getVariantDataFromVariant(this, settings, filterParsed)
@@ -33,6 +34,7 @@ object DataVariant {
     /**
      * Creates a copy of this variant with the specified settings.
      */
+    @JvmOverloads
     @JvmStatic
     fun ShipVariantAPI.clone(settings: VariantSettings, filterParsed: Boolean = true) =
         this.toParsedData(settings, filterParsed).toVariantUnchecked()

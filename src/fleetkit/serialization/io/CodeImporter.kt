@@ -18,6 +18,7 @@ import org.json.JSONObject
 import java.awt.Color
 
 object CodeImporter {
+    @JvmStatic
     @JvmOverloads
     fun extractDataFromString(text: String, missing: MissingContent = MissingContent()): ConvertibleToEntity<*>? {
         val text = text.trim()
@@ -78,6 +79,7 @@ object CodeImporter {
         }
     }
 
+    @JvmStatic
     @JvmOverloads
     fun extractDataFromJSON(json: JSONObject, missing: MissingContent = MissingContent()): ConvertibleToEntity<*>? {
         if (json.length() == 0) return null
