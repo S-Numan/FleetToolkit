@@ -2,7 +2,7 @@ package fleetkit.core.util.save.backup
 
 import com.fs.starfarer.api.Global
 import fleetkit.core.config.FTVariables
-import fleetkit.serialization.PlayerSaveUtils
+import fleetkit.serialization.io.SaveTransfer
 
 internal object SaveBackupManager {
     private const val MAX_SLOT = 8
@@ -11,7 +11,7 @@ internal object SaveBackupManager {
 
     fun createBackup() {
         try {
-            val compSave = PlayerSaveUtils.createSaveJson(superCompressSave = true, showErrorMessages = false)
+            val compSave = SaveTransfer.createSaveJson(showErrorMessages = false)
 
             if (compSave.length >= 1000000) {
                 Global.getLogger(this::class.java)

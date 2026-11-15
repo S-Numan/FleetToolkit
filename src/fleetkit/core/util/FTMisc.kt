@@ -12,7 +12,7 @@ import com.fs.starfarer.api.loading.WeaponGroupSpec
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import fleetkit.core.config.FTSettings
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
-import fleetkit.serialization.GameModInfo
+import fleetkit.serialization.content.GameModInfo
 import fleetkit.util.api.MemberUtils
 import fleetkit.util.api.VariantUtils
 import org.json.JSONObject

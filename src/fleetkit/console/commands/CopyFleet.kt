@@ -13,10 +13,10 @@ import com.fs.starfarer.campaign.fleet.FleetMember
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.fleet.FleetSettings
-import fleetkit.serialization.fleet.JSONFleet.saveFleetToJson
-import fleetkit.serialization.member.DataMember.cloneMember
-import fleetkit.serialization.person.DataPerson.clonePerson
+import fleetkit.serialization.entities.fleet.FleetSettings
+import fleetkit.serialization.entities.fleet.FleetJson.saveFleetToJson
+import fleetkit.serialization.entities.member.DataMember.clone
+import fleetkit.serialization.entities.person.DataPerson.clone
 import fleetkit.util.lib.ClipboardUtil
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.BaseCommandWithSuggestion
@@ -59,7 +59,7 @@ class CopyFleet : BaseCommandWithSuggestion {
 
             var hasFlagship = false
             allShips.forEach { (id, tempMember) ->
-                val member = cloneMember(tempMember)
+                val member = tempMember.clone()
                 fleet.fleetData.addFleetMember(member)
 
                 if (member.captain.id == commander.id) {
@@ -83,7 +83,7 @@ class CopyFleet : BaseCommandWithSuggestion {
             }
 
             if (!hasFlagship)
-                fleet.commander = clonePerson(commander)
+                fleet.commander = commander.clone()
 
 
             val json = saveFleetToJson(
@@ -134,7 +134,7 @@ class CopyFleet : BaseCommandWithSuggestion {
                 ?: run {
                     val fleet = Global.getFactory().createEmptyFleet(Factions.NEUTRAL, FleetTypes.TASK_FORCE, false)
                     members.forEach { member ->
-                        fleet.fleetData.addFleetMember(cloneMember(member))
+                        fleet.fleetData.addFleetMember(member.clone())
                     }
                     fleet.fleetData
                 }

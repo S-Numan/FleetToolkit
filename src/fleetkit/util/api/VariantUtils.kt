@@ -6,9 +6,9 @@ import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.impl.SharedUnlockData
 import com.fs.starfarer.api.impl.campaign.ids.Tags
 import fleetkit.core.config.FTVariables
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.variant.DataVariant
-import fleetkit.serialization.variant.VariantSettings
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.entities.variant.VariantSettings
 import org.magiclib.kotlin.getBuildInBonusXP
 import org.magiclib.util.MagicLookup
 import org.magiclib.util.api.*

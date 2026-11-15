@@ -1,10 +1,9 @@
 package fleetkit.console.commands.saveTransfer
 
 import fleetkit.core.util.FTTxt
-import fleetkit.serialization.MissingContentExtended
-import fleetkit.serialization.PlayerSaveUtils.compileSaveAny
-import fleetkit.serialization.PlayerSaveUtils.loadCompiledSave
-import fleetkit.serialization.reportMissingContentIfAny
+import fleetkit.serialization.content.MissingContentExtended
+import fleetkit.serialization.io.SaveTransfer.compileSaveAny
+import fleetkit.serialization.io.SaveTransfer.loadCompiledSave
 import fleetkit.util.lib.ClipboardUtil.getClipboardContentsAutoJSON
 import org.lazywizard.console.BaseCommand
 import org.lazywizard.console.CommonStrings
@@ -76,7 +75,7 @@ class LoadSave : BaseCommand {
         if (!missing.hasMissing()) {
             Console.showMessage(FTTxt.txt("no_missing_elements"))
         } else {
-            reportMissingContentIfAny(missing)
+            missing.reportMissingContentIfAny()
         }
 
 

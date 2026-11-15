@@ -7,8 +7,8 @@ import com.fs.starfarer.api.characters.FullName
 import com.fs.starfarer.api.characters.FullName.Gender
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.impl.campaign.ids.Factions
-import fleetkit.serialization.person.DataPerson
-import fleetkit.serialization.person.PersonSettings
+import fleetkit.serialization.entities.person.DataPerson
+import fleetkit.serialization.entities.person.PersonSettings
 import org.magiclib.util.MagicLookup
 import java.util.*
 

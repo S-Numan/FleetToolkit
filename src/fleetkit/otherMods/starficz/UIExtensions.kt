@@ -113,12 +113,6 @@ fun UIComponentAPI.setSize(width: Float, height: Float) {
     position.setSize(width, height)
 }
 
-val UIComponentAPI.x
-    get() = position.x
-
-val UIComponentAPI.y
-    get() = position.y
-
 val UIComponentAPI.left
     get() = x
 
@@ -349,8 +343,6 @@ class BoxedUILabel(val uiLabel: LabelAPI) : BoxedUIElement(uiLabel as UIComponen
     override fun render(alphaMult: Float) {
         uiLabel.render(alphaMult)
     }
-
-    override fun getPosition() = uiLabel.position
 }
 
 class BoxedUIImage(val uiImage: UIComponentAPI) : BoxedUIElement(uiImage), UIComponentAPI by uiImage {

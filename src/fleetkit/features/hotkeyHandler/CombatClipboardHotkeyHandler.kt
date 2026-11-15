@@ -15,12 +15,11 @@ import fleetkit.core.config.FTSettings
 import fleetkit.core.integration.plugin.ModPlugin
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
-import fleetkit.serialization.ClipboardMisc
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.reportMissingContentIfAny
-import fleetkit.serialization.variant.DataVariant
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.entities.member.DataMember
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.io.ClipboardIO
 import fleetkit.ui.customPanel.DialogUtils
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
@@ -44,10 +43,8 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
                 if (event.isCtrlDown) {
                     if (event.eventValue == Keyboard.KEY_C) {
                         try {
-                            val codex = UIFinder.getCodexDialog()
-
-                            if (codex != null) {
-                                ClipboardMisc.codexEntryToClipboard(codex)
+                            if (Global.getSettings().isShowingCodex) {
+                                ClipboardIO.codexEntryToClipboard()
                                 event.consume(); continue
                             }
                             if (ClipboardHotkeyHandlerUtils.handleRefitCopy(event.isShiftDown)) {
@@ -68,7 +65,7 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
                         } else if (event.eventValue == Keyboard.KEY_V) {
                             if (Global.getCurrentState() == GameState.TITLE && !Global.getSettings().isShowingCodex && !DialogUtils.isModalPanelOpen()) {
                                 val missing = MissingContent()
-                                val data = ClipboardMisc.extractDataFromClipboard(missing) ?: continue
+                                val data = ClipboardIO.loadDataFromClipboard(missing) ?: continue
 
                                 if(UIFinder.getRefitTab() != null || data is DataVariant.ParsedVariantData || (data is DataMember.ParsedMemberData && data.variantData != null)) {
                                     if (ClipboardHotkeyHandlerUtils.handleRefitPaste()) {
@@ -174,7 +171,7 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
         val missing = MissingContent()
 
         if (event.eventValue == Keyboard.KEY_V) {
-            val data = ClipboardMisc.extractDataFromClipboard(missing) ?: return
+            val data = ClipboardIO.loadDataFromClipboard(missing) ?: return
             if (data is DataVariant.ParsedVariantData || data is DataMember.ParsedMemberData) {
                 //
             } else {
@@ -253,7 +250,7 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
             }
         }
 
-        reportMissingContentIfAny(missing)
+        missing.reportMissingContentIfAny()
 
         fun spawnAt(
             engine: CombatEngineAPI,

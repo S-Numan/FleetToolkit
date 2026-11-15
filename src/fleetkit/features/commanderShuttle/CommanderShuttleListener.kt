@@ -9,8 +9,8 @@ import com.fs.starfarer.api.impl.campaign.GateEntityPlugin
 import com.fs.starfarer.api.impl.campaign.JumpPointInteractionDialogPluginImpl
 import com.fs.starfarer.api.impl.campaign.RuleBasedInteractionDialogPluginImpl
 import fleetkit.core.config.FTVariables
-import fleetkit.core.util.FTTxt
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTTxt
 import java.awt.Color
 
 internal class CommanderShuttleListener :

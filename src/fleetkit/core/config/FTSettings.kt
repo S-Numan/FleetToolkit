@@ -1,7 +1,7 @@
 package fleetkit.core.config
 
 import com.fs.starfarer.api.Global
-import fleetkit.serialization.variant.VariantSettings
+import fleetkit.serialization.entities.variant.VariantSettings
 import fleetkit.util.api.kotlin.containsString
 import lunalib.lunaSettings.LunaSettings
 import org.json.JSONArray

@@ -20,9 +20,9 @@ import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.handleUIFleet
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteFleet
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteIntoPlayerFleetPanel
 import fleetkit.features.recentBattles.RecentBattleDialog
-import fleetkit.serialization.ClipboardMisc
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.fleet.DataFleet
+import fleetkit.serialization.io.ClipboardIO
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.fleet.DataFleet
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.util.api.kotlin.isIdle
 import org.lwjgl.input.Keyboard
@@ -98,9 +98,8 @@ internal class CampaignClipboardHotkeyHandler : CampaignInputListener {
         sector: SectorAPI,
         ui: CampaignUIAPI
     ) {
-        val codex = UIFinder.getCodexDialog()
-        if (codex != null) {
-            ClipboardMisc.codexEntryToClipboard(codex)
+        if (Global.getSettings().isShowingCodex) {
+            ClipboardIO.codexEntryToClipboard()
             event.consume()
             return
         }
@@ -127,7 +126,7 @@ internal class CampaignClipboardHotkeyHandler : CampaignInputListener {
                 if (handleRefitPaste()) event?.consume()
             } else {
                 val missing = MissingContent()
-                val data = ClipboardMisc.extractDataFromClipboard(missing) ?: return
+                val data = ClipboardIO.loadDataFromClipboard(missing) ?: return
 
                 if (currentTab == CoreUITabId.FLEET || ui.isIdle()) {
                     if (currentTab != CoreUITabId.FLEET || data is DataFleet.ParsedFleetData)

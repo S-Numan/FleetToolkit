@@ -5,8 +5,6 @@ import com.fs.starfarer.api.ui.*
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.addButton
 import fleetkit.otherMods.starficz.getChildrenCopy
-import fleetkit.otherMods.starficz.height
-import fleetkit.otherMods.starficz.width
 import org.json.JSONArray
 import org.json.JSONObject
 import org.magiclib.kotlin.setAlpha

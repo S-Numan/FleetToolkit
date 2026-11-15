@@ -27,11 +27,11 @@ import fleetkit.features.autofit.shipDirectory.ShipDirectoryService.getCoreAutof
 import fleetkit.features.autofit.shipDirectory.ShipDirectoryService.getLoadoutAutofitSpecsForShip
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.ClipboardMisc
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.compressor.ModHeader
-import fleetkit.serialization.variant.DataVariant.cloneVariant
-import fleetkit.serialization.variant.VariantSettings
+import fleetkit.serialization.io.ClipboardIO
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.core.ModHeader
+import fleetkit.serialization.entities.variant.DataVariant.clone
+import fleetkit.serialization.entities.variant.VariantSettings
 import fleetkit.ui.UIUtils
 import fleetkit.ui.customPanel.patterns.DialogPanel
 import fleetkit.util.api.VariantUtils
@@ -736,7 +736,7 @@ internal object AutofitPanel {
 
                 val indexInMenu = index - coreEffectiveHullAutofitSpecs.size
 
-                val draggedVariant = cloneVariant(autofitPlugin.draggedAutofitSpec!!.variant, settings) // Copied to apply settings and ensure is variant that would be loaded if brought up later
+                val draggedVariant = autofitPlugin.draggedAutofitSpec!!.variant.clone(settings) // Copied to apply settings and ensure is variant that would be loaded if brought up later
 
                 if (FTSettings.autofitNoSModdedBuiltInWhenNotBuiltInMod) {
                     draggedVariant.sModdedBuiltIns.toList().forEach {
@@ -783,7 +783,7 @@ internal object AutofitPanel {
                         it.autofitSpec?.source != null && it.autofitSpec?.variant != null &&
                                 compareVariantContents(
                                     shipDirectory.getShip(shipVariantID)!!,
-                                    cloneVariant(it.autofitSpec!!.variant, settings) // Copied to apply settings
+                                    it.autofitSpec!!.variant.clone(settings) // Copied to apply settings
                                 )
                     })
                 } else {
@@ -822,7 +822,7 @@ internal object AutofitPanel {
                 Global.getSoundPlayer().playUISound("ui_button_pressed", 1f, 1f)
 
                 if (event.isCtrlDown) {//Copy variant to clipboard
-                    ClipboardMisc.saveVariantToClipboard(selectorPlugin.autofitSpec!!.variant, event.isShiftDown)
+                    ClipboardIO.saveToClipboard(selectorPlugin.autofitSpec!!.variant, event.isShiftDown)
                 }
             }
         }

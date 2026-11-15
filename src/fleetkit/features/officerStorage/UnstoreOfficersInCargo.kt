@@ -5,8 +5,8 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.CoreUITabId
 import com.fs.starfarer.api.util.Misc
-import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTSettings
+import fleetkit.core.config.FTVariables
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import org.lwjgl.input.Mouse

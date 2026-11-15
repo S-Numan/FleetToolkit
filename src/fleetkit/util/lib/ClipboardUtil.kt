@@ -1,6 +1,6 @@
 package fleetkit.util.lib
 
-import fleetkit.serialization.SerializationUtils.getJSONFromStringSafe
+import fleetkit.serialization.io.JSONInput
 import org.lwjgl.Sys
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
@@ -57,7 +57,7 @@ object ClipboardUtil {
 
     fun getClipboardContentsAutoJSON(): Any? {
         val contents = getClipboardContents() ?: return null
-        val json = getJSONFromStringSafe(contents)
+        val json = JSONInput.getJSONFromStringSafe(contents)
         return json ?: contents
     }
 

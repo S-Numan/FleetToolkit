@@ -6,12 +6,12 @@ import com.fs.starfarer.api.combat.ShipVariantAPI
 import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTMisc.deepDiff
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.compressor.formats.VariantFormat
-import fleetkit.serialization.variant.DataVariant
-import fleetkit.serialization.variant.DataVariant.filterParsedVariantData
-import fleetkit.serialization.variant.JSONVariant
-import fleetkit.serialization.variant.VariantSettings
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.variant.VariantCode
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.entities.variant.DataVariant.filterParsedVariantData
+import fleetkit.serialization.entities.variant.VariantJson
+import fleetkit.serialization.entities.variant.VariantSettings
 import fleetkit.util.api.VariantUtils
 import org.json.JSONArray
 import org.json.JSONObject
@@ -165,10 +165,10 @@ class ShipDirectory(
             hullVariantId = setVariantID ?: makeVariantID(inputVariant)
         }
 
-        val comp = VariantFormat.encode(DataVariant.getVariantDataFromVariant(variantToSave, settings), withPrepend = false)
+        val comp = VariantCode.encode(DataVariant.getVariantDataFromVariant(variantToSave, settings), withPrepend = false)
 
         //Ensures end result is readable, and uses the saved version of the variant to guarantee consistency across game restarts.
-        val parsedVariant = comp?.let { VariantFormat.decode(it) }
+        val parsedVariant = comp.takeIf { it.isNotEmpty() }?.let { VariantCode.decode(it) }
         if (parsedVariant == null) {
             DisplayMessage.showError("Failed to save variant", "Failed to extract variant data from comp string after just saving: $comp")
             return ""
@@ -179,11 +179,11 @@ class ShipDirectory(
             val comparisonSettings = VariantSettings().apply {
                 includeVariantID = true
             }
-            val variantJSON = JSONVariant.saveVariantToJson(
+            val variantJSON = VariantJson.saveVariantToJson(
                 variantToSave,
                 comparisonSettings
             )
-            val variantUnJSON = JSONVariant.extractVariantDataFromJson(variantJSON).copy(variantId = parsedVariant.variantId)
+            val variantUnJSON = VariantJson.extractVariantDataFromJson(variantJSON).copy(variantId = parsedVariant.variantId)
             if (variantUnJSON != filterParsedVariantData(parsedVariant, comparisonSettings)) { // If not equal, this means the logic somewhere when saving and getting the variant to/from JSON or COMP is not correct
                 DisplayMessage.showError("DEBUG: Variant data mismatch", "\nvariantUnJSON:\n${variantUnJSON}\n\nparsedVariant:\n${parsedVariant}")
 
@@ -230,7 +230,7 @@ class ShipDirectory(
         val data = shipEntry.variantData.copy(variantId = variantID)
         val variant = shipEntry.getVariant()?.apply { hullVariantId = variantID }
 
-        val comp = VariantFormat.encode(data, withPrepend = false)
+        val comp = VariantCode.encode(data, withPrepend = false)
 
         val shipPath = "${shipEntry.path.substringBefore("/")}/${data.variantId}"
 

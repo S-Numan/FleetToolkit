@@ -8,7 +8,7 @@ import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.campaign.CampaignEngine
 import fleetkit.features.commanderShuttle.CommanderShuttle
-import fleetkit.serialization.PlayerSaveUtils
+import fleetkit.serialization.io.SaveTransfer
 import org.magiclib.util.api.getCargoFromSubmarkets
 import org.magiclib.util.api.getModules
 import org.magiclib.util.api.getSubmarkets
@@ -26,7 +26,7 @@ internal object MakeSaveRemovable {
     fun beforeGameSave() {
         try {
             CommanderShuttle.beforeGameSave()
-            PlayerSaveUtils.beforeGameSave()
+            SaveTransfer.beforeGameSave()
 
             /*clearMemoryKeys()
             entitiesWithThing = getEntitiesWithThings(CampaignUtils.getSectorMarkets())
@@ -38,7 +38,7 @@ internal object MakeSaveRemovable {
 
     fun afterGameSave() {
         try {
-            PlayerSaveUtils.afterGameSave()
+            SaveTransfer.afterGameSave()
             CommanderShuttle.afterGameSave()
 
             /*entitiesWithThing?.forEach { processAfterSave(it) }

@@ -14,8 +14,8 @@ import com.fs.starfarer.api.util.Misc
 import fleetkit.core.config.FTVariables
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtils.getConstructorsMatching
-import fleetkit.ui.UIUtils
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.ui.UIUtils
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.GL11
 import org.magiclib.kotlin.*

@@ -2,17 +2,6 @@ package fleetkit.util.api.kotlin
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.fleet.FleetMemberAPI
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.member.MemberSettings
-
-/**
- * Creates a copy of this member with the specified settings.
- *
- * Will apply a filter pass based on the settings, enabling this to be serializable. This will remove non value types memKeys if present.
- */
-fun FleetMemberAPI.clone(settings: MemberSettings = MemberSettings()): FleetMemberAPI {
-    return DataMember.cloneMember(this, settings = settings)
-}
 
 /**
  * Returns the ship name without any faction prefixes.

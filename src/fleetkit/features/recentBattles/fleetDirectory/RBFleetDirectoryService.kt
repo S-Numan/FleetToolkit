@@ -4,10 +4,9 @@ import com.fs.starfarer.api.Global
 import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTVariables.DIRECTORY_CONFIG_FILE_NAME
 import fleetkit.core.util.DisplayMessage
-import fleetkit.serialization.MissingContent
-import fleetkit.serialization.SerializationUtils
-import fleetkit.serialization.fleet.CompressedFleet.extractFleetDataFromCompString
-import fleetkit.serialization.fleet.DataFleet
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.io.CodeImporter
+import fleetkit.serialization.entities.fleet.DataFleet
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
@@ -79,7 +78,7 @@ object RBFleetDirectoryService {
                 continue
             }
 
-            val parsed = SerializationUtils.extractDataFromString(fleetString) as? DataFleet.ParsedFleetData
+            val parsed = CodeImporter.extractDataFromString(fleetString) as? DataFleet.ParsedFleetData
             if (parsed == null) {
                 Global.getLogger(this.javaClass).error(
                     "Failed to parse fleet at /saves/common/$directory$fleetPath"

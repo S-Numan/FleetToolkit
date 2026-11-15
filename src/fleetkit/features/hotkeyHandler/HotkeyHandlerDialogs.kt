@@ -25,7 +25,6 @@ import com.fs.state.AppDriver
 import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
-import fleetkit.core.util.FTMisc.deepDiff
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.FTTxt.txtPlural
 import fleetkit.core.util.file.directory.DirFile
@@ -40,16 +39,14 @@ import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteFleet
 import fleetkit.features.recentBattles.RecentBattleReplay
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.*
-import fleetkit.serialization.compressor.ModHeader
-import fleetkit.serialization.compressor.formats.FleetFormat
-import fleetkit.serialization.compressor.formats.VariantFormat
-import fleetkit.serialization.fleet.CompressedFleet
-import fleetkit.serialization.fleet.DataFleet
-import fleetkit.serialization.fleet.FleetSettings
-import fleetkit.serialization.member.DataMember
-import fleetkit.serialization.variant.CompressedVariant
-import fleetkit.serialization.variant.DataVariant
+import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.content.MissingContentExtended
+import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.entities.fleet.FleetSettings
+import fleetkit.serialization.entities.member.DataMember
+import fleetkit.serialization.entities.variant.DataVariant
+import fleetkit.serialization.io.ClipboardIO
+import fleetkit.serialization.io.SaveTransfer
 import fleetkit.ui.UIUtils
 import fleetkit.ui.addButtonD
 import fleetkit.ui.addCheckboxD
@@ -714,8 +711,7 @@ object HotkeyHandlerDialogs {
             val deterministicRandom = Random(seed)
 
             val fleet = DataFleet.createCampaignFleetFromData(
-                data,
-                true, settings = settings, missing = missingEx, random = deterministicRandom
+                data, settings = settings, missing = missingEx, random = deterministicRandom
             )
 
             fleet.memoryWithoutUpdate["\$#${FTVariables.PREFIX}_customBattleCreationPlugin"] = true
@@ -868,7 +864,7 @@ object HotkeyHandlerDialogs {
                 preview.onClick { event ->
                     if (!event.isLMBDownEvent) return@onClick
                     if (event.isCtrlDown) {
-                        ClipboardMisc.saveMemberToClipboard(member!!, event.isShiftDown)
+                        ClipboardIO.saveToClipboard(member!!, event.isShiftDown)
                     } else {
                         isPressedMemberID = if (isPressedMemberID == member.id) null else member.id
 
@@ -950,7 +946,7 @@ object HotkeyHandlerDialogs {
                 }
                 preview.onClick { event ->
                     if (event.isLMBDownEvent && event.isCtrlDown) {
-                        ClipboardMisc.saveMemberToClipboard(member, event.isShiftDown)
+                        ClipboardIO.saveToClipboard(member, event.isShiftDown)
                     }
                 }
                 preview.onHoverEnter {
@@ -1215,7 +1211,7 @@ object HotkeyHandlerDialogs {
                     onClick {
                         excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         //val battle = Global.getFactory().createBattle(Global.getSector().playerFleet, fleet)
 
@@ -1367,7 +1363,7 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         sector.playerFleet.containingLocation.spawnFleet(sector.playerFleet, 0f, 0f, fleet)
                         //dialog.onExit {
@@ -1385,7 +1381,7 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         //excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         FleetUtils.replacePlayerFleetWith(
                             fleet,
@@ -1411,7 +1407,7 @@ object HotkeyHandlerDialogs {
                     ).onClick {
                         //excludeMissingShips(fleet)
 
-                        reportMissingContentIfAny(missingEx)
+                        missingEx.reportMissingContentIfAny()
 
                         val playerFleet = sector.playerFleet.fleetData
 
@@ -1446,7 +1442,7 @@ object HotkeyHandlerDialogs {
                 if (event.isCtrlDown) {
                     if (event.eventValue == Keyboard.KEY_C) {
                         //excludeMissingShips(fleet)
-                        ClipboardMisc.saveFleetToClipboard(
+                        ClipboardIO.saveToClipboard(
                             inputData, event.isShiftDown,
                             settings.apply {
                                 memberSettings.includeID = false
@@ -1455,7 +1451,7 @@ object HotkeyHandlerDialogs {
                     } else if (event.eventValue == Keyboard.KEY_V) {
                         dialog.forceDismiss()
                         val missing = MissingContent()
-                        val data = ClipboardMisc.extractDataFromClipboard(missing)
+                        val data = ClipboardIO.loadDataFromClipboard(missing)
                         if (data != null && (data is DataFleet.ParsedFleetData || data is DataMember.ParsedMemberData || data is DataVariant.ParsedVariantData)) {
                             SystemTaskScheduler.performLater {
                                 pasteFleet(data, missing)
@@ -1826,7 +1822,7 @@ object HotkeyHandlerDialogs {
             ui.addSpacer(buttonHeight)
 
             ui.addButton(FTTxt.txt("copy_save_to_clipboard"), null, ui.width, buttonHeight, 3f).onClick {
-                val json = PlayerSaveUtils.createSaveJson(
+                val json = SaveTransfer.createSaveJson(
                     handleCargo = isEnabled(SaveOption.CARGO),
                     handleSubmarketCargo = isEnabled(SaveOption.SUBMARKETCARGO),
                     handleRelations = isEnabled(SaveOption.REPUTATION),
@@ -1850,10 +1846,10 @@ object HotkeyHandlerDialogs {
                 val saveTransfer = ClipboardUtil.getClipboardContentsAutoJSON()
 
                 val missing = MissingContentExtended()
-                val compiled = PlayerSaveUtils.compileSaveAny(saveTransfer, missing)
+                val compiled = SaveTransfer.compileSaveAny(saveTransfer, missing)
 
                 if (compiled.isEmpty()) {
-                    reportMissingContentIfAny(missing)
+                    missing.reportMissingContentIfAny()
                     DisplayMessage.showMessage(
                         FTTxt.txt("failed_to_find_save_in_clipboard"),
                         Color.YELLOW
@@ -1861,7 +1857,7 @@ object HotkeyHandlerDialogs {
                     return@onClick
                 }
 
-                PlayerSaveUtils.loadCompiledSave(
+                SaveTransfer.loadCompiledSave(
                     compiled,
                     handleCargo = isEnabled(SaveOption.CARGO),
                     handleSubmarketCargo = isEnabled(SaveOption.SUBMARKETCARGO),
@@ -1876,7 +1872,7 @@ object HotkeyHandlerDialogs {
                 )
 
                 DisplayMessage.showMessage(FTTxt.txt("save_loaded_from_clipboard"))
-                reportMissingContentIfAny(missing)
+                missing.reportMissingContentIfAny()
 
                 dialog.dismiss()
             }
