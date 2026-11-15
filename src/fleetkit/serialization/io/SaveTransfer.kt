@@ -3,6 +3,7 @@ package fleetkit.serialization.io
 import com.fs.starfarer.api.EveryFrameScript
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.*
+import com.fs.starfarer.api.campaign.econ.MarketAPI
 import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.impl.campaign.ids.*
 import com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator
@@ -13,6 +14,7 @@ import com.fs.starfarer.api.util.Misc
 import com.fs.starfarer.campaign.CampaignUIPersistentData
 import fleetkit.core.config.FTVariables
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.content.MissingContentExtended
@@ -102,6 +104,32 @@ object SaveTransfer {
         var inHyperAbilityId: String? = null
     )
 
+    /**
+     * Markets that can hold storage: registered economy markets, plus markets attached directly to custom entities (abandoned stations).
+     * Never touches PlanetAPI.market, so condition-only planet markets are not converted.
+     */
+    private fun SectorAPI.getStorageMarkets(): List<MarketAPI> {
+        val result = LinkedHashMap<String, MarketAPI>()
+
+        for (market in economy.marketsCopy) {
+            result[market.id] = market
+        }
+
+        for (location in allLocations) {
+            @Suppress("UNCHECKED_CAST")
+            val customEntities = location.getEntities(CustomCampaignEntityAPI::class.java) as List<SectorEntityToken>
+            for (entity in customEntities) {
+                val market = entity.market ?: continue
+                result.putIfAbsent(market.id, market)
+            }
+        }
+
+        return result.values.toList()
+    }
+
+    /**
+     * @param moreAccurateMarketCheckerButSlower if true uses [getMarkets], if false uses [getStorageMarkets]. Get storage markets is much faster, but it might not catch all modded cases where storage markets are.
+     */
     fun createSaveJson(
         handleCargo: Boolean = true,
         handleSubmarketCargo: Boolean = true,
@@ -113,6 +141,7 @@ object SaveTransfer {
         handleKnownHullmods: Boolean = true,
         handleOfficers: Boolean = true,
         handleAbilityBar: Boolean = true,
+        moreAccurateMarketCheckerButSlower: Boolean = true,
         showErrorMessages: Boolean = true,
     ): String {
         val json = JSONObject()
@@ -128,7 +157,10 @@ object SaveTransfer {
 
         if (handleSubmarketCargo) {
             try {
-                val markets = sector.getMarkets()
+                val markets =
+                    if (moreAccurateMarketCheckerButSlower) sector.getMarkets()
+                    else sector.getStorageMarkets()
+
                 val checkedStorages = mutableSetOf<CargoAPI>()
 
                 @Suppress("UNCHECKED_CAST")

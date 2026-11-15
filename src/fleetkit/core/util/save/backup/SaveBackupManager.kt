@@ -11,7 +11,7 @@ internal object SaveBackupManager {
 
     fun createBackup() {
         try {
-            val compSave = SaveTransfer.createSaveJson(showErrorMessages = false)
+            val compSave = SaveTransfer.createSaveJson(showErrorMessages = false, moreAccurateMarketCheckerButSlower = false)
 
             if (compSave.length >= 1000000) {
                 Global.getLogger(this::class.java)
