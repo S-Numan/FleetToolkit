@@ -801,62 +801,62 @@ object SaveTransfer {
         }
 
         if (handleAbilityBar) {
-
             compiled.abilities?.forEach { id ->
                 val spec = runCatching { Global.getSettings().getAbilitySpec(id) }.getOrNull() ?: return@forEach
 
                 if (!sector.characterData.abilities.contains(spec.id)
-                    && spec.id != "rat_exoship_management"
-                ) // Will cause a crash if the player controllable exoship is not present
+                    && spec.id != "rat_exoship_management") // Will cause a crash if the player controllable exoship is not present
                     sector.characterData.addAbility(spec.id)
             }
+
+            val savedBars = compiled.abilityBars ?: return
 
             val bars: Array<Array<CampaignUIPersistentData.AbilitySlot>> = try {
                 @Suppress("UNCHECKED_CAST")
                 sector.uiData.abilitySlotsAPI.safeInvoke("getSlots") as Array<Array<CampaignUIPersistentData.AbilitySlot>>
             } catch (e: Exception) {
                 DisplayMessage.showError(FTTxt.txt("failed_to_load_ability_bars"), e)
-                emptyArray()
+                return
             }
 
-            compiled.abilityBars?.forEachIndexed { barIndex, savedBar ->
+            // Vanilla abilities that a modded/renamed ability id can fall back to when its own id is unavailable.
+            val fallbacks: List<Pair<String, List<String>>> = listOf(
+                Abilities.EMERGENCY_BURN to listOf(Abilities.EMERGENCY_BURN),
+                Abilities.SUSTAINED_BURN to listOf(Abilities.SUSTAINED_BURN),
+                Abilities.GRAVITIC_SCAN to listOf(Abilities.GRAVITIC_SCAN, "neutrino_detector"),
+                Abilities.REMOTE_SURVEY to listOf(Abilities.REMOTE_SURVEY),
+                Abilities.SCAVENGE to listOf(Abilities.SCAVENGE),
+                Abilities.SENSOR_BURST to listOf(Abilities.SENSOR_BURST),
+            )
+
+            fun isUnlocked(id: String): Boolean =
+                playerFleet.abilities?.containsKey(id) == true ||
+                        sector.characterData.abilities.contains(id) ||
+                        sector.playerStats.grantedAbilityIds.contains(id)
+
+            /** Returns an id that is usable by the player right now, or null if the slot should stay empty. */
+            fun resolveAbility(savedId: String?): String? {
+                if (savedId.isNullOrEmpty()) return null
+
+                // 1. The ability itself, if it exists and the player has it
+                val spec = runCatching { Global.getSettings().getAbilitySpec(savedId) }.getOrNull()
+                if (spec != null && isUnlocked(spec.id)) return spec.id
+
+                // 2. A vanilla equivalent, matched by id substring.
+                return fallbacks
+                    .firstOrNull { (_, keys) -> keys.any { savedId.contains(it) } }
+                    ?.first
+                    ?.takeIf { isUnlocked(it) }
+            }
+
+            savedBars.forEachIndexed { barIndex, savedBar ->
+                val bar = bars.getOrNull(barIndex) ?: return@forEachIndexed
+
                 savedBar.forEachIndexed { slotIndex, savedSlot ->
-                    val bar = bars.getOrNull(barIndex)
-                    val slot = bar?.getOrNull(slotIndex)
+                    val slot = bar.getOrNull(slotIndex) ?: return@forEachIndexed
 
-                    fun convertMissing(id: String?): String? {
-                        if (id == null)
-                            return null
-                        val spec = runCatching { Global.getSettings().getAbilitySpec(id) }.getOrNull()
-                        var newID: String? = spec?.id ?: return null
-
-                        // The ability spec is in the game from this point on
-
-                        val isAbilityUnlocked = playerFleet.abilities?.contains(newID) == true || sector.characterData.abilities.contains(newID) || sector.playerStats.grantedAbilityIds.contains(newID)
-                        if (!isAbilityUnlocked) {
-                            fun matches(id: String, vararg keys: String) =
-                                keys.any { id.contains(it) }
-
-                            newID = when {
-                                matches(id, Abilities.EMERGENCY_BURN) -> convertMissing(Abilities.EMERGENCY_BURN)
-                                matches(id, Abilities.SUSTAINED_BURN) -> convertMissing(Abilities.SUSTAINED_BURN)
-                                matches(id, Abilities.GRAVITIC_SCAN, "neutrino_detector") -> convertMissing(Abilities.GRAVITIC_SCAN)
-                                matches(id, Abilities.REMOTE_SURVEY) -> convertMissing(Abilities.REMOTE_SURVEY)
-                                matches(id, Abilities.SCAVENGE) -> convertMissing(Abilities.SCAVENGE)
-                                matches(id, Abilities.SENSOR_BURST) -> convertMissing(Abilities.SENSOR_BURST)
-                                else -> null
-                            }
-                        }
-
-                        if (isAbilityUnlocked)
-                            return newID
-                        return null
-                    }
-
-                    slot?.apply {
-                        abilityId = convertMissing(savedSlot.abilityId)
-                        inHyperAbilityId = convertMissing(savedSlot.inHyperAbilityId)
-                    }
+                    slot.abilityId = resolveAbility(savedSlot.abilityId)
+                    slot.inHyperAbilityId = resolveAbility(savedSlot.inHyperAbilityId)
                 }
             }
         }

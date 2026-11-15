@@ -1,3 +1,7 @@
+# 2.1.0
+- Fix possible crash on loading a save transfer.
+- Completely remake compressed strings to compress into a smaller size. Backwards compatability for the older format is still kept.
+
 # 2.0.1
 - Fix captain picker dialog copy.
 - Fix officer storage.
