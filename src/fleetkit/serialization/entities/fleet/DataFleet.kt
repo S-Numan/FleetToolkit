@@ -47,13 +47,6 @@ object DataFleet {
         val memKeys: Map<String, Any?> = emptyMap(),
         val secondInCommandData: DataSecondInCommand.SecondInCommandData? = null,
     ) : ConvertibleToEntity<CampaignFleetAPI> {
-        @Deprecated(
-            message = "Use fleetAggression instead",
-            replaceWith = ReplaceWith("fleetAggression")
-        )
-        val aggression: Int
-            get() = fleetAggression ?: -1
-
         @JvmOverloads
         fun filtered(
             settings: FleetSettings = FleetSettings(),
@@ -98,20 +91,6 @@ object DataFleet {
 
         override fun toEntity(missing: MissingContent, random: Random): CampaignFleetAPI =
             toCampaignFleet(FleetSettings(), missing = missing, random = random)
-    }
-
-    enum class FleetAggressionV1(val level: Int) {
-        TIMID(0),
-        CAUTIOUS(1),
-        STEADY(2),
-        AGGRESSIVE(3),
-        FEROCIOUS(4),
-        RECKLESS(5);
-
-        companion object {
-            fun fromLevel(level: Int): FleetAggressionV1 =
-                entries.firstOrNull { it.level == level } ?: STEADY
-        }
     }
 
     internal fun getFleetDataFromFleet(

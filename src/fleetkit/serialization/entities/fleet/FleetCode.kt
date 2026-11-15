@@ -2,6 +2,7 @@ package fleetkit.serialization.entities.fleet
 
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.FleetDataAPI
+import fleetkit.core.util.FTTxt
 import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.Format
 import fleetkit.serialization.core.ModHeader
@@ -28,7 +29,20 @@ object FleetCode : EntityFormat<DataFleet.ParsedFleetData> {
     )
     /** If [mods] is null, it will automatically be generated */
     override fun encode(data: DataFleet.ParsedFleetData, withPrepend: Boolean, mods: ModHeader?): String {
-        return super.encode(data, withPrepend = withPrepend, mods ?: ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { GameModInfo(it.id, it.name, it.version) }))
+        val mods = mods ?: ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { GameModInfo(it.id, it.name, it.version) })
+        val output = super.encode(data, withPrepend = false, mods)
+        if (!withPrepend) {
+            return output
+        } else {
+            val resolvedFleetData = DataFleet.createCampaignFleetFromData(data).fleetData
+
+            val dp = resolvedFleetData.membersListCopy.sumOf { it.deploymentPointsCost.toDouble() }
+
+            val fleetName = data.fleetName ?: "Fleet"
+            val readable = FTTxt.txt("fleet_summary", fleetName, dp.toInt(), data.members.size)
+
+            return "$readable ${mods.describe()}\n$output"
+        }
     }
     fun encode(data: FleetDataAPI, withPrepend: Boolean = true) =
          encode(DataFleet.getFleetDataFromFleet(data), withPrepend)

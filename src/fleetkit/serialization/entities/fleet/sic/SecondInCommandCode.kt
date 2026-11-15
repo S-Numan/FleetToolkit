@@ -8,11 +8,11 @@ object SecondInCommandCode : Format<DataSecondInCommand.SecondInCommandData> {
     override val typeId = 'S'
     override val version = 1
     override fun sync(c: Codec, d: DataSecondInCommand.SecondInCommandData?) = DataSecondInCommand.SecondInCommandData(
-        officers = c.list(d?.officers, SecondInCommandOfficerFormat).toMutableList(),
+        officers = c.list(d?.officers, SecondInCommandOfficerCode).toMutableList(),
     )
 }
 
-object SecondInCommandOfficerFormat : Format<DataSecondInCommand.SecondInCommandOfficerData> {
+object SecondInCommandOfficerCode : Format<DataSecondInCommand.SecondInCommandOfficerData> {
     override val typeId = 's'
     override val version = 1
     override fun sync(c: Codec, d: DataSecondInCommand.SecondInCommandOfficerData?) = DataSecondInCommand.SecondInCommandOfficerData(

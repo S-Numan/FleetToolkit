@@ -18,16 +18,6 @@ import org.json.JSONObject
 import java.awt.Color
 
 object CodeImporter {
-    /*@JvmOverloads
-    fun extractDataFromAny(value: Any, missing: MissingContent = MissingContent()): ConvertibleToEntity<*, *>? {
-        if (value is String)
-            return extractDataFromString(value, missing)
-        else if (value is JSONObject)
-            return extractDataFromJSON(value, missing)
-
-        return null
-    }*/
-
     @JvmOverloads
     fun extractDataFromString(text: String, missing: MissingContent = MissingContent()): ConvertibleToEntity<*>? {
         val text = text.trim()

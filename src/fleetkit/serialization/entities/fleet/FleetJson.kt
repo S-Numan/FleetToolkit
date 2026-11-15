@@ -6,7 +6,6 @@ import com.fs.starfarer.api.campaign.FleetDataAPI
 import com.fs.starfarer.api.util.Misc
 import fleetkit.core.util.FTMisc
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.entities.fleet.DataFleet.FleetAggressionV1
 import fleetkit.serialization.entities.fleet.DataFleet.buildFleetFull
 import fleetkit.serialization.entities.fleet.DataFleet.createCampaignFleetFromData
 import fleetkit.serialization.entities.fleet.DataFleet.getFleetDataFromFleet

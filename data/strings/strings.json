@@ -193,9 +193,9 @@
 
 
   # Human readable compression prepend
-  "shipReadableWithPerson": "%s (Pilot: %s) – %s %s : %s",
-  "shipReadableNoPerson": "%s – %s %s : %s",
-  "fleet_summary": "%s - '%s dp' '%s ships' : %s",
+  "shipReadableWithPerson": "%s (Pilot: %s) – %s %s",
+  "shipReadableNoPerson": "%s – %s %s",
+  "fleet_summary": "%s - '%s dp' '%s ships'",
 
 
 

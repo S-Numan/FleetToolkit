@@ -269,7 +269,7 @@ internal object ClipboardHotkeyHandlerUtils {
         }
 
         fleet?.let { fleetToCopy ->
-            val txt = if (!isShiftDown) {
+            val txt = if (isShiftDown) {
                 val json = saveFleetToJson(
                     fleetToCopy,
                     FleetSettings().apply {

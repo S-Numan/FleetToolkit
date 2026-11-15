@@ -25,7 +25,7 @@ interface Format<T : Any> {
             sync(c, data)
             val output = "${CodeRegistry.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
             return if (withPrepend && mods != null)
-                mods.describe() + "\n" + output
+                data.javaClass.simpleName + " " + mods.describe() + "\n" + output
             else
                 output
         } catch (e: Exception) {

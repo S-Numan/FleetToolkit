@@ -1,9 +1,12 @@
 package fleetkit.serialization.core
 
 import fleetkit.serialization.entities.fleet.FleetCode
+import fleetkit.serialization.entities.fleet.sic.SecondInCommandCode
+import fleetkit.serialization.entities.fleet.sic.SecondInCommandOfficerCode
 import fleetkit.serialization.entities.member.MemberCode
 import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.serialization.entities.variant.VariantCode
+import fleetkit.serialization.entities.variant.WeaponGroupCode
 
 object CodeRegistry {
     /** Every code starts with this, so ordinary text that happens to begin with a type letter isn't as easily mistaken for one. */
@@ -40,14 +43,6 @@ object CodeRegistry {
 
     fun parseData(code: String): ConvertibleToEntity<*>? =
         identify(code)?.decode(code)
-
-    /*fun parseDataOrNull(code: String, logError: Boolean = true): Any? = try {
-        parseData(code)
-    } catch (e: RuntimeException) {
-        if (logError)
-            Global.getLogger(this.javaClass).error("Failed to identify data", e)
-        null
-    }*/
 
     /**
      * Example usage:
