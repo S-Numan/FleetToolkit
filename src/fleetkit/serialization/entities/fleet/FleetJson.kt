@@ -100,7 +100,7 @@ object FleetJson {
         missing.gameMods.addAll(FTMisc.getModInfosFromJson(json))
 
         val aggression =
-            if(json.has("aggressin_doctrine")) json.optInt("aggression_doctrine", -1).takeIf { it >= 0 }?.let { FleetAggressionV1.fromLevel(it) }
+            if(json.has("aggressin_doctrine")) json.optInt("aggression_doctrine", -1).takeIf { it >= 0 }
             else null
 
         val factionID = json.optString("factionID", "")
@@ -271,7 +271,7 @@ object FleetJson {
         fleetJson.put("members", membersJson)
         fleetJson.put("variants", variantsJson)
         if (data.fleetAggression != null)
-            fleetJson.put("aggression_doctrine", data.fleetAggression.level)
+            fleetJson.put("aggression_doctrine", data.fleetAggression)
 
         if (data.idleOfficers.isNotEmpty()) {
             val idleOfficers = data.idleOfficers.map { officerData ->

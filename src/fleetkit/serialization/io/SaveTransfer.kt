@@ -312,7 +312,7 @@ object SaveTransfer {
 
     data class CompiledSave(
         var fleet: CampaignFleetAPI? = null,
-        var aggressionDoctrine: DataFleet.FleetAggressionV1? = null,
+        var aggressionDoctrine: Int? = null,
         var player: PersonAPI? = null,
         var cargo: CargoAPI? = null,
         var marketCargos: List<MarketCargo>? = null,
@@ -801,63 +801,68 @@ object SaveTransfer {
         }
 
         if (handleAbilityBar) {
-            compiled.abilities?.forEach { id ->
-                val spec = runCatching { Global.getSettings().getAbilitySpec(id) }.getOrNull() ?: return@forEach
+            try {
+                compiled.abilities?.forEach { id ->
+                    val spec = runCatching { Global.getSettings().getAbilitySpec(id) }.getOrNull() ?: return@forEach
 
-                if (!sector.characterData.abilities.contains(spec.id)
-                    && spec.id != "rat_exoship_management") // Will cause a crash if the player controllable exoship is not present
-                    sector.characterData.addAbility(spec.id)
-            }
-
-            val savedBars = compiled.abilityBars ?: emptyList()
-
-            val bars: Array<Array<CampaignUIPersistentData.AbilitySlot>> = try {
-                @Suppress("UNCHECKED_CAST")
-                sector.uiData.abilitySlotsAPI.safeInvoke("getSlots") as Array<Array<CampaignUIPersistentData.AbilitySlot>>
-            } catch (e: Exception) {
-                DisplayMessage.showError(FTTxt.txt("failed_to_load_ability_bars"), e)
-                emptyArray<Array<CampaignUIPersistentData.AbilitySlot>>()
-            }
-
-            // Vanilla abilities that a modded/renamed ability id can fall back to when its own id is unavailable.
-            val fallbacks: List<Pair<String, List<String>>> = listOf(
-                Abilities.EMERGENCY_BURN to listOf(Abilities.EMERGENCY_BURN),
-                Abilities.SUSTAINED_BURN to listOf(Abilities.SUSTAINED_BURN),
-                Abilities.GRAVITIC_SCAN to listOf(Abilities.GRAVITIC_SCAN, "neutrino_detector"),
-                Abilities.REMOTE_SURVEY to listOf(Abilities.REMOTE_SURVEY),
-                Abilities.SCAVENGE to listOf(Abilities.SCAVENGE),
-                Abilities.SENSOR_BURST to listOf(Abilities.SENSOR_BURST),
-            )
-
-            fun isUnlocked(id: String): Boolean =
-                playerFleet.abilities?.containsKey(id) == true ||
-                        sector.characterData.abilities.contains(id) ||
-                        sector.playerStats.grantedAbilityIds.contains(id)
-
-            /** Returns an id that is usable by the player right now, or null if the slot should stay empty. */
-            fun resolveAbility(savedId: String?): String? {
-                if (savedId.isNullOrEmpty()) return null
-
-                // 1. The ability itself, if it exists and the player has it
-                val spec = runCatching { Global.getSettings().getAbilitySpec(savedId) }.getOrNull()
-                if (spec != null && isUnlocked(spec.id)) return spec.id
-
-                // 2. A vanilla equivalent, matched by id substring.
-                return fallbacks
-                    .firstOrNull { (_, keys) -> keys.any { savedId.contains(it) } }
-                    ?.first
-                    ?.takeIf { isUnlocked(it) }
-            }
-
-            savedBars.forEachIndexed { barIndex, savedBar ->
-                val bar = bars.getOrNull(barIndex) ?: return@forEachIndexed
-
-                savedBar.forEachIndexed { slotIndex, savedSlot ->
-                    val slot = bar.getOrNull(slotIndex) ?: return@forEachIndexed
-
-                    slot.abilityId = resolveAbility(savedSlot.abilityId)
-                    slot.inHyperAbilityId = resolveAbility(savedSlot.inHyperAbilityId)
+                    if (!sector.characterData.abilities.contains(spec.id)
+                        && spec.id != "rat_exoship_management"
+                    ) // Will cause a crash if the player controllable exoship is not present
+                        sector.characterData.addAbility(spec.id)
                 }
+
+                val savedBars = compiled.abilityBars ?: emptyList()
+
+                val bars: Array<Array<CampaignUIPersistentData.AbilitySlot>> = try {
+                    @Suppress("UNCHECKED_CAST")
+                    sector.uiData.abilitySlotsAPI.safeInvoke("getSlots") as Array<Array<CampaignUIPersistentData.AbilitySlot>>
+                } catch (e: Exception) {
+                    DisplayMessage.showError(FTTxt.txt("failed_to_load_ability_bars"), e)
+                    emptyArray<Array<CampaignUIPersistentData.AbilitySlot>>()
+                }
+
+                // Vanilla abilities that a modded/renamed ability id can fall back to when its own id is unavailable.
+                val fallbacks: List<Pair<String, List<String>>> = listOf(
+                    Abilities.EMERGENCY_BURN to listOf(Abilities.EMERGENCY_BURN),
+                    Abilities.SUSTAINED_BURN to listOf(Abilities.SUSTAINED_BURN),
+                    Abilities.GRAVITIC_SCAN to listOf(Abilities.GRAVITIC_SCAN, "neutrino_detector"),
+                    Abilities.REMOTE_SURVEY to listOf(Abilities.REMOTE_SURVEY),
+                    Abilities.SCAVENGE to listOf(Abilities.SCAVENGE),
+                    Abilities.SENSOR_BURST to listOf(Abilities.SENSOR_BURST),
+                )
+
+                fun isUnlocked(id: String): Boolean =
+                    playerFleet.abilities?.containsKey(id) == true ||
+                            sector.characterData.abilities.contains(id) ||
+                            sector.playerStats.grantedAbilityIds.contains(id)
+
+                /** Returns an id that is usable by the player right now, or null if the slot should stay empty. */
+                fun resolveAbility(savedId: String?): String? {
+                    if (savedId.isNullOrEmpty()) return null
+
+                    // 1. The ability itself, if it exists and the player has it
+                    val spec = runCatching { Global.getSettings().getAbilitySpec(savedId) }.getOrNull()
+                    if (spec != null && isUnlocked(spec.id)) return spec.id
+
+                    // 2. A vanilla equivalent, matched by id substring.
+                    return fallbacks
+                        .firstOrNull { (_, keys) -> keys.any { savedId.contains(it) } }
+                        ?.first
+                        ?.takeIf { isUnlocked(it) }
+                }
+
+                savedBars.forEachIndexed { barIndex, savedBar ->
+                    val bar = bars.getOrNull(barIndex) ?: return@forEachIndexed
+
+                    savedBar.forEachIndexed { slotIndex, savedSlot ->
+                        val slot = bar.getOrNull(slotIndex) ?: return@forEachIndexed
+
+                        slot.abilityId = resolveAbility(savedSlot.abilityId)
+                        slot.inHyperAbilityId = resolveAbility(savedSlot.inHyperAbilityId)
+                    }
+                }
+            } catch(e: Exception) {
+                DisplayMessage.showError(FTTxt.txt("failed_to_load_ability_bars"), e)
             }
         }
     }

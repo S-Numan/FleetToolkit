@@ -124,7 +124,6 @@ internal object LegacyFleetCode {
 
             val aggression =
                 metaParts.getOrNull(1)?.toIntOrNull()?.takeIf { it > 0 } // This should be >=, but a lot of the older format was saved with 0 and I can't bother to fix it.
-                    ?.let { DataFleet.FleetAggressionV1.fromLevel(it) }
 
             val factionID =
                 metaParts.getOrNull(2)?.ifBlank { null }
@@ -292,7 +291,7 @@ internal object LegacyFleetCode {
 
         val fleetMeta = listOf(
             data.fleetName ?: "",
-            (data.fleetAggression?.level ?: -1).toString(),
+            (data.fleetAggression ?: -1).toString(),
             data.factionID ?: ""
         ).joinToString(fieldSep)
 

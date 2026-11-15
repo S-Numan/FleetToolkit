@@ -13,13 +13,12 @@ import fleetkit.serialization.entities.member.MemberCode
 import fleetkit.util.api.FleetUtils
 
 // Composite: embeds PersonFormat and MemberFormat. Bump this version whenever either changes.
-@Suppress("EnumValuesSoftDeprecate")
 object FleetCode : EntityFormat<DataFleet.ParsedFleetData> {
     override val typeId = 'f'
     override val version = 1
     override fun sync(c: Codec, d: DataFleet.ParsedFleetData?) = DataFleet.ParsedFleetData(
         fleetName = c.optStr(d?.fleetName),
-        fleetAggression = c.opt(d?.fleetAggression) { c.enum(it, DataFleet.FleetAggressionV1.values()) },
+        fleetAggression = c.int(d?.fleetAggression),
         factionID = c.optStr(d?.factionID),
         commanderIfNoFlagship = c.opt(d?.commanderIfNoFlagship, PersonCode),
         members = c.list(d?.members, MemberCode),

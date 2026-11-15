@@ -39,7 +39,7 @@ object DataFleet {
 
     data class ParsedFleetData(
         val fleetName: String? = null,
-        val fleetAggression: FleetAggressionV1? = null,
+        val fleetAggression: Int? = null,
         val factionID: String? = null,
         val commanderIfNoFlagship: DataPerson.ParsedPersonData? = null, // null if flagship exists, as commander is on flagship
         val members: List<DataMember.ParsedMemberData> = emptyList(),
@@ -52,7 +52,7 @@ object DataFleet {
             replaceWith = ReplaceWith("fleetAggression")
         )
         val aggression: Int
-            get() = fleetAggression?.level ?: -1
+            get() = fleetAggression ?: -1
 
         @JvmOverloads
         fun filtered(
@@ -136,7 +136,7 @@ object DataFleet {
 
         val data = ParsedFleetData(
             fleetName = campFleet?.name,
-            fleetAggression = campFleet?.faction?.doctrine?.aggression?.let { FleetAggressionV1.fromLevel(it) },
+            fleetAggression = campFleet?.faction?.doctrine?.aggression,
             factionID = campFleet?.faction?.id,
             commanderIfNoFlagship = fleet.commander?.let { if (it.isDefault && it.stats.skillsCopy.count { skill -> skill.skill.isAdmiralSkill && skill.level > 0 } == 0) null else getPersonDataFromPerson(it, filterParsed = false) },
             members = fleet.membersListCopy.map { getMemberDataFromMember(it, filterParsed = false) },
@@ -366,12 +366,16 @@ object DataFleet {
                 } else if (data.fleetAggression != null && !isPlayerFleet) { // Don't do this to the playerFleet, just set the player's faction aggression doctrine manually instead.
                     // Apply doctrinal aggression to default officers
                     val personality = when (data.fleetAggression) {
-                        FleetAggressionV1.TIMID -> Personalities.TIMID
-                        FleetAggressionV1.CAUTIOUS -> Personalities.CAUTIOUS
-                        FleetAggressionV1.STEADY -> Personalities.STEADY
-                        FleetAggressionV1.AGGRESSIVE -> Personalities.AGGRESSIVE
-                        FleetAggressionV1.FEROCIOUS -> if (random.nextBoolean()) Personalities.AGGRESSIVE else Personalities.RECKLESS
-                        FleetAggressionV1.RECKLESS -> Personalities.RECKLESS
+                        0 -> Personalities.TIMID
+                        1 -> Personalities.CAUTIOUS
+                        2 -> Personalities.STEADY
+                        3 -> Personalities.AGGRESSIVE
+                        4 -> if (random.nextBoolean()) Personalities.AGGRESSIVE else Personalities.RECKLESS
+                        5 -> Personalities.RECKLESS
+                        else -> {
+                            Global.getLogger(this.javaClass).warn("Personality of value '${data.fleetAggression}' was out of bounds when building fleet. Defaulting to STEADY")
+                            Personalities.STEADY
+                        }
                     }
 
                     officer.setPersonality(personality)
