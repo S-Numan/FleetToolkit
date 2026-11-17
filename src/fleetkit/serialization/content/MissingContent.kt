@@ -16,7 +16,7 @@ open class MissingContent(
     val skillIds: MutableSet<String> = mutableSetOf()
     val gameMods: MutableSet<GameModInfo> = mutableSetOf()//ID, name, version
 
-    // Function to check if anything was missing from the variant.
+    // Function to check if anything was missing.
     open fun hasMissing(): Boolean {
         return hasMissingVariantElements() || skillIds.isNotEmpty()
     }

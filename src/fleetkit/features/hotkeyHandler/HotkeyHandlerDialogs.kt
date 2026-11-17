@@ -12,7 +12,6 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.impl.campaign.events.OfficerManagerEvent
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags
 import com.fs.starfarer.api.impl.campaign.ids.Skills
-import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.plugins.OfficerLevelupPlugin
 import com.fs.starfarer.api.ui.*
 import com.fs.starfarer.api.util.FaderUtil
@@ -25,6 +24,7 @@ import com.fs.state.AppDriver
 import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
 import fleetkit.core.util.FTTxt.txtPlural
 import fleetkit.core.util.file.directory.DirFile
@@ -554,7 +554,6 @@ object HotkeyHandlerDialogs {
     }
 
     private sealed class SimulationBlockReason(val color: Color, val message: String, val image: String) {
-
         object Restricted : SimulationBlockReason(
             Color.RED,
             FTTxt.txt("sim_block_restricted"),
@@ -593,21 +592,18 @@ object HotkeyHandlerDialogs {
     }
 
     private fun getBlockReason(
-        member: FleetMemberAPI,
-        unknown: MissingContent,
-        allowSimulationAnyway: Boolean,
-        cheatsEnabled: Boolean,
+        variant: ShipVariantAPI
     ): SimulationBlockReason? {
-        if (allowSimulationAnyway || cheatsEnabled) return null
-
-        return when {
-            member.variant.hasTag(FTVariables.VARIANT_MADE_IN_ERROR) -> SimulationBlockReason.MissingHull
-            member.hullSpec.hasTag(Tags.RESTRICTED) || member.variant.hasTag(Tags.RESTRICTED) -> SimulationBlockReason.Restricted
-            member.hullSpec.hasTag(Tags.NO_SIM) || member.variant.hasTag(Tags.NO_SIM) -> SimulationBlockReason.NoSim
-            member.isStation -> SimulationBlockReason.Station
-            member.hullSpec.hasTag(Tags.DWELLER) || member.hullSpec.hasTag(Tags.THREAT) -> SimulationBlockReason.Cosmic
-            unknown.hullIds.isNotEmpty() -> SimulationBlockReason.UnknownHull
-            else -> null
+        if (variant.hasTag(FTVariables.VARIANT_MADE_IN_ERROR))
+            return SimulationBlockReason.MissingHull
+        return when (FTMisc.getBlockReasonType(variant)) {
+            FTMisc.BlockReasonType.Restricted -> SimulationBlockReason.Restricted
+            FTMisc.BlockReasonType.NoSim -> SimulationBlockReason.NoSim
+            FTMisc.BlockReasonType.Station -> SimulationBlockReason.Station
+            FTMisc.BlockReasonType.Cosmic -> SimulationBlockReason.Cosmic
+            FTMisc.BlockReasonType.UnknownHull -> SimulationBlockReason.UnknownHull
+            FTMisc.BlockReasonType.UnknownContents -> null
+            null -> null
         }
     }
 
@@ -783,7 +779,8 @@ object HotkeyHandlerDialogs {
 
                 val dataMember = data.members.find { it.id == member.id }
 
-                val reason = getBlockReason(member, unknownContents, allowSimulationAnyway, cheatsEnabled)
+                val reason = if (allowSimulationAnyway || cheatsEnabled) null
+                                                    else getBlockReason(member.variant)
                 if (reason != null) {
                     val img = listPanel.addImage(reason.image, size, size)
                     img.position.inTL(x, y)

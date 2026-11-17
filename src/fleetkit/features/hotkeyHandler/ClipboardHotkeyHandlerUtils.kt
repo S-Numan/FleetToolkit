@@ -12,7 +12,6 @@ import com.fs.starfarer.api.fleet.FleetMemberType
 import com.fs.starfarer.api.impl.campaign.FleetEncounterContext
 import com.fs.starfarer.api.impl.campaign.ids.Factions
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes
-import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
@@ -24,6 +23,7 @@ import fleetkit.core.config.FTVariables
 import fleetkit.core.integration.plugin.ModPlugin
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.DisplayMessage.showMessage
+import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
 import fleetkit.features.autofit.shipDirectory.ShipDirectoryService.doesLoadoutExist
 import fleetkit.features.commanderShuttle.CommanderShuttle
@@ -34,7 +34,6 @@ import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
 import fleetkit.serialization.io.ClipboardIO
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.entities.fleet.LegacyFleetCode
 import fleetkit.serialization.entities.fleet.DataFleet
 import fleetkit.serialization.entities.fleet.DataFleet.getFleetDataFromFleet
 import fleetkit.serialization.entities.fleet.DataFleet.toParsedData
@@ -50,7 +49,6 @@ import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.ui.customPanel.patterns.DialogPanel
 import fleetkit.util.api.MemberUtils.randomizeMemberCosmetics
 import fleetkit.util.api.PersonUtils
-import fleetkit.util.api.VariantUtils
 import fleetkit.util.lib.ClipboardUtil
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.magiclib.util.api.getActualCurrentTab
@@ -327,31 +325,31 @@ internal object ClipboardHotkeyHandlerUtils {
             return true
         }
 
-        if (variant.hullSpec.hasTag(Tags.RESTRICTED) || variant.hullSpec.hasTag(Tags.DWELLER) || variant.hullSpec.hasTag(Tags.THREAT)) {
-            showMessage(
-                FTTxt.txt("cannot_import_loadout_hull_restricted"),
-                Color.YELLOW
-            )
-            return true
-        }
+        if (!FTSettings.cheatsEnabled()) {
+            val blockReason = FTMisc.getBlockReasonType(variant)
+            if (blockReason == FTMisc.BlockReasonType.Restricted || blockReason == FTMisc.BlockReasonType.Cosmic) {
+                showMessage(
+                    FTTxt.txt("cannot_import_loadout_hull_restricted"),
+                    Color.YELLOW
+                )
+                return true
+            }
 
-        val unknownContents = MissingContent()
-        VariantUtils.whatVariantContentsAreNotKnownToPlayer(variant, unknownContents)
-        if (unknownContents.hullIds.isNotEmpty()) {
-            showMessage(
-                FTTxt.txt("cannot_import_loadout_unknown_hull"),
-                Color.YELLOW
-            )
-            return true
+            if (blockReason == FTMisc.BlockReasonType.UnknownHull) {
+                showMessage(
+                    FTTxt.txt("cannot_import_loadout_unknown_hull"),
+                    Color.YELLOW
+                )
+                return true
+            }
+            if (blockReason == FTMisc.BlockReasonType.UnknownContents) {
+                showMessage(
+                    FTTxt.txt("cannot_import_loadout_unknown_elements"),
+                    Color.YELLOW
+                )
+                return true
+            }
         }
-        if (unknownContents.hasMissingVariantElements()) {
-            showMessage(
-                FTTxt.txt("cannot_import_loadout_unknown_elements"),
-                Color.YELLOW
-            )
-            return true
-        }
-
 
         val loadoutExists = doesLoadoutExist(FTSettings.defaultPrefix, variant)
 

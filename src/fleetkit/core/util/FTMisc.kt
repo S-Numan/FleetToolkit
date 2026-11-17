@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.impl.campaign.HullModItemManager
+import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin
 import com.fs.starfarer.api.loading.VariantSource
 import com.fs.starfarer.api.loading.WeaponGroupSpec
@@ -13,6 +14,8 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import fleetkit.core.config.FTSettings
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.serialization.content.GameModInfo
+import fleetkit.serialization.content.MissingContent
+import fleetkit.util.api.HullUtils
 import fleetkit.util.api.MemberUtils
 import fleetkit.util.api.VariantUtils
 import org.json.JSONObject
@@ -667,5 +670,28 @@ internal object FTMisc {
             }
         }
         return gameMods
+    }
+
+    enum class BlockReasonType {
+        Restricted,
+        NoSim,
+        Station,
+        Cosmic,
+        UnknownHull,
+        UnknownContents
+    }
+
+    fun getBlockReasonType(variant: ShipVariantAPI): BlockReasonType? {
+        val missing = MissingContent()
+        VariantUtils.whatVariantContentsAreNotKnownToPlayer(variant, missing)
+        return when {
+            missing.hullIds.isNotEmpty() -> BlockReasonType.UnknownHull
+            missing.hasMissingVariantElements() -> BlockReasonType.UnknownContents
+            variant.hullSpec.hasTag(Tags.DWELLER) || variant.hullSpec.hasTag(Tags.THREAT) -> BlockReasonType.Cosmic
+            variant.hullSpec.hasTag(Tags.RESTRICTED) || variant.hasTag(Tags.RESTRICTED) -> BlockReasonType.Restricted
+            variant.isStation -> BlockReasonType.Station
+            variant.hullSpec.hasTag(Tags.NO_SIM) || variant.hasTag(Tags.NO_SIM) -> BlockReasonType.NoSim
+            else -> null
+        }
     }
 }

@@ -6,14 +6,13 @@ import com.fs.starfarer.api.combat.BaseEveryFrameCombatPlugin
 import com.fs.starfarer.api.combat.CombatEngineAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.fleet.FleetMemberType
-import com.fs.starfarer.api.impl.SharedUnlockData
-import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.input.InputEventType
 import com.fs.starfarer.api.mission.FleetSide
 import fleetkit.core.config.FTSettings
 import fleetkit.core.integration.plugin.ModPlugin
 import fleetkit.core.util.DisplayMessage
+import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.entities.fleet.DataFleet
@@ -214,32 +213,36 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
 
         if (!FTSettings.cheatsEnabled()) {
 
-            // TODO, if player is considered unaware of ship. Do not include it in the reason for why they cannot spawn it.
+            // to do. if player is considered unaware of ship. Do not include it in the reason for why they cannot spawn it.
 
-            if (member.hullSpec.hasTag(Tags.NO_SIM) || member.variant.hasTag(Tags.NO_SIM)) {
+            val blockReason = FTMisc.getBlockReasonType(member.variant)
+
+            if (blockReason == FTMisc.BlockReasonType.NoSim) {
                 DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_no_sim"), Color.YELLOW)
                 return
             }
-            if (member.hullSpec.hasTag(Tags.RESTRICTED)) {
+            if (blockReason == FTMisc.BlockReasonType.Restricted) {
                 DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_is_restricted"), Color.YELLOW)
                 return
             }
-            if (member.hullSpec.hasTag(Tags.CODEX_UNLOCKABLE)) {
-                if (!SharedUnlockData.get().isPlayerAwareOfShip(member.hullId)) {
-                    DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_player_not_aware"), Color.YELLOW)
-                    return
-                }
-            }
-            if (getDeployedFleetPoints(engine, FleetSide.ENEMY) + member.deployCost > Global.getSettings().battleSize / 2f * 1.2f) {
-                DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_exceed_fleet_limit"), Color.YELLOW)
-                return
-            }
-            if (member.isStation) {
+            if (blockReason == FTMisc.BlockReasonType.Station) {
                 DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_no_station"), Color.YELLOW)
                 return
             }
-            if (member.hullSpec.hasTag(Tags.DWELLER) || member.hullSpec.hasTag(Tags.THREAT)) {
+            if (blockReason == FTMisc.BlockReasonType.Cosmic) {
                 DisplayMessage.showMessage("Cannot simulate what is beyond comprehension", Color.YELLOW)
+                return
+            }
+            if (blockReason == FTMisc.BlockReasonType.UnknownHull) {
+                DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_player_not_aware"), Color.YELLOW)
+                return
+            }
+            if (blockReason == FTMisc.BlockReasonType.UnknownContents) {
+                DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_contents_player_not_aware"), Color.YELLOW)
+                return
+            }
+            if (getDeployedFleetPoints(engine, FleetSide.ENEMY) + member.deployCost > Global.getSettings().battleSize / 2f * 1.2f) {
+                DisplayMessage.showMessage(FTTxt.txt("cannot_spawn_ship_of_hull", member.hullSpec.hullName) + FTTxt.txt("ship_exceed_fleet_limit"), Color.YELLOW)
                 return
             }
         }
