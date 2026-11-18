@@ -44,7 +44,7 @@ interface Format<T : Any> {
             check(input.remaining() == 0) { "Corrupt data: trailing bytes" }
             return Decoded(result, mods)
         } catch (e: Exception) {
-            Global.getLogger(this.javaClass).warn("Failed to decode", e)
+            logDecodeFailure("Failed to decode", e)
         }
         return null
     }
@@ -54,7 +54,7 @@ interface Format<T : Any> {
         try {
             return openCodec(code).second.optModHeader(null)
         } catch (e: Exception) {
-            Global.getLogger(this.javaClass).warn("Failed to decode", e)
+            logDecodeFailure("Failed to decode", e)
         }
         return null
     }
@@ -67,5 +67,11 @@ interface Format<T : Any> {
         val ver = c.int(null)
         check(ver == version) { "Unsupported version $ver" }
         return input to c
+    }
+
+    private fun logDecodeFailure(what: String, e: Exception) {
+        val log = Global.getLogger(this.javaClass)
+        log.warn("$what: ${e.message}")
+        log.debug("$what (stack trace)", e)
     }
 }

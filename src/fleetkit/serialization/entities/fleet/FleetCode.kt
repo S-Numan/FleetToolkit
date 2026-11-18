@@ -6,7 +6,7 @@ import fleetkit.core.util.FTTxt
 import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.person.PersonCode
-import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.content.ParsedModData
 import fleetkit.serialization.core.EntityFormat
 import fleetkit.serialization.entities.fleet.sic.SecondInCommandCode
 import fleetkit.serialization.entities.member.MemberCode
@@ -28,7 +28,7 @@ object FleetCode : EntityFormat<DataFleet.ParsedFleetData> {
     )
     /** If [mods] is null, it will automatically be generated */
     override fun encode(data: DataFleet.ParsedFleetData, withPrepend: Boolean, mods: ModHeader?): String {
-        val mods = mods ?: ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { ModVersionData(it.id, it.name, it.version) })
+        val mods = mods ?: ModHeader(FleetUtils.getAllSourceModsFromFleet(data).map { ParsedModData(it.id, it.name, it.version) })
         val output = super.encode(data, withPrepend = false, mods)
         if (!withPrepend) {
             return output

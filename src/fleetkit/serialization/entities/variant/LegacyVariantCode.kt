@@ -6,7 +6,7 @@ import com.fs.starfarer.api.loading.WeaponGroupType
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.content.ParsedModData
 import fleetkit.serialization.entities.variant.DataVariant.buildVariantFull
 import fleetkit.serialization.entities.variant.DataVariant.getVariantDataFromVariant
 import fleetkit.serialization.io.CodeImporter.fieldSep
@@ -100,12 +100,12 @@ internal object LegacyVariantCode {
         // Group every 3 parts together and join back with separator
         val modInfos = parts.chunked(3).map { it.joinToString(sep) }
 
-        val gameMods: Set<ModVersionData> = modInfos
+        val gameMods: Set<ParsedModData> = modInfos
             .mapNotNull { mod ->
                 val parts = mod.split(sep)
                 if (parts.size == 3) {
                     val (id, name, ver) = parts
-                    ModVersionData(id, name, ver)
+                    ParsedModData(id, name, ver)
                 } else null // Skip malformed lines
             }
             .toSet()

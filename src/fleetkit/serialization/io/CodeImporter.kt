@@ -64,15 +64,14 @@ object CodeImporter {
             else -> {
                 val format = CodeRegistry.identify(text)
                 if (format != null) {
-                    try {
-                        val decoded = format.decodeWithMods(text)!!
-                        decoded.mods?.toGameModInfos()?.let { missing.gameMods.addAll(it) }
-                        decoded.data
-                    } catch (_: Exception) {
+                    val decoded = format.decodeWithMods(text)
+                    if (decoded == null) {
                         val message = FTTxt.txt("failed_extract", format.javaClass.simpleName)
                         DisplayMessage.showMessage(message, Color.YELLOW)
-                        Global.getLogger(this.javaClass).warn(message)
                         null
+                    } else {
+                        decoded.mods?.toGameModInfos()?.let { missing.gameMods.addAll(it) }
+                        decoded.data
                     }
                 } else
                     null

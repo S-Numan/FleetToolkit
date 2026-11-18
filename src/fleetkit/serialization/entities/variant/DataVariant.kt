@@ -46,7 +46,7 @@ object DataVariant {
         val displayName: String = "",
         val fluxCapacitors: Int = -1,
         val fluxVents: Int = -1,
-        val tags: List<String> = emptyList(),
+        val tags: Collection<String> = emptyList(),
         val hullMods: Set<String> = emptySet(),
         val permaMods: Set<String> = emptySet(),
         val sMods: Set<String> = emptySet(),
@@ -268,7 +268,7 @@ object DataVariant {
             }
 
         val filteredTags: List<String> = if (!settings.includeTags) emptyList() else
-            data.tags.filter(::shouldKeepTag) // TODO, filter without shifting slots
+            data.tags.filter(::shouldKeepTag)
 
         // Module Variants
         val filteredModuleVariants = mutableMapOf<String, ParsedVariantData>()

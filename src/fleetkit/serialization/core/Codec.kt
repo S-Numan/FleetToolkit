@@ -1,5 +1,6 @@
 package fleetkit.serialization.core
 
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 // Bidirectional codec
@@ -43,7 +44,11 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
     fun optFloat(v: Float?): Float? = opt(v) { float(it) }
 
     // Stores the float as round(v * 100) in a varint. Precision: 0.01.
-    fun float2(v: Float?): Float = int(((v ?: 0f) * 100f).roundToInt()) / 100f
+    fun float2(v: Float?): Float {
+        val scaled = (v ?: 0f) * 100f
+        require(scaled.isFinite() && abs(scaled) < Int.MAX_VALUE) { "float2 can't store $v" }
+        return int(scaled.roundToInt()) / 100f
+    }
     fun optFloat2(v: Float?): Float? = opt(v) { float2(it) }
 
     private fun count(v: Int): Int {
