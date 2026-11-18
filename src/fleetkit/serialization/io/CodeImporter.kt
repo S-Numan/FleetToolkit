@@ -68,9 +68,10 @@ object CodeImporter {
                         val decoded = format.decodeWithMods(text)!!
                         decoded.mods?.toGameModInfos()?.let { missing.gameMods.addAll(it) }
                         decoded.data
-                    } catch (e: Exception) {
-                        DisplayMessage.showMessage(FTTxt.txt("failed_extract", format.javaClass.simpleName), Color.YELLOW)
-                        Global.getLogger(this.javaClass).error(e)
+                    } catch (_: Exception) {
+                        val message = FTTxt.txt("failed_extract", format.javaClass.simpleName)
+                        DisplayMessage.showMessage(message, Color.YELLOW)
+                        Global.getLogger(this.javaClass).warn(message)
                         null
                     }
                 } else

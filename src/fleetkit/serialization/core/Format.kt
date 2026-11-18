@@ -12,7 +12,6 @@ interface Format<T : Any> {
     fun sync(c: Codec, d: T?): T
 
     /**
-     *
      * @param withPrepend Add a description line for the user, a line break, then the code. Safe to paste back into decode().
      * @param mods to embed the game version and required mods.
      */
@@ -45,13 +44,20 @@ interface Format<T : Any> {
             check(input.remaining() == 0) { "Corrupt data: trailing bytes" }
             return Decoded(result, mods)
         } catch (e: Exception) {
-            Global.getLogger(this.javaClass).error("Failed to decode", e)
+            Global.getLogger(this.javaClass).warn("Failed to decode", e)
         }
         return null
     }
 
     /** Reads only the mod header (null if the code has none). Use it to warn about missing mods before importing. */
-    fun readMods(code: String): ModHeader? = openCodec(code).second.optModHeader(null)
+    fun readMods(code: String): ModHeader? {
+        try {
+            return openCodec(code).second.optModHeader(null)
+        } catch (e: Exception) {
+            Global.getLogger(this.javaClass).warn("Failed to decode", e)
+        }
+        return null
+    }
 
     private fun openCodec(code: String): Pair<ByteBuffers.In, Codec> {
         val clean = CodeRegistry.clean(code)
