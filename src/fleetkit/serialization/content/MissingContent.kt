@@ -14,7 +14,7 @@ open class MissingContent(
     val hullIds: MutableSet<String> = mutableSetOf()
     val hullModIds: MutableSet<String> = mutableSetOf()
     val skillIds: MutableSet<String> = mutableSetOf()
-    val gameMods: MutableSet<GameModInfo> = mutableSetOf()//ID, name, version
+    val gameMods: MutableSet<ModVersionData> = mutableSetOf()//ID, name, version
 
     // Function to check if anything was missing.
     open fun hasMissing(): Boolean {
@@ -61,7 +61,7 @@ open class MissingContent(
 
         printIfNotEmpty(FTTxt.txt("missing_skills"), missingMessages, skillIds)
 
-        val filteredMods: Set<GameModInfo> = if (doNotPrintEnabledMods) {
+        val filteredMods: Set<ModVersionData> = if (doNotPrintEnabledMods) {
             val modManager = Global.getSettings().modManager
             gameMods
                 .filter { it.id != "SS" } // Starsector is always included

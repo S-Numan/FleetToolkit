@@ -3,14 +3,11 @@ package fleetkit.serialization.entities.member
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.Format
 import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.serialization.entities.variant.VariantCode
-import fleetkit.serialization.content.GameModInfo
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.core.EntityFormat
-import fleetkit.serialization.entities.fleet.DataFleet
-import fleetkit.util.api.FleetUtils
 import fleetkit.util.api.MemberUtils
 import org.magiclib.util.MagicLookup
 
@@ -30,7 +27,7 @@ object MemberCode : EntityFormat<DataMember.ParsedMemberData> {
     )
     /** If [mods] is null, it will automatically be generated */
     override fun encode(data: DataMember.ParsedMemberData, withPrepend: Boolean, mods: ModHeader?): String {
-        val mods = mods ?: ModHeader(MemberUtils.getAllSourceModsFromMember(data).map { GameModInfo(it.id, it.name, it.version) })
+        val mods = mods ?: ModHeader(MemberUtils.getAllSourceModsFromMember(data).map { ModVersionData(it.id, it.name, it.version) })
         val output = super.encode(data, withPrepend = false, mods)
         if (!withPrepend) {
             return output

@@ -13,9 +13,8 @@ import com.fs.starfarer.api.loading.WeaponGroupSpec
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import fleetkit.core.config.FTSettings
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
-import fleetkit.serialization.content.GameModInfo
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.content.MissingContent
-import fleetkit.util.api.HullUtils
 import fleetkit.util.api.MemberUtils
 import fleetkit.util.api.VariantUtils
 import org.json.JSONObject
@@ -644,10 +643,10 @@ internal object FTMisc {
         return sModsToApply to bonusXpToGrant
     }
 
-    fun getModInfosFromJson(json: JSONObject, onlyMissing: Boolean = false): MutableSet<GameModInfo> {
-        val gameMods = mutableSetOf<GameModInfo>()
+    fun getModInfosFromJson(json: JSONObject, onlyMissing: Boolean = false): MutableSet<ModVersionData> {
+        val gameMods = mutableSetOf<ModVersionData>()
         json.optString("gameVersion", null)?.let {
-            gameMods.add(GameModInfo("SS", "Starsector", it))
+            gameMods.add(ModVersionData("SS", "Starsector", it))
         }
         json.optJSONArray("mod_info")?.let {
             repeat(it.length()) { i ->
@@ -666,7 +665,7 @@ internal object FTMisc {
 
                 if (onlyMissing && hasMod) return@repeat
 
-                gameMods.add(GameModInfo(modSpecId, modSpecName, modSpecVersion))
+                gameMods.add(ModVersionData(modSpecId, modSpecName, modSpecVersion))
             }
         }
         return gameMods

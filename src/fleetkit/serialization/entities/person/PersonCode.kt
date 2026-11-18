@@ -2,14 +2,10 @@ package fleetkit.serialization.entities.person
 
 import com.fs.starfarer.api.characters.FullName
 import com.fs.starfarer.api.characters.PersonAPI
-import fleetkit.core.util.FTTxt
 import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.Format
 import fleetkit.serialization.core.ModHeader
-import fleetkit.serialization.content.GameModInfo
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.core.EntityFormat
-import fleetkit.serialization.entities.fleet.DataFleet
-import fleetkit.util.api.FleetUtils
 import fleetkit.util.api.PersonUtils
 
 @Suppress("EnumValuesSoftDeprecate")
@@ -35,7 +31,7 @@ object PersonCode : EntityFormat<DataPerson.ParsedPersonData> {
     )
     /** If [mods] is null, it will automatically be generated */
     override fun encode(data: DataPerson.ParsedPersonData, withPrepend: Boolean, mods: ModHeader?): String {
-        val mods = mods ?: ModHeader(PersonUtils.getAllSourceModsFromPerson(data).map { GameModInfo(it.id, it.name, it.version) })
+        val mods = mods ?: ModHeader(PersonUtils.getAllSourceModsFromPerson(data).map { ModVersionData(it.id, it.name, it.version) })
         val output = super.encode(data, withPrepend = false, mods)
         if (!withPrepend) {
             return output

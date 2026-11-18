@@ -7,7 +7,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.content.GameModInfo
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.io.CodeImporter.fieldSep
 import fleetkit.serialization.io.CodeImporter.memberSep
 import fleetkit.serialization.io.CodeImporter.metaSep
@@ -92,12 +92,12 @@ internal object LegacyMemberCode {
 
             val modInfos = parts.chunked(3).map { it.joinToString(sep) }
 
-            val gameMods: Set<GameModInfo> =
+            val gameMods: Set<ModVersionData> =
                 modInfos.mapNotNull { mod ->
                     val p = mod.split(sep)
                     if (p.size == 3) {
                         val (id, name, ver) = p
-                        GameModInfo(id, name, ver)
+                        ModVersionData(id, name, ver)
                     } else null
                 }.toSet()
 
