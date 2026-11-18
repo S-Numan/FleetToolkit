@@ -15,12 +15,9 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
 
     /** Wrap every recursive step in this. Throws on corrupt data that nests too deeply. */
     fun <T> nested(block: () -> T): T {
-        check(++depth <= MAX_DEPTH) { "Corrupt data: nesting too deep" }
-        try {
-            return block()
-        } finally {
-            depth--
-        }
+        check(depth < MAX_DEPTH) { "Corrupt data: nesting too deep" }
+        depth++
+        try { return block() } finally { depth-- }
     }
 
     // ---- primitives: write `v` (or a default if null) / read and ignore `v` ----
@@ -81,7 +78,7 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
         return result
     }
 
-    // ---- loosely typed values (for memKeys). Unsupported types are written as null. ----
+    // loosely typed values (for memKeys). Unsupported types are written as null.
     fun any(v: Any?): Any? {
         val tag = int(
             if (reading) 0 else when (v) {
@@ -95,10 +92,11 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
                 is Byte -> 7
                 is Char -> 8
                 is String -> 9
-                else -> 0
+                else -> 0 // unsupported type: stored as null
             }
         )
         return when (tag) {
+            0 -> null // null or unsupported type; no payload follows
             1 -> bool(v as? Boolean)
             2 -> int(v as? Int)
             3 -> long(v as? Long)
@@ -108,7 +106,7 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
             7 -> int((v as? Byte)?.toInt()).toByte()
             8 -> int((v as? Char)?.code).toChar()
             9 -> str(v as? String)
-            else -> null // tag 0: null or unsupported type, nothing follows
+            else -> error("Corrupt data: unknown value tag $tag")
         }
     }
 
