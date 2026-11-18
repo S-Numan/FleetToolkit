@@ -11,48 +11,57 @@ interface Format<T : Any> {
     val version: Int
     fun sync(c: Codec, d: T?): T
 
+    fun encode(data: T): String = encodeWith(data) { }
+
+    fun decode(code: String): T? = decodeWith(code) { }?.first
+
     /**
-     * @param withPrepend Add a description line for the user, a line break, then the code. Safe to paste back into decode().
-     * @param mods to embed the game version and required mods.
+     * Not intended for use outside sub-interfaces.
+     *
+     * Building block for [encode]. [header] writes extra data between the version and the body (nothing in a plain Format).
+     * Subinterfaces use it to add their own header; don't call it from outside.
      */
-    fun encode(data: T, withPrepend: Boolean = true, mods: ModHeader? = null): String {
+    fun encodeWith(data: T, header: (Codec) -> Unit): String {
         try {
             val out = ByteBuffers.Out()
             val c = Codec(out)
             c.int(version)
-            c.optModHeader(mods)
+            header(c)
             sync(c, data)
-            val output = "${CodeRegistry.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
-            return if (withPrepend && mods != null)
-                data.javaClass.simpleName + " " + mods.describe() + "\n" + output
-            else
-                output
+            return "${CodeRegistry.header(typeId)}${BinaryPack.pack(out.toByteArray())}"
         } catch (e: Exception) {
             Global.getLogger(this.javaClass).error("Failed to encode", e)
         }
         return ""
     }
 
-    fun decode(code: String): T? = decodeWithMods(code)?.data
-
-    fun decodeWithMods(code: String): Decoded<T>? {
+    /**
+     * Not intended for use outside sub-interfaces.
+     *
+     * Building block for [decode]. [header] reads whatever [encodeWith]'s header wrote and returns it.
+     */
+    fun <H> decodeWith(code: String, header: (Codec) -> H): Pair<T, H>? {
         try {
             val (input, c) = openCodec(code)
-            val mods = c.optModHeader(null)
+            val h = header(c)
             val result = sync(c, null)
             // Raw deflate has no checksum; leftover bytes mean a mistyped or mismatched code
             check(input.remaining() == 0) { "Corrupt data: trailing bytes" }
-            return Decoded(result, mods)
+            return result to h
         } catch (e: Exception) {
             logDecodeFailure("Failed to decode", e)
         }
         return null
     }
 
-    /** Reads only the mod header (null if the code has none). Use it to warn about missing mods before importing. */
-    fun readMods(code: String): ModHeader? {
+    /**
+     * Not intended for use outside sub-interfaces.
+     *
+     * Reads only the header (null on failure), without decoding the body.
+     */
+    fun <H> readHeaderWith(code: String, header: (Codec) -> H): H? {
         try {
-            return openCodec(code).second.optModHeader(null)
+            return header(openCodec(code).second)
         } catch (e: Exception) {
             logDecodeFailure("Failed to decode", e)
         }
