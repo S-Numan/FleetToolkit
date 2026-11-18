@@ -88,6 +88,7 @@ import second_in_command.ui.elements.SkillWidgetElement
 import second_in_command.ui.tooltips.SCSkillTooltipCreator
 import java.awt.Color
 import java.util.*
+import kotlin.math.max
 
 
 object HotkeyHandlerDialogs {
@@ -757,9 +758,9 @@ object HotkeyHandlerDialogs {
             val paddingX = 10f
             val paddingY = 14f
 
-            val numPerRow = Math.max(1, (leftWidth / (size + paddingX)).toInt())
+            val numPerRow = max(1, (leftWidth / (size + paddingX)).toInt())
 
-            val rows = (fleetData.membersListCopy.size + numPerRow - 1) / numPerRow
+            val rows = max((fleetData.membersListCopy.size + numPerRow - 1) / numPerRow, 1) // Always have at least 1 row
             val totalHeight = rows * size + (rows - 1) * paddingY
 
             val listPanel = dialog.panel.createCustomPanel(leftWidth, totalHeight, null)
