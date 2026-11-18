@@ -108,6 +108,10 @@ object DataPerson {
             memKeys.remove(Misc.CAPTAIN_UNREMOVABLE)
         }
 
+        memKeys.entries.removeAll { (_, value) ->
+            !PrefixedCodec.isPrefixable(value)
+        }
+
         val data = ParsedPersonData(
             aiCoreId = if (person.isAICore) person.aiCoreId else "",
             first = person.name.first,
@@ -169,12 +173,10 @@ object DataPerson {
             data.memKeys.filterKeys { key ->
                 if (key.startsWith("$#")) return@filterKeys false
 
-                val value = data.memKeys[key]
-
                 when {
                     key in excludeKeys -> return@filterKeys false
                     settings.excludePeopleMemoryKeys && key in peopleKeys -> return@filterKeys false
-                    else -> PrefixedCodec.isPrefixable(value)
+                    else -> true
                 }
             }
 

@@ -3,8 +3,7 @@ package fleetkit.serialization.io
 import org.json.JSONObject
 
 object JSONInput {
-    @JvmStatic
-    fun cleanJsonStringInput(raw: String): String {
+    private fun cleanJsonStringInput(raw: String): String {
         return raw.lines()
             .map { line ->
                 var inQuotes = false

@@ -27,6 +27,7 @@ import org.magiclib.kotlin.getErrorVariantID
 import org.magiclib.kotlin.getHullIdForVariantId
 import org.magiclib.util.MagicLookup
 import java.util.*
+import kotlin.collections.removeAll
 
 object DataFleet {
 
@@ -111,8 +112,12 @@ object DataFleet {
     ): ParsedFleetData {
         val campFleet: CampaignFleetAPI? = fleet.fleet
 
-        val memKeys = if (!settings.includeMemKeys) emptyMap() else
+        val memKeys = if (!settings.includeMemKeys) null else
             campFleet?.let { it.memoryWithoutUpdate.keys.associateWith { key -> it.memoryWithoutUpdate[key] }.toMutableMap() }
+
+        memKeys?.entries?.removeAll { (_, value) ->
+            !PrefixedCodec.isPrefixable(value)
+        }
 
         //val hasFlagship = fleet.membersListCopy.any { it.isFlagship && !it.variant.hullMods.contains(ModSettings.commandShuttleId) }
 
@@ -150,9 +155,7 @@ object DataFleet {
             data.memKeys.filterKeys { key ->
                 if (key.startsWith("$#")) return@filterKeys false
 
-                val value = data.memKeys[key]
-
-                return@filterKeys PrefixedCodec.isPrefixable(value)
+                return@filterKeys true
             }
 
         var filteredCommander: DataPerson.ParsedPersonData? = null
