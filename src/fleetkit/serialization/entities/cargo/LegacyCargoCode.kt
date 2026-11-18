@@ -84,6 +84,7 @@ internal object LegacyCargoCode {
                         // Skip expensive tooltip checks for things that are already known to be probably safe
                         Triple("SPECIAL", special.id, special.data)
                     } else {
+                        // Would it not be better to put this check in the load instead of save as loading happens less often?
                         val errorResult = runCatching {
                             templateCargo.removeEmptyStacks()
                             templateCargo.addSpecial(SpecialItemData(special.id, special.data), 1f)

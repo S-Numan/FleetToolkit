@@ -69,6 +69,7 @@ interface Format<T : Any> {
         return input to c
     }
 
+    @Suppress("SameParameterValue")
     private fun logDecodeFailure(what: String, e: Exception) {
         val log = Global.getLogger(this.javaClass)
         log.warn("$what: ${e.message}")

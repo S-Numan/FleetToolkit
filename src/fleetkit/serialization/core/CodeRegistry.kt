@@ -22,13 +22,12 @@ object CodeRegistry {
         check(all.map { it.typeId }.toSet().size == all.size) { "Duplicate Format typeId" }
     }
 
-    /** Returns the last non-blank line, trimmed, keeping only the trailing sequence of characters after the last space. */
+    /** Returns the last non-blank line, trimmed, intended to keep only the trailing Base64 code. */
+    private val WS = Regex("\\s+")
     fun clean(code: String): String =
-        code.lines()
-            .lastOrNull { it.isNotBlank() }
-            ?.trim()
-            ?.substringAfterLast(' ')
-            ?: ""
+        code.lines().lastOrNull { it.isNotBlank() }
+            ?.trim()?.split(WS)?.last()
+            ?.trim('`', '"', '\'', '<', '>') ?: ""
 
     /** Returns the matching format, or null unless the text starts with MARKER followed by a known type id. */
     fun identify(code: String): EntityFormat<*>? {

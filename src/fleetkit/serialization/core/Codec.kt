@@ -20,18 +20,18 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
         try { return block() } finally { depth-- }
     }
 
-    // ---- primitives: write `v` (or a default if null) / read and ignore `v` ----
+    // Primitives: write `v` (or a default if null) / read and ignore `v`
     fun int(v: Int?): Int = input?.readInt() ?: (v ?: 0).also { out!!.writeInt(it) }
     fun long(v: Long?): Long = input?.readLong() ?: (v ?: 0L).also { out!!.writeLong(it) }
     fun float(v: Float?): Float = input?.readFloat() ?: (v ?: 0f).also { out!!.writeFloat(it) }
     fun bool(v: Boolean?): Boolean = input?.readBoolean() ?: (v ?: false).also { out!!.writeBoolean(it) }
     fun str(v: String?): String = input?.readUTF() ?: (v ?: "").also { out!!.writeUTF(it) }
 
-    // Enums are stored by ordinal (compact). Reordering/inserting enum entries changes the format.
+    /** Enums are stored by ordinal (compact). Reordering/inserting enum entries changes the format. */
     fun <E : Enum<E>> enum(v: E?, all: Array<E>): E =
         all.getOrElse(int(v?.ordinal ?: 0)) { all[0] }
 
-    // ---- nullability: a 1-byte presence flag, then the value if present ----
+    // Nullability: a 1-byte presence flag, then the value if present.
     fun <T : Any> opt(v: T?, item: (T?) -> T): T? =
         if (bool(v != null)) item(v) else null
 
@@ -78,7 +78,7 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
         return result
     }
 
-    // loosely typed values (for memKeys). Unsupported types are written as null.
+    // loosely typed values (usually for memKeys). Unsupported types are written as null.
     fun any(v: Any?): Any? {
         val tag = int(
             if (reading) 0 else when (v) {
