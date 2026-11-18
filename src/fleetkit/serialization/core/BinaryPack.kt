@@ -37,17 +37,19 @@ object BinaryPack {
     }
 
     fun pack(raw: ByteArray, dictVersion: Char = PackDictionaries.LATEST): String {
-        val dict = PackDictionaries.byVersion[dictVersion]
-        val usedVersion = if (dict != null) dictVersion else '0'
+        require(raw.size < MAX_RAW_SIZE) { "Data too large to pack: ${raw.size} bytes (limit ${MAX_RAW_SIZE - 1})" }
 
-        // Try every strategy and keep the smallest result
-        var best: ByteArray? = null
-        for (strategy in STRATEGIES) {
-            val candidate = deflate(raw, dict, strategy)
-            if (best == null || candidate.size < best.size) best = candidate
-        }
+        val dict: ByteArray? =
+            if (dictVersion == '0') null // '0' means no dictionary
+            else PackDictionaries.byVersion[dictVersion] // Get dictionary if not '0'
+                ?: throw IllegalArgumentException("Unknown dictionary version '$dictVersion'") // Unknown dictionary versions throw
 
-        return usedVersion + Base64.getEncoder().withoutPadding().encodeToString(best!!)
+        // Try every strategy, keep the smallest result
+        val best = STRATEGIES
+            .map { deflate(raw, dict, it) }
+            .minBy { it.size }
+
+        return dictVersion + Base64.getEncoder().withoutPadding().encodeToString(best)
     }
 
     fun unpack(code: String): ByteArray {

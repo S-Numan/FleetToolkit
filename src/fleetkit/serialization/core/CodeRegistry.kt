@@ -47,11 +47,11 @@ object CodeRegistry {
     /**
      * Example usage:
      *
-     * when (Formats.identify(pasted)) {
-     *     FleetFormat   -> importFleet(FleetFormat.decode(pasted))
-     *     MemberFormat  -> importMember(MemberFormat.decode(pasted))
-     *     VariantFormat -> importVariant(VariantFormat.decode(pasted))
-     *     PersonFormat  -> importPerson(PersonFormat.decode(pasted))
+     * when (CodeRegistry.identify(pasted)) {
+     *     FleetCode   -> importFleet(FleetCode.decode(pasted))
+     *     MemberCode  -> importMember(MemberCode.decode(pasted))
+     *     VariantCode -> importVariant(VariantCode.decode(pasted))
+     *     PersonCode  -> importPerson(PersonCode.decode(pasted))
      *     else          -> showError("Unrecognized code")
      * }
      */
