@@ -49,7 +49,7 @@ object BinaryPack {
             .map { deflate(raw, dict, it) }
             .minBy { it.size }
 
-        return dictVersion + Base64.getEncoder().withoutPadding().encodeToString(best)
+        return dictVersion + Base64.getUrlEncoder().withoutPadding().encodeToString(best)
     }
 
     fun unpack(code: String): ByteArray {
@@ -61,7 +61,7 @@ object BinaryPack {
 
         // Stray or mistyped characters make Base64 throw IllegalArgumentException
         val data = try {
-            Base64.getDecoder().decode(code.substring(1))
+            Base64.getUrlDecoder().decode(code.substring(1))
         } catch (e: IllegalArgumentException) {
             throw IllegalStateException("Corrupt data code", e)
         }

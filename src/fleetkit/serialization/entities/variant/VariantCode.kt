@@ -3,7 +3,7 @@ package fleetkit.serialization.entities.variant
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.ModHeader
-import fleetkit.serialization.content.ParsedModData
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.core.EntityFormat
 import fleetkit.util.api.VariantUtils
 import org.magiclib.util.MagicLookup
@@ -32,7 +32,7 @@ object VariantCode : EntityFormat<DataVariant.ParsedVariantData> {
 
     /** If [mods] is null, it will automatically be generated */
     override fun encode(data: DataVariant.ParsedVariantData, withPrepend: Boolean, mods: ModHeader?): String {
-        val mods = mods ?: ModHeader(VariantUtils.getAllSourceModsFromVariant(data).map { ParsedModData(it.id, it.name, it.version) })
+        val mods = mods ?: ModHeader(VariantUtils.getAllSourceModsFromVariant(data).map { ModVersionData(it.id, it.name, it.version) })
         val output = super.encode(data, withPrepend = false, mods)
         if (!withPrepend) {
             return output

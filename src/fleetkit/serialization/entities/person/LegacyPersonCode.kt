@@ -6,7 +6,7 @@ import com.fs.starfarer.api.characters.PersonAPI
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.content.ParsedModData
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.io.CodeImporter.fieldSep
 import fleetkit.serialization.io.CodeImporter.joinSep
 import fleetkit.serialization.io.CodeImporter.memKeyJoinSep
@@ -90,13 +90,13 @@ internal object LegacyPersonCode {
 
             val modInfos = parts.chunked(3).map { it.joinToString(sep) }
 
-            val gameMods: Set<ParsedModData> =
+            val gameMods: Set<ModVersionData> =
                 modInfos.mapNotNull { mod ->
                     val p = mod.split(sep)
 
                     if (p.size == 3) {
                         val (id, name, ver) = p
-                        ParsedModData(id, name, ver)
+                        ModVersionData(id, name, ver)
                     } else null
                 }.toSet()
 
@@ -331,13 +331,13 @@ internal object LegacyPersonCode {
             requiredMods += "(${Global.getSettings().gameVersion})"
             addedModDetails += "SS${sep}Starsector$sep${Global.getSettings().gameVersion}$sep"
 
-            val mods = mutableSetOf<ParsedModData>()
+            val mods = mutableSetOf<ModVersionData>()
 
             for (skill in data.skills.keys) {
                 val spec = Global.getSettings().getSkillSpec(skill) ?: continue
                 val modSpec = spec.sourceMod
                 if (modSpec != null) {
-                    mods += ParsedModData(
+                    mods += ModVersionData(
                         modSpec.id,
                         modSpec.name,
                         modSpec.version

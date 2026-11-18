@@ -8,7 +8,7 @@ import com.fs.starfarer.api.campaign.FleetDataAPI
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.content.ParsedModData
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.entities.fleet.DataFleet.createCampaignFleetFromData
 import fleetkit.serialization.entities.fleet.DataFleet.getFleetDataFromFleet
 import fleetkit.serialization.entities.fleet.sic.DataSecondInCommand
@@ -103,13 +103,13 @@ internal object LegacyFleetCode {
 
             val modInfos = parts.chunked(3).map { it.joinToString(sep) }
 
-            val gameMods: Set<ParsedModData> =
+            val gameMods: Set<ModVersionData> =
                 modInfos.mapNotNull { mod ->
                     val p = mod.split(sep)
 
                     if (p.size == 3) {
                         val (id, name, ver) = p
-                        ParsedModData(id, name, ver)
+                        ModVersionData(id, name, ver)
                     } else null
                 }.toSet()
 

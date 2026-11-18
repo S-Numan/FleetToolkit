@@ -2,22 +2,22 @@ package fleetkit.serialization.core
 
 import com.fs.starfarer.api.Global
 import fleetkit.core.util.FTTxt
-import fleetkit.serialization.content.ParsedModData
+import fleetkit.serialization.content.ModVersionData
 
 /** Which game version and mods a code was made with. Stored inside every code (optionally). */
 data class ModHeader(
-    val mods: List<ParsedModData>,
+    val mods: List<ModVersionData>,
     val gameVersion: String = Global.getSettings().gameVersion
 ) {
-    fun toGameModInfos(): Set<ParsedModData> =
-        LinkedHashSet<ParsedModData>().apply {
+    fun toGameModInfos(): Set<ModVersionData> =
+        LinkedHashSet<ModVersionData>().apply {
             if (gameVersion.isNotEmpty())
-                add(ParsedModData(STARSECTOR_ID, "Starsector", gameVersion))
+                add(ModVersionData(STARSECTOR_ID, "Starsector", gameVersion))
             addAll(mods)
         }
 
     /** Mods this code needs that the predicate says aren't enabled, e.g. `missing(modManager::isModEnabled)`. */
-    fun missing(isEnabled: (String) -> Boolean): List<ParsedModData> =
+    fun missing(isEnabled: (String) -> Boolean): List<ModVersionData> =
         mods.filterNot { isEnabled(it.id) }
 
     /**
@@ -42,7 +42,7 @@ data class ModHeader(
 fun Codec.optModHeader(v: ModHeader?): ModHeader? = opt(v) { h ->
     ModHeader(
         gameVersion = str(h?.gameVersion),
-        mods = list<ParsedModData>(h?.mods) { m -> ParsedModData(str(m?.id), str(m?.name), str(m?.version)) }
+        mods = list<ModVersionData>(h?.mods) { m -> ModVersionData(str(m?.id), str(m?.name), str(m?.version)) }
     )
 }
 
