@@ -43,5 +43,5 @@ If not in the refit screen, adds the specified modspec to your fleet's cargo."
 SetPersonality,fleetkit.console.commands.SetOfficerPersonality,"cheat,campaign,fleettoolkit",setpersonality <personality>,Changes the personality of the officer captaining the ship viewed in the refit screen.
 Paste,fleetkit.console.commands.ForcePaste,"cheat,campaign,fleettoolkit",paste,"Functions the same as using CTRL + V, but assumes cheats are enabled."
 ,,,,
-Cheats,fleetkit.console.commands.Cheats,"cheat,fleettoolkit",cheats,"Toggles cheats in this mod. Can also be achieved via LunaLib settings or by enabling devMode.
+Cheats,fleetkit.console.commands.Cheats,"cheat,fleettoolkit",cheats,"Toggles cheats for Fleet Toolkit. This can also be achieved within the LunaLib settings, enabling devMode, or within the ‘CTRL + SHIFT + D’ dev dialog.’
 The effects of this command are forgotten on game restart."

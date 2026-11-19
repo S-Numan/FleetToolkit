@@ -41,30 +41,9 @@ object PersonJson {
 
         val memKeys = buildMap<String, Any?> {
 
-            // DEPRECIATED
-            json.optJSONObject("memKeys")?.let { memKeysJson ->
-                memKeysJson.keys().forEach { keyName ->
-                    if (keyName !is String) return@forEach
-
-                    memKeysJson.opt(keyName)?.let { raw ->
-                        if (raw !is String) return@forEach
-
-                        val value =
-                            raw.toIntOrNull()
-                                ?: raw.toLongOrNull()
-                                ?: raw.toFloatOrNull()
-                                ?: raw.toDoubleOrNull()
-                                ?: raw.toShortOrNull()
-                                ?: raw.toByteOrNull()
-                                ?: raw.lowercase().toBooleanStrictOrNull()
-                                ?: raw
-
-                        put("$$keyName", value)
-                    }
-                }
-            }
-
-            json.optJSONObject("memKeysV2")?.let { memKeysJson ->
+            val memKeys = json.optJSONObject("memKeys")
+                ?: json.optJSONObject("memKeysV2") // DEPRECIATED
+            memKeys?.let { memKeysJson ->
                 memKeysJson.keys().forEach { keyName ->
                     if (keyName !is String) return@forEach
 
@@ -72,7 +51,8 @@ object PersonJson {
                         if (raw !is String) return@forEach
 
                         val parsedValue = PrefixedCodec.decodeAny(raw)
-                        if (!parsedValue.success) return@forEach
+                        if (!parsedValue.success)
+                            return@forEach
 
                         put("$$keyName", parsedValue.value)
                     }
@@ -194,7 +174,7 @@ object PersonJson {
 
         }
         if (memKeysJSON.length() > 0)
-            json.put("memKeysV2", memKeysJSON)
+            json.put("memKeys", memKeysJSON)
 
         val skillsObject = JSONObject()
         for (skill in data.skills) {
