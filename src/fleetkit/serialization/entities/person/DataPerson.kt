@@ -108,8 +108,8 @@ object DataPerson {
             memKeys.remove(Misc.CAPTAIN_UNREMOVABLE)
         }
 
-        memKeys.entries.removeAll { (_, value) ->
-            !PrefixedCodec.isPrefixable(value)
+        memKeys.entries.removeAll { (key, value) ->
+            !PrefixedCodec.isPrefixable(value) // || key == "\$inactive" // Should this be uncommented?
         }
 
         val data = ParsedPersonData(
