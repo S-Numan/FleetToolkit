@@ -87,14 +87,18 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
     fun strList(v: Collection<String>?): List<String> = list(v) { str(it) }
     fun strSet(v: Collection<String>?): Set<String> = LinkedHashSet(strList(v))
 
-    fun <V> map(v: Map<String, V>?, value: (V?) -> V): Map<String, V> {
+    fun <V> map(v: Map<String, V>?, value: (V?) -> V): Map<String, V> =
+        map(v, { str(it) }, value)
+
+    /** Like [map], but you choose how keys are coded, e.g. `{ c.slotId(it) }`. */
+    fun <V> map(v: Map<String, V>?, key: (String?) -> String, value: (V?) -> V): Map<String, V> {
         val src = v?.entries?.toList() ?: emptyList()
         val n = count(src.size)
         val result = LinkedHashMap<String, V>()
         for (k in 0 until n) {
             val e = src.getOrNull(k)
-            val key = str(e?.key)
-            result[key] = value(e?.value)
+            val k2 = key(e?.key)
+            result[k2] = value(e?.value)
         }
         return result
     }
