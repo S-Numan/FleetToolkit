@@ -2,12 +2,24 @@ package fleetkit.serialization.core
 
 import fleetkit.serialization.dictionaries.PackDictionaries
 import java.util.*
+import java.util.zip.CRC32
 import java.util.zip.DataFormatException
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
+
 object BinaryPack {
     private const val MAX_RAW_SIZE = 1_048_576 // 1 MB cap on decompressed data
+
+    private const val CRC_BYTES = 4
+
+    // Covers the version char too, so a mistyped dictionary version is caught as well
+    private fun checksum(version: Char, data: ByteArray, len: Int = data.size): Int {
+        val crc = CRC32()
+        crc.update(version.code)
+        crc.update(data, 0, len)
+        return crc.value.toInt()
+    }
 
     // Strategies to try. The decoder doesn't need to know which one won.
     private val STRATEGIES = intArrayOf(
@@ -49,7 +61,11 @@ object BinaryPack {
             .map { deflate(raw, dict, it) }
             .minBy { it.size }
 
-        return dictVersion + Base64.getUrlEncoder().withoutPadding().encodeToString(best)
+        val framed = best.copyOf(best.size + CRC_BYTES)
+        val crc = checksum(dictVersion, best)
+        for (i in 0 until CRC_BYTES) framed[best.size + i] = (crc ushr (24 - 8 * i)).toByte()
+
+        return dictVersion + Base64.getEncoder().withoutPadding().encodeToString(framed)
     }
 
     fun unpack(code: String): ByteArray {
@@ -59,12 +75,21 @@ object BinaryPack {
         else PackDictionaries.byVersion[dictVersion]
             ?: error("Unknown dictionary version '$dictVersion' (code from a newer version?)")
 
-        // Stray or mistyped characters make Base64 throw IllegalArgumentException
-        val data = try {
-            Base64.getUrlDecoder().decode(code.substring(1))
+        val framed = try {
+            Base64.getDecoder().decode(code.substring(1))
         } catch (e: IllegalArgumentException) {
             throw IllegalStateException("Corrupt data code", e)
         }
+        check(framed.size > CRC_BYTES) { "Truncated data code" }
+
+        val bodyLen = framed.size - CRC_BYTES
+        var stored = 0
+        for (i in 0 until CRC_BYTES) stored = (stored shl 8) or (framed[bodyLen + i].toInt() and 0xFF)
+        check(stored == checksum(dictVersion, framed, bodyLen)) {
+            "Checksum mismatch (typo or truncated code?)"
+        }
+
+        val data = framed.copyOf(bodyLen)
 
         val inf = Inflater(true)
         try {

@@ -17,7 +17,7 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.content.MissingContentExtended
-import fleetkit.serialization.dictionaries.PackDictionaryV1
+import fleetkit.serialization.dictionaries.PackDictionaryOld
 import fleetkit.serialization.entities.cargo.JSONCargo
 import fleetkit.serialization.entities.cargo.LegacyCargoCode
 import fleetkit.serialization.entities.fleet.DataFleet
@@ -44,9 +44,9 @@ import kotlin.math.sin
 
 object SaveTransfer {
 
-    private val hullDictionary = PackDictionaryV1.hulls.joinToString("")
-    private val wingDictionary = PackDictionaryV1.wings.joinToString("")
-    private val weaponDictionary = PackDictionaryV1.weapons.joinToString("")
+    private val hullDictionary = PackDictionaryOld.hulls.joinToString("")
+    private val wingDictionary = PackDictionaryOld.wings.joinToString("")
+    private val weaponDictionary = PackDictionaryOld.weapons.joinToString("")
 
     class RemoveEmptyStation(private val station: SectorEntityToken) : EveryFrameScript {
         var isEmpty = false
