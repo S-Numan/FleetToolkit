@@ -1,130 +1,60 @@
 import java.util.zip.ZipFile
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+import java.io.ByteArrayOutputStream
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
+
+/*
+ * ------------------------------------------------------------
+ *  USER CONFIGURATION lives in settings.gradle.kts.
+ *  Edit the values there, not here. settings.gradle.kts publishes them onto `gradle.extra`, and we just read them back out below
+ *  so the rest of this file (the build pipeline) doesn't need to change or know where the config actually lives.
+ * ------------------------------------------------------------
+ */
+val starsectorPath = gradle.extra["starsectorPath"] as String
+val jarName = gradle.extra["jarName"] as String
+val zipName = gradle.extra["zipName"] as String
+@Suppress("UNCHECKED_CAST")
+val modDependencies = gradle.extra["modDependencies"] as List<String>
+@Suppress("UNCHECKED_CAST")
+val packageIncludes = gradle.extra["packageIncludes"] as List<String>
+@Suppress("UNCHECKED_CAST")
+val packageIncludeExtensions = gradle.extra["packageIncludeExtensions"] as List<String>
+@Suppress("UNCHECKED_CAST")
+val packageExcludes = if (gradle.extra.has("packageExcludes")) gradle.extra["packageExcludes"] as List<String> else emptyList()
+@Suppress("UNCHECKED_CAST")
+val otherDependencies = gradle.extra["otherDependencies"] as List<String>
+val libsFolder = gradle.extra["libsFolder"] as String
+val devResolution = gradle.extra["devResolution"] as String
+val javaVersion = gradle.extra["javaVersion"] as Int
+val isLibrary = gradle.extra["isLibrary"] as Boolean
+
+val useCommunityApiDocs: Boolean = gradle.extra["useCommunityApiDocs"] as Boolean
+val communityApiDocsPath: File = (gradle.extra["communityApiDocsPath"] as? String)?.let { file(it) } ?:
+    layout.buildDirectory.dir("communityApiDocs").get().asFile
+val communityApiDocsRepoUrl: String = gradle.extra["communityApiDocsRepoUrl"] as String
+val communityApiDocsAutoUpdate: Boolean = gradle.extra["communityApiDocsAutoUpdate"] as Boolean
+//How often (in hours) to re-check for updates. Checks are throttled by a marker file's mtime, so
+//most Gradle syncs don't pay for a network round-trip at all. Set to 0 to check every time.
+val communityApiDocsUpdateIntervalHours: Long = 24L
+
+
+
+
+
+
+
+
+/// BUILD PIPELINE
+/// In Most cases, you should not need to change anything below here.
+
+
+
 
 // Workaround for a Gradle issue: the Kotlin compiler can try to write its session-alive flag file before build/.kotlin/sessions/ exists.
 // This creates the folder preemptively before compilation to avoid that issue.
 layout.buildDirectory.dir(".kotlin/sessions").get().asFile.mkdirs()
-
-
-/**
- * The name of your mod. Used to create a mod folder name (and the name of your mod, if using auto-updated mod_info.json).
- * Defaults to the name of the mod's folder.
- */
-val modName = rootDir.name
-
-//Other mods to load as compile-time dependencies. Adding them will provide auto-complete for their functions.
-//Each entry is the jar name. The build searches every mod /jars/ folder for a matching file ("LazyLib.jar" -> "Starsector/mods/LazyLib/jars/LazyLib.jar")
-//Mods added this way still need to be added to mod_info.json if they are always required (hard-dependency).
-val modDependencies = listOf(
-    "LazyLib.jar", //LazyLib
-    "LazyLib-Kotlin.jar",
-
-    "MagicLib.jar", //MagicLib
-
-    "LunaLib.jar", //LunaLib
-
-    "lw_Console.jar",
-    "CombatChatter.jar",
-    "SecondInCommand.jar",
-)
-
-/** Set below to `true` to automatically create mod_info.json and Version Checker files. */
-val shouldAutomaticallyCreateMetadataFiles = true
-
-// REQUIRED CORE SETTINGS
-val modId = "SN_FleetToolkit" // Unique ID of your mod. Ensure it is unique from other mods.
-val gameVersion = "0.98.5a-RC4" // The version of Starsector that the mod is intended for.
-val modVersion = "2.0.1" // Your mod version
-val isUtilityMod = true // Whether this mod can be safely removed from a save.
-var modPlugin = "fleetkit.core.integration.plugin.ModPlugin" // Path to your main plugin class
-
-// DEPENDENCIES (mods required to run yours)
-val modInfoDependencyData = listOf(
-    ModDependency(id = "lw_lazylib", name = "LazyLib"),
-    ModDependency(id = "MagicLib", name = "MagicLib"),
-)
-
-// USER-FACING INFO
-val modAuthor = "S-Numan"
-val displayName = "Fleet Toolkit" // This is the user facing name of your mod.
-val modDescription = "Help with easily managing fleets by providing tools to copy, add, and save; fleets, officers, ships, variants, and more.\n\nThis mod can be safely added and removed at any time." // The description of your mod as it appears in the mod loader.
-
-
-// OPTIONAL: VERSION CHECKER (leave blank if not using)
-val directDownloadURL = "https://github.com/S-Numan/FleetToolkit/releases/latest/download/FleetToolkit.zip"
-val changelogURL = "https://raw.githubusercontent.com/S-Numan/FleetToolkit/master/CHANGELOGS.md"
-val masterVersionFile = "https://raw.githubusercontent.com/S-Numan/FleetToolkit/master/fleettoolkit.version"
-val modThreadId = "33414"
-val modVersionName = "fleettoolkit" // Name of the .version file. Defaults to the mod id.
-
-
-//Files and folders (relative to the project root) included in the packaged zip.
-//Directories keep their structure in the zip; files are placed at the zip root.
-//Missing entries are silently skipped by Gradle.
-val packageIncludes = listOf(
-    "mod_info.json",
-    "data",
-    "graphics",
-    "sounds",
-    "src",
-    "LICENSE"
-)
-
-//File extensions to include from the project root in the packaged zip.
-//Each entry is matched as "*.<ext>" against files directly in the project root.
-val packageIncludeExtensions = listOf(
-    "version",
-    "md",
-    "txt"
-)
-
-//Additional jars to include, like libraries you ship with your mod.
-//Paths are relative to this projects root directory.
-val otherDependencies = listOf<String>(
-    // "jars/dependency.jar",
-)
-
-val modNameNoSpaces = modName.replace(" ", "-") // Defaults to the name of your mod, with spaces replaced by hyphens.
-
-//Folder (relative to this project root) that is also searched for modDependencies and otherDependencies.
-//Drop jars here when you don't have the source mod installed under /mods/, or want to pin a specific version.
-//For modDependencies, files are matched by filename (recursively).
-//For otherDependencies, the entry's path is also tried relative to this folder.
-val libsFolder = "libs"
-
-val devResolution = "1920x1080"
-
-//Java version to use. Should be 17, as it is what starsector itself uses.
-val javaVersion = 17
-
-//When set to true, .java and .kt source files will be bundled with your jar. This will provide people
-//with real javadocs/comments when viewing things from your mod within their IDE. Does increase the jar size.
-//You should set this to "true" if you expect other people to add your mod as a dependency
-val isLibrary = true
-
-val jarName = "${modNameNoSpaces}.jar"
-val jars = arrayOf("jars/$jarName")
-
-//Name for the Zip that is created when you run package_mod.bat.
-//This zip includes the data, graphics, jars, sounds and src folder.
-//It also includes the mod_info.json and .version files at the root folder.
-val zipName = "$modNameNoSpaces.zip"
-
-//Automatically points to the starsector folder if the mod is placed in to the "mods" folder.
-//If you do not place the project in to your mods folder, replace this with the path to Starsectors root folder.
-val starsectorPath = "../../"
-
-
-
-
-
-runCatching {
-    // Auto detect mod plugin if it was not found
-    if (!classExistsInSrc(modPlugin, file("src")))
-        modPlugin = findModPluginClass(file("src")) ?: modPlugin
-}
-
-/// BUILD PIPELINE
-/// In Most cases, you should not need to change anything below here.
 
 //Local Maven repo where mod-dependency jars get staged, along with a matching "-sources.jar"
 //(see stageModDependency / addModJars below). Declared up here (rather than next to docsRepoDir)
@@ -150,28 +80,26 @@ fun DependencyHandler.addStarsectorCoreDependencies() {
     compileOnly("com.fs.starfarer:starfarer-api:local")
 
     //All other core jars in one files(...) call.
-    compileOnly(
-        files(
-            File(coreDir, "starfarer_obf.jar"),
-            File(coreDir, "commons-compiler.jar"),
-            File(coreDir, "commons-compiler-jdk.jar"),
-            File(coreDir, "fs.common_obf.jar"),
-            File(coreDir, "fs.sound_obf.jar"),
-            File(coreDir, "janino.jar"),
-            File(coreDir, "jaxb-api-2.4.0-b180830.0359.jar"),
-            File(coreDir, "jaxb-api-2.4.0-b180830.0359-sources.jar"),
-            File(coreDir, "jinput.jar"),
-            File(coreDir, "jogg-0.0.7.jar"),
-            File(coreDir, "jorbis-0.0.15.jar"),
-            File(coreDir, "json.jar"),
-            File(coreDir, "log4j-1.2.9.jar"),
-            File(coreDir, "lwjgl.jar"),
-            File(coreDir, "lwjgl_util.jar"),
-            File(coreDir, "txw2-3.0.2.jar"),
-            File(coreDir, "webp-imageio-0.1.6.jar"),
-            File(coreDir, "xstream-1.4.10.jar"),
-        )
-    )
+    compileOnly(files(
+        File(coreDir, "starfarer_obf.jar"),
+        File(coreDir, "commons-compiler.jar"),
+        File(coreDir, "commons-compiler-jdk.jar"),
+        File(coreDir, "fs.common_obf.jar"),
+        File(coreDir, "fs.sound_obf.jar"),
+        File(coreDir, "janino.jar"),
+        File(coreDir, "jaxb-api-2.4.0-b180830.0359.jar"),
+        File(coreDir, "jaxb-api-2.4.0-b180830.0359-sources.jar"),
+        File(coreDir, "jinput.jar"),
+        File(coreDir, "jogg-0.0.7.jar"),
+        File(coreDir, "jorbis-0.0.15.jar"),
+        File(coreDir, "json.jar"),
+        File(coreDir, "log4j-1.2.9.jar"),
+        File(coreDir, "lwjgl.jar"),
+        File(coreDir, "lwjgl_util.jar"),
+        File(coreDir, "txw2-3.0.2.jar"),
+        File(coreDir, "webp-imageio-0.1.6.jar"),
+        File(coreDir, "xstream-1.4.10.jar"),
+    ))
 }
 
 
@@ -196,8 +124,6 @@ idea {
         testOutputDir = file("build/idea-out/test")
     }
 }
-
-val docsRepoDir = layout.buildDirectory.dir("communityApiDocs")
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -232,7 +158,6 @@ sourceSets {
     }
 }
 
-
 //Build in parameter names, in case another mod needs to check out the code without having source access.
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
@@ -240,12 +165,20 @@ tasks.withType<JavaCompile>().configureEach {
 kotlin {
     compilerOptions {
         javaParameters = true
+        //Pin the kotlin version to the kotlin runtime that is shipped with LazyLib
+        apiVersion = KotlinVersion.KOTLIN_2_1
+        languageVersion = KotlinVersion.KOTLIN_2_1
     }
 }
 
-
 tasks.test {
     enabled = false
+}
+
+//Gradle 9 defaults archives to reproducible mode, which stamps every entry with 1980-02-01.
+//Keep the real file modification dates in the jar and the release zip instead.
+tasks.withType<AbstractArchiveTask>().configureEach {
+    isPreserveFileTimestamps = true
 }
 
 tasks.jar {
@@ -259,8 +192,6 @@ tasks.jar {
         }
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-
-    dependsOn("createCommunityDocs")
 }
 
 fun DependencyHandler.addModJars(jarNames: List<String>) {
@@ -323,12 +254,34 @@ fun jarDeclaresAnnotationProcessor(jarFile: File): Boolean {
     }.getOrDefault(false)
 }
 
+//True if the jar bundles at least one .java/.kt source file (not just .class files).
+fun jarHasSourceEntries(jarFile: File): Boolean = runCatching {
+    ZipFile(jarFile).use { zip ->
+        zip.entries().asSequence().any { !it.isDirectory && (it.name.endsWith(".java") || it.name.endsWith(".kt")) }
+    }
+}.getOrDefault(false)
+
+//For a jar at <mod>/jars/.../x.jar, returns <mod>/src if it exists and contains java/kt files.
+//Returns null for jars that don't live under a "jars" folder (e.g. the local libs folder).
+fun findModSrcDir(jarFile: File): File? {
+    var dir: File? = jarFile.parentFile
+    while (dir != null) {
+        if (dir.name == "jars") {
+            return File(dir.parentFile, "src").takeIf { src ->
+                src.isDirectory && src.walkTopDown().any { it.isFile && (it.extension == "java" || it.extension == "kt") }
+            }
+        }
+        dir = dir.parentFile
+    }
+    return null
+}
+
 //Stages a mod-dependency jar as a local Maven artifact under modDepsRepoDir, so it can be added
 //as "modjars:<jarBaseName>:local". This mirrors stageStarsectorApi() below: the maven layout +
 //"-sources.jar" naming convention is what lets IntelliJ automatically attach sources/docs for a
 //compileOnly dependency.
 //Starsector mod jars typically bundle their .java/.kt source files alongside the .class files
-//in the same jar.
+//in the same jar. If they have not, fall back the /src sources if present.
 fun stageModDependency(jarFile: File): String {
     val jarBaseName = jarFile.nameWithoutExtension
     val artifactDir = File(modDepsRepoDir, "modjars/$jarBaseName/local")
@@ -336,20 +289,36 @@ fun stageModDependency(jarFile: File): String {
     val dstSources = File(artifactDir, "$jarBaseName-local-sources.jar")
     val pomFile = File(artifactDir, "$jarBaseName-local.pom")
 
-    // Force the configuration cache to depend on this jar's mtime. Without this, an
-    // updated mod jar's timestamp is invisible to the cache and re-staging silently
-    // stops happening once the cache is warm (same issue stageStarsectorApi() avoids
-    // for the core Starsector API jar).
-    //providers.of(FileMtimeSource::class.java) { parameters.path.set(jarFile.absolutePath) }.get()
-
     artifactDir.mkdirs()
 
     if (!dstJar.exists() || dstJar.lastModified() < jarFile.lastModified()) {
         jarFile.copyTo(dstJar, overwrite = true)
     }
 
-    if (!dstSources.exists() || dstSources.lastModified() < jarFile.lastModified()) {
-        extractSourceEntriesOnly(jarFile, dstSources)
+    if (jarHasSourceEntries(jarFile)) {
+        //Preferred: sources bundled in the jar itself.
+        if (!dstSources.exists() || dstSources.lastModified() < jarFile.lastModified()) {
+            extractSourceEntriesOnly(jarFile, dstSources)
+        }
+    } else {
+        //Fallback: no sources in the jar, so use the owning mod's /src folder if it has one.
+        val modSrc = findModSrcDir(jarFile)
+        if (modSrc != null) {
+            val srcMtime = modSrc.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() } ?: 0L
+            if (!dstSources.exists() || dstSources.lastModified() < maxOf(srcMtime, jarFile.lastModified())) {
+                dstSources.delete()
+                ant.withGroovyBuilder {
+                    "zip"(
+                        "destfile" to dstSources.absolutePath,
+                        "basedir" to modSrc.absolutePath,
+                        "includes" to "**/*.java,**/*.kt,**/*.kts"
+                    )
+                }
+            }
+        } else {
+            //Nothing to attach; make sure a stale sources jar from an earlier sync doesn't linger.
+            dstSources.delete()
+        }
     }
 
     if (!pomFile.exists()) {
@@ -388,8 +357,8 @@ fun extractSourceEntriesOnly(srcJar: File, dstJar: File) {
     dstJar.delete()
     ant.withGroovyBuilder {
         "zip"(
-            "destfile" to dstJar.absolutePath,
-            "basedir" to extractDir.absolutePath
+        "destfile" to dstJar.absolutePath,
+        "basedir" to extractDir.absolutePath
         )
     }
 
@@ -407,7 +376,7 @@ fun DependencyHandler.addCompileOnlyJar(path: String) {
     val libsFile = file("$libsFolder/$path")
     if (libsFile.exists()) {
         compileOnly(files(libsFile))
-        if (jarDeclaresAnnotationProcessor(jarFile)) annotationProcessor(files(jarFile))
+        if (jarDeclaresAnnotationProcessor(libsFile)) annotationProcessor(files(libsFile))
         return
     }
     logger.error(
@@ -466,17 +435,157 @@ abstract class FileMtimeSource : ValueSource<Long, FileMtimeSource.Parameters> {
     interface Parameters : ValueSourceParameters {
         val path: Property<String>
     }
-
     override fun obtain(): Long = File(parameters.path.get()).let {
         if (it.exists()) it.lastModified() else -1L
     }
 }
 
+//Small helper result type for a single git invocation, used internally by CommunityApiDocsSyncSource below.
+data class GitCommandResult(val exitCode: Int, val output: String) {
+    val ok: Boolean get() = exitCode == 0
+}
+
+//Keeps CommunityApiDocs checked out and (subject to the interval throttle) up to date.
+//Runs inside obtain() rather than plain build-script code because Gradle re-invokes obtain() on
+//every build - even on a configuration-cache hit - to check whether the result changed. That's
+//what makes the interval actually fire on a schedule instead of only on a cache miss.
+//Returns the newest mtime under src/, or -1 if there's no usable checkout. Gradle also uses this
+//return value to decide whether anything downstream needs to be rebuilt.
+abstract class CommunityApiDocsSyncSource : ValueSource<Long, CommunityApiDocsSyncSource.Parameters> {
+    interface Parameters : ValueSourceParameters {
+        val repoPath: Property<File>
+        val repoUrl: Property<String>
+        val autoUpdate: Property<Boolean>
+        val intervalHours: Property<Long>
+    }
+
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    private val log = Logging.getLogger(CommunityApiDocsSyncSource::class.java)
+
+    override fun obtain(): Long {
+        val repoPath = parameters.repoPath.get()
+        val srcDir = File(repoPath, "src")
+
+        if (!parameters.autoUpdate.get()) {
+            return newestMtime(srcDir)
+        }
+
+        val gitDir = File(repoPath, ".git")
+        val markerFile = File(repoPath.parentFile, "${repoPath.name}.last-checked")
+        val intervalMs = parameters.intervalHours.get() * 3_600_000L
+        val needsCheck = !srcDir.exists() ||
+                !markerFile.exists() ||
+                System.currentTimeMillis() - markerFile.lastModified() >= intervalMs
+
+        if (needsCheck) {
+            if (!gitDir.exists()) {
+                //First time only: shallow clone into a temp folder, then swap it in atomically so
+                //an interrupted build never leaves a half-checked-out repo behind.
+                log.lifecycle("Cloning CommunityApiDocs into $repoPath ...")
+                repoPath.parentFile?.mkdirs()
+                val freshDir = File(repoPath.parentFile, "${repoPath.name}.tmp")
+                freshDir.deleteRecursively()
+
+                val result = runGit(
+                    repoPath.parentFile ?: File("."),
+                    "clone", "--depth", "1", parameters.repoUrl.get(), freshDir.absolutePath,
+                    timeoutSeconds = 120,
+                )
+
+                if (result.ok) {
+                    repoPath.deleteRecursively()
+                    if (!freshDir.renameTo(repoPath)) {
+                        //Fall back to copy+delete in case the rename crosses a filesystem boundary.
+                        freshDir.copyRecursively(repoPath, overwrite = true)
+                        freshDir.deleteRecursively()
+                    }
+                    markerFile.parentFile?.mkdirs()
+                    markerFile.writeText(System.currentTimeMillis().toString())
+                } else {
+                    freshDir.deleteRecursively()
+                    log.warn(
+                        result.output.substringAfter('\n') +
+                                "\nCould not clone CommunityApiDocs (offline, or git isn't installed?). " +
+                                "Falling back to vanilla Starsector API sources for hover docs."
+                    )
+                }
+            } else {
+                //Already cloned: fetch just the new tip commit and force the working tree to match
+                //it, rather than `git pull`, since there are never local commits worth preserving
+                //here. origin/HEAD tracks whatever the remote's default branch is.
+                log.lifecycle("Fetching CommunityApiDocs updates...")
+                val fetched = runGit(repoPath, "fetch", "--depth", "1", "origin", timeoutSeconds = 60)
+                if (fetched.ok && runGit(repoPath, "reset", "--hard", "origin/HEAD", timeoutSeconds = 30).ok) {
+                    markerFile.parentFile?.mkdirs()
+                    markerFile.writeText(System.currentTimeMillis().toString())
+                } else {
+                    log.warn("Could not check CommunityApiDocs for updates; using the existing local checkout.")
+                }
+            }
+        }
+
+        return newestMtime(srcDir)
+    }
+
+    private fun newestMtime(dir: File): Long {
+        if (!dir.exists()) return -1L
+        return dir.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() } ?: -1L
+    }
+
+    //Runs `git <args>` in `dir` via ExecOperations, since a raw ProcessBuilder call would trip
+    //the "external process during configuration" restriction. There's no timeout parameter here,
+    //so hangs are bounded on git's side instead: GIT_TERMINAL_PROMPT=0 skips credential prompts,
+    //and http.lowSpeedLimit/Time abort a stalled transfer.
+    private fun runGit(dir: File, vararg args: String, timeoutSeconds: Long = 30): GitCommandResult {
+        val output = ByteArrayOutputStream()
+        val result = execOperations.exec {
+            workingDir = dir
+            commandLine(
+                listOf(
+                    "git",
+                    "-c", "http.lowSpeedLimit=1000",
+                    "-c", "http.lowSpeedTime=$timeoutSeconds",
+                ) + args
+            )
+            environment("GIT_TERMINAL_PROMPT", "0")
+            standardOutput = output
+            errorOutput = output
+            isIgnoreExitValue = true
+        }
+        return GitCommandResult(result.exitValue, output.toString().trim())
+    }
+}
+
+//Resolves CommunityApiDocs' src/ folder for use as sources-jar content (triggering the
+//clone/update inside CommunityApiDocsSyncSource along the way), or null if there isn't one.
+fun resolveCommunityApiDocsSrc(): File? {
+    val mtime = providers.of(CommunityApiDocsSyncSource::class.java) {
+        parameters.repoPath.set(communityApiDocsPath)
+        parameters.repoUrl.set(communityApiDocsRepoUrl)
+        parameters.autoUpdate.set(communityApiDocsAutoUpdate)
+        parameters.intervalHours.set(communityApiDocsUpdateIntervalHours)
+    }.get()
+    if (mtime < 0) return null
+    return File(communityApiDocsPath, "src").takeIf { it.exists() }
+}
+
+
 //Stages the Starsector API as a local Maven repo under build/starsector-api/.
 //Using a maven layout (not flatDir) because IntelliJ only reliably attaches sources when the
 //artifact has a POM and follows the standard "<name>-<version>-sources.jar" classifier convention.
-//A jar IS a zip with optional manifest, so the source side is just a copy with the right filename.
-//If you ever hit a zip layout IntelliJ does not like, swap the copy for a real extract + repack.
+//A jar IS a zip with optional manifest, so the source side is just a copy (or a re-zip) with the
+//right filename. If you ever hit a zip layout IntelliJ does not like, swap the copy for a real
+//extract + repack.
+//
+//The "-sources.jar" content itself comes from one of two places:
+//  - CommunityApiDocs (see CommunityApiDocsSyncSource/resolveCommunityApiDocsSrc() above),
+//    auto-cloned/updated under communityApiDocsPath. If present, that folder is zipped up and used
+//    as the sources jar instead of Starsector's own, mostly undocumented starfarer.api.zip.
+//    IntelliJ's Quick Documentation / hover popup then shows the community-written Javadoc instead.
+//  - Otherwise (auto-update disabled and nothing checked out, or the clone failed with no
+//    prior copy to fall back on) it falls back to starfarer.api.zip, same as the original setup.
 //Runs at configuration time so the files exist before Gradle resolves dependencies (including IDE sync).
 fun stageStarsectorApi(): File {
     val repoDir = layout.buildDirectory.dir("starsector-api").get().asFile
@@ -485,6 +594,9 @@ fun stageStarsectorApi(): File {
 
     val srcJar = File(coreDir, "starfarer.api.jar")
     val srcZip = File(coreDir, "starfarer.api.zip")
+    //This is what actually clones/updates CommunityApiDocs (subject to the throttle/interval),
+    //so it needs to run before the freshness checks below, not just resolve a path.
+    val communityDocsSrc: File? = if (useCommunityApiDocs) resolveCommunityApiDocsSrc() else null
     val dstJar = File(artifactDir, "starfarer-api-local.jar")
     val dstSources = File(artifactDir, "starfarer-api-local-sources.jar")
     val pomFile = File(artifactDir, "starfarer-api-local.pom")
@@ -500,32 +612,26 @@ fun stageStarsectorApi(): File {
                 "Check starsectorPath at the top of this build script."
     }
 
+    val useCommunityDocs = communityDocsSrc != null
 
-    // Hack to show documentation
-    val docsSrcDir = docsRepoDir.get().asFile.resolve("src")
-
-    if (docsSrcDir.exists()) {
-        project.copy {
-            from(docsSrcDir)
-            into(layout.buildDirectory.dir("tmp/communitySources").get().asFile)
-        }
-
-        ant.withGroovyBuilder {
-            "zip"(
-                "destfile" to dstSources.absolutePath,
-                "basedir" to docsSrcDir.absolutePath
-            )
-        }
-    }
+    //Newest mtime across every file under CommunityApiDocs/src, so a freshly re-cloned copy
+    //(different content, same folder) is always detected as newer than a stale sources jar.
+    val communityDocsMtime = if (useCommunityDocs) {
+        communityDocsSrc.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() } ?: 0L
+    } else 0L
 
     //Fast path: staged files match (or post-date) their sources, so we can return without doing anything.
     val jarFresh = dstJar.exists() && dstJar.lastModified() >= srcJar.lastModified()
-    val sourcesFresh = !srcZip.exists() || (dstSources.exists() && dstSources.lastModified() >= srcZip.lastModified())
+    val sourcesFresh = if (useCommunityDocs) {
+        dstSources.exists() && dstSources.lastModified() >= communityDocsMtime
+    } else {
+        !srcZip.exists() || (dstSources.exists() && dstSources.lastModified() == srcZip.lastModified())
+    }
     if (jarFresh && sourcesFresh && pomFile.exists()) return repoDir
 
     artifactDir.mkdirs()
 
-    //Only copy if the source is newer than the staged file, so rMagicLib-Kotlin.jarepeat syncs are cheap.
+    //Only copy if the source is newer than the staged file, so repeat syncs are cheap.
     fun stageIfStale(src: File, dst: File) {
         if (!src.exists()) return
         if (!dst.exists() || dst.lastModified() < src.lastModified()) {
@@ -534,7 +640,23 @@ fun stageStarsectorApi(): File {
     }
 
     stageIfStale(srcJar, dstJar)
-    stageIfStale(srcZip, dstSources)
+
+    if (useCommunityDocs) {
+        if (!sourcesFresh) {
+            dstSources.delete()
+            ant.withGroovyBuilder {
+                "zip"(
+                    "destfile" to dstSources.absolutePath,
+                    "basedir" to communityDocsSrc.absolutePath
+                )
+            }
+        }
+    } else {
+        if (srcZip.exists()) {
+            srcZip.copyTo(dstSources, overwrite = true)
+            dstSources.setLastModified(srcZip.lastModified())
+        }
+    }
 
     //Minimal POM. Gradle's maven resolver needs one to recognise the artifact and to look up the -sources classifier.
     if (!pomFile.exists()) {
@@ -577,9 +699,7 @@ fun shellTokenize(s: String): List<String> {
     for (c in s) when {
         quote != null -> if (c == quote) quote = null else cur.append(c)
         c == '"' || c == '\'' -> quote = c
-        c.isWhitespace() -> if (cur.isNotEmpty()) {
-            out += cur.toString(); cur.clear()
-        }
+        c.isWhitespace() -> if (cur.isNotEmpty()) { out += cur.toString(); cur.clear() }
         else -> cur.append(c)
     }
     if (cur.isNotEmpty()) out += cur.toString()
@@ -674,9 +794,7 @@ fun parseLauncher(): StarsectorLaunchSpec {
 }
 
 val launcherInfo by lazy { starsectorLayout() to parseLauncher() }
-
 fun List<String>.filteredArgs(): List<String> = filterNot { it.contains("PrintCodeCache") }
-
 
 //Builds the mod jar, then runs Starsector using the same classpath/jvmArgs the launcher would use.
 tasks.register<JavaExec>("runStarsector") {
@@ -776,287 +894,11 @@ tasks.register<Zip>("packageMod") {
     from(projectDir) {
         packageIncludeExtensions.forEach { ext -> include("*.$ext") }
     }
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-fun File.writeIfChanged(content: String) {
-    if (!exists() || readText() != content) {
-        writeText(content)
+    // 4. Always exclude anything matching packageExcludes. Task-level excludes apply to every from() above,
+    // so they override packageIncludes and packageIncludeExtensions. Bare names/globs (no "/") are
+    // prefixed with "**/" so they match at any depth, e.g. src/notes/CLAUDE.local.md.
+    packageExcludes.forEach { pattern ->
+        exclude(if ('/' in pattern) pattern else "**/$pattern")
     }
-}
-
-fun String.jsonEscape(): String =
-    this
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"")
-        .replace("\n", "\\n")
-
-data class ModDependency(
-    val id: String,
-    val name: String,
-    val version: String? = null
-)
-
-fun ModDependency.toJson(): String {
-    val versionPart = version?.let { """"version": "$it"""" }
-
-    return buildString {
-        append("{")
-        append(""""id": "$id", """)
-        append(""""name": "$name"""")
-
-        if (versionPart != null) {
-            append(", ")
-            append(versionPart)
-        }
-
-        append("}")
-    }
-}
-
-// Setup metadata files
-runCatching {
-
-    val version = modVersion.split(".").let { Triple(it[0], it[1], it[2]) }
-    System.setProperty("line.separator", "\n") // Use LF instead of CRLF like a normal person
-
-    if (shouldAutomaticallyCreateMetadataFiles) {
-        // Generates a mod_info.json from the variables defined at the top of this script.
-        File(projectDir, "mod_info.json")
-            .writeIfChanged(
-                """
-# THIS FILE IS GENERATED BY build.gradle.kts.
-{
-    "id": "$modId",
-    "name": "$displayName",
-    "author": "$modAuthor",
-    "utility": "$isUtilityMod",
-    "version": { "major":"${version.first}", "minor": "${version.second}", "patch": "${version.third}" },
-    "description": "${modDescription.jsonEscape()}",
-    "jars": [
-        ${jars.joinToString { "\"$it\"" }}
-    ],
-    "modPlugin":"$modPlugin",
-    "gameVersion": "$gameVersion",
-    "dependencies": [
-${modInfoDependencyData.joinToString(",\n") { "       " + it.toJson() }}
-    ],
-}
-""".trimIndent()
-            )
-
-
-        if (directDownloadURL.isNotBlank() || changelogURL.isNotBlank() || masterVersionFile.isNotBlank() || modThreadId.isNotBlank()) {
-            // Generates a Version Checker csv file from the variables defined at the top of this script.
-            with(File(projectDir, "data/config/version/version_files.csv")) {
-                this.parentFile.mkdirs()
-                this.writeIfChanged(
-                    """
-                    version file
-                    ${modVersionName}.version
-
-                    """.trimIndent()
-                )
-            }
-
-            // Generates a Version Checker .version file from the variables defined at the top of this script.
-            val fields = mutableListOf<String>()
-
-            if (directDownloadURL.isNotBlank()) {
-                fields += """"directDownloadURL":"$directDownloadURL""""
-            }
-
-            if (changelogURL.isNotBlank()) {
-                fields += """"changelogURL":"$changelogURL""""
-            }
-
-            if (masterVersionFile.isNotBlank()) {
-                fields += """"masterVersionFile":"$masterVersionFile""""
-            }
-
-            fields += """"modName":"$displayName""""
-
-            if (modThreadId.isNotBlank()) {
-                fields += """"modThreadId":$modThreadId"""
-            }
-
-            fields += """
-"modVersion":
-    {
-        "major":${version.first},
-        "minor":${version.second},
-        "patch":${version.third}
-    }
-        """.trimIndent()
-
-            File(projectDir, "${modVersionName}.version").writeIfChanged(
-                """
-# THIS FILE IS GENERATED BY build.gradle.kts.
-{
-    ${fields.joinToString(",\n    ")}
-}
-""".trimIndent()
-            )
-        }
-
-        // Creates a file with the mod name to tell the Github Actions script the name of the mod.
-        // Not needed if not using Github Actions (but doesn't hurt to keep).
-        //with(File(projectDir, ".github/workflows/mod-folder-name.txt")) {
-        //    this.parentFile.mkdirs()
-        //    this.writeIfChanged(modNameNoSpaces)
-        //}
-
-    }
-}
-
-
-fun findModPluginClass(srcDir: File): String? {
-    if (!srcDir.exists()) return null
-
-    val javaOrKotlinFiles = srcDir.walkTopDown()
-        .filter { it.isFile && (it.extension == "java" || it.extension == "kt") }
-
-    val classRegex = Regex("""class\s+(\w+)\s*[:(]\s*BaseModPlugin""")
-    val javaExtendsRegex = Regex("""class\s+(\w+)\s+extends\s+BaseModPlugin""")
-    val packageRegex = Regex("""package\s+([\w\.]+)""")
-
-    for (file in javaOrKotlinFiles) {
-        val text = file.readText()
-
-        val classMatch =
-            classRegex.find(text) ?: javaExtendsRegex.find(text)
-
-        if (classMatch != null) {
-            val className = classMatch.groupValues[1]
-
-            val packageName = packageRegex.find(text)?.groupValues?.get(1)
-
-            return if (packageName != null) {
-                "$packageName.$className"
-            } else {
-                className // fallback (default package)
-            }
-        }
-    }
-
-    return null
-}
-
-fun classExistsInSrc(fqcn: String, srcDir: File): Boolean {
-    val path = fqcn.replace('.', '/') + ".kt"
-    val altPath = fqcn.replace('.', '/') + ".java"
-
-    return File(srcDir, path).exists() || File(srcDir, altPath).exists()
-}
-
-
-val cloneCommunityApiDocs = tasks.register<Exec>("cloneCommunityApiDocs") {
-    isIgnoreExitValue = true
-
-    val targetDir = docsRepoDir.map { it.asFile }
-
-    onlyIf {
-        !targetDir.get().resolve(".git").exists()
-    }
-
-    doFirst {
-        val dir = targetDir.get()
-        dir.mkdirs()
-    }
-
-    commandLine(
-        "git", "clone",
-        "--no-checkout",
-        "--filter=blob:none",
-        "https://github.com/StarsectorCommunityApiDocs/CommunityApiDocs.git",
-        targetDir.get().absolutePath
-    )
-}
-val sparseCheckoutCommunityApiDocs = tasks.register<Exec>("sparseCheckoutCommunityApiDocs") {
-    isIgnoreExitValue = true
-
-    val repoDir = docsRepoDir.get().asFile
-
-    onlyIf {
-        repoDir.resolve(".git").exists()
-    }
-
-    workingDir(repoDir)
-
-    commandLine(
-        "git", "sparse-checkout",
-        "set", "src"
-    )
-}
-val checkoutCommunityApiDocs = tasks.register<Exec>("checkoutCommunityApiDocs") {
-    isIgnoreExitValue = true
-
-    val repoDir = docsRepoDir.get().asFile
-
-    onlyIf {
-        repoDir.resolve(".git").exists()
-    }
-
-    workingDir(repoDir)
-
-    commandLine("git", "checkout")
-}
-val updateCommunityApiDocs = tasks.register<Exec>("updateCommunityApiDocs") {
-    isIgnoreExitValue = true
-
-    val repoDir = docsRepoDir.get().asFile
-
-    onlyIf {
-        repoDir.resolve(".git").exists()
-    }
-
-    // Much cheaper than scanning entire repo
-    inputs.file(repoDir.resolve(".git/HEAD"))
-    outputs.file(repoDir.resolve(".git/FETCH_HEAD"))
-
-
-    workingDir(repoDir)
-
-    commandLine("git", "fetch", "--quiet")
-}
-val createCommunityDocs = tasks.register<Jar>("createCommunityDocs") {
-    dependsOn(
-        cloneCommunityApiDocs,
-        sparseCheckoutCommunityApiDocs,
-        checkoutCommunityApiDocs,
-        updateCommunityApiDocs
-    )
-}
-
-//tasks.named("prepareKotlinBuildScriptModel") { // Force run createCommunityDocs every gradle sync. If using gradle to build, this could probably be done in a better place like a jar task.
-//    dependsOn("createCommunityDocs")
-//}
-
-updateCommunityApiDocs.configure {
-    mustRunAfter(checkoutCommunityApiDocs)
-}
-
-checkoutCommunityApiDocs.configure {
-    mustRunAfter(sparseCheckoutCommunityApiDocs)
-}
-
-sparseCheckoutCommunityApiDocs.configure {
-    mustRunAfter(cloneCommunityApiDocs)
 }
