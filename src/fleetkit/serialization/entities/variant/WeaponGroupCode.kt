@@ -6,12 +6,30 @@ import fleetkit.serialization.core.Format
 
 @Suppress("EnumValuesSoftDeprecate")
 object WeaponGroupCode : Format<DataVariant.ParsedWeaponGroup> {
-    private val SLOT = Regex("WS (\\d{3})")
+    // "WS" + optional single space + exactly 3 or 4 digits. Space and width are kept so strings round-trip exactly.
+    private val SLOT = Regex("WS( ?)(\\d{3,4})")
 
-    /** "WS 007" is stored as the int 7. Anything else is stored as 0 followed by the literal string. */
+    /**
+     * Stores a slot ID as one varint: 1 + number * 4 + (2 if four digits) + (1 if there was a space).
+     * 0 means "literal string follows" and is used for anything that doesn't match exactly
+     *
+     * Examples: "WS 007", "WS007", "WS0002", "WS 0002".
+     */
     fun Codec.slotId(v: String?): String {
-        val n = int(v?.let { SLOT.matchEntire(it)?.groupValues?.get(1)?.toInt() } ?: 0)
-        return if (n > 0) "WS %03d".format(n) else str(v)
+        val m = v?.let { SLOT.matchEntire(it) }
+        val code = int(
+            if (m == null) 0
+            else {
+                val digits = m.groupValues[2]
+                1 + digits.toInt() * 4 +
+                        (if (digits.length == 4) 2 else 0) +
+                        (if (m.groupValues[1].isNotEmpty()) 1 else 0)
+            }
+        )
+        if (code <= 0) return str(v)
+        val c = code - 1
+        val width = if (c and 2 != 0) 4 else 3
+        return "WS" + (if (c and 1 != 0) " " else "") + (c shr 2).toString().padStart(width, '0')
     }
 
     override val typeId = 'g'
