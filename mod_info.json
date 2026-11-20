@@ -4,13 +4,13 @@
     "name": "Fleet Toolkit",
     "author": "S-Numan",
     "utility": "true",
-    "version": { "major":"2", "minor": "0", "patch": "1" },
+    "version": { "major":"2", "minor": "1", "patch": "0" },
     "description": "Help with easily managing fleets by providing tools to copy, add, and save; fleets, officers, ships, variants, and more.\n\nThis mod can be safely added and removed at any time.",
     "jars": [
-        "jars/Fleet-Toolkit.jar"
+        "jars/FleetToolkit.jar"
     ],
     "modPlugin":"fleetkit.core.integration.plugin.ModPlugin",
-    "gameVersion": "0.98.5a-RC4",
+    "gameVersion": "0.98.5a-RC8",
     "dependencies": [
        {"id": "lw_lazylib", "name": "LazyLib"},
        {"id": "MagicLib", "name": "MagicLib"}
