@@ -3,7 +3,6 @@ package fleetkit.serialization.entities.person
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.characters.FullName
 import com.fs.starfarer.api.characters.PersonAPI
-import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.impl.campaign.ids.Factions
 import com.fs.starfarer.api.impl.campaign.ids.Personalities
 import com.fs.starfarer.api.impl.campaign.ids.Ranks
@@ -11,7 +10,6 @@ import com.fs.starfarer.api.util.Misc
 import fleetkit.core.config.FTVariables
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.core.ConvertibleToEntity
-import fleetkit.serialization.entities.member.DataMember.getMemberDataFromMember
 import fleetkit.util.api.PersonUtils
 import fleetkit.util.lib.PrefixedCodec
 import org.histidine.chatter.ChatterDataManager

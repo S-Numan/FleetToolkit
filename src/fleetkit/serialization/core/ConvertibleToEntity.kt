@@ -1,7 +1,7 @@
 package fleetkit.serialization.core
 
 import fleetkit.serialization.content.MissingContent
-import java.util.Random
+import java.util.*
 
 interface ConvertibleToEntity<out R> {
     /**

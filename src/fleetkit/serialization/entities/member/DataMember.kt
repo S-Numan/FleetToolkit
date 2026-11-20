@@ -3,7 +3,6 @@ package fleetkit.serialization.entities.member
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.fleet.FleetMemberType
-import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeGet
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.core.ConvertibleToEntity
 import fleetkit.serialization.entities.person.DataPerson

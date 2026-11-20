@@ -9,9 +9,9 @@ import com.fs.starfarer.campaign.util.CollectionView
 import fleetkit.core.util.FTMisc.getSpecialItemName
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtils.set
-import fleetkit.util.api.CargoUtils
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeGet
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.util.api.CargoUtils
 
 class CargoFilterPanel(
     width: Float,

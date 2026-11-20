@@ -11,7 +11,7 @@ import fleetkit.core.util.FTMisc.endStencil
 import fleetkit.core.util.FTMisc.renderTiledTexture
 import fleetkit.core.util.FTMisc.startStencilWithXPad
 import fleetkit.core.util.FTMisc.startStencilWithYPad
-import fleetkit.otherMods.starficz.*
+import fleetkit.otherMods.starficz.StarUIPanelPlugin
 import fleetkit.ui.UIUtils
 import org.magiclib.util.reflection.UIFinder
 import java.awt.Color

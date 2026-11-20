@@ -2,12 +2,10 @@ package fleetkit.ui.customPanel.core
 
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
-import fleetkit.otherMods.starficz.height
+import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.lastComponent
 import fleetkit.otherMods.starficz.setSize
-import fleetkit.otherMods.starficz.width
 import fleetkit.ui.customPanel.DialogUtils
-import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 
 open class ComposablePanel : BasePanel() {
 

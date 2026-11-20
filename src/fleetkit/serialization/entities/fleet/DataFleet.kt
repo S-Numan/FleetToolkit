@@ -27,7 +27,6 @@ import org.magiclib.kotlin.getErrorVariantID
 import org.magiclib.kotlin.getHullIdForVariantId
 import org.magiclib.util.MagicLookup
 import java.util.*
-import kotlin.collections.removeAll
 
 object DataFleet {
 

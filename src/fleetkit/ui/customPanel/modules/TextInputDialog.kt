@@ -1,6 +1,5 @@
 package fleetkit.ui.customPanel.modules
 
-import fleetkit.otherMods.starficz.width
 import fleetkit.ui.addExcludeTextField
 import fleetkit.ui.customPanel.patterns.DialogPanel
 import org.lwjgl.input.Keyboard

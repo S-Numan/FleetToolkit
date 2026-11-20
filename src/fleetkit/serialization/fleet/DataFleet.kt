@@ -2,12 +2,11 @@ package fleetkit.serialization.fleet
 
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.entities.fleet.DataFleet as NewDataFleet
-
 import fleetkit.serialization.entities.fleet.sic.DataSecondInCommand
 import fleetkit.serialization.entities.member.DataMember
 import fleetkit.serialization.entities.person.DataPerson
-import java.util.Random
+import java.util.*
+import fleetkit.serialization.entities.fleet.DataFleet as NewDataFleet
 import fleetkit.serialization.fleet.FleetSettings as OldFleetSettings
 
 @Deprecated("")

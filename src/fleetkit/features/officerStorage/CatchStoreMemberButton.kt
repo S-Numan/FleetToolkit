@@ -10,15 +10,14 @@ import com.fs.starfarer.api.input.InputEventType
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import com.fs.starfarer.campaign.fleet.FleetMember
-import fleetkit.core.config.FTVariables
 import fleetkit.core.config.FTSettings
+import fleetkit.core.config.FTVariables
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.features.commanderShuttle.CommanderShuttle
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.UIUtils
-import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse

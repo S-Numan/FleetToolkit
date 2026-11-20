@@ -4,9 +4,9 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.ui.*
 import com.fs.starfarer.api.util.Misc
 import fleetkit.otherMods.starficz.Font
+import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.getFontPath
 import fleetkit.ui.customPanel.elements.ObservedTextField
-import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import org.magiclib.kotlin.setAlpha
 import java.awt.Color
 

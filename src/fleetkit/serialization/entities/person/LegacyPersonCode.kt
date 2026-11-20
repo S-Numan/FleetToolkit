@@ -7,6 +7,8 @@ import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.entities.person.DataPerson.buildPersonFull
+import fleetkit.serialization.entities.person.DataPerson.getPersonDataFromPerson
 import fleetkit.serialization.io.CodeImporter.fieldSep
 import fleetkit.serialization.io.CodeImporter.joinSep
 import fleetkit.serialization.io.CodeImporter.memKeyJoinSep
@@ -14,8 +16,6 @@ import fleetkit.serialization.io.CodeImporter.memKeySep
 import fleetkit.serialization.io.CodeImporter.metaSep
 import fleetkit.serialization.io.CodeImporter.personSep
 import fleetkit.serialization.io.CodeImporter.sep
-import fleetkit.serialization.entities.person.DataPerson.buildPersonFull
-import fleetkit.serialization.entities.person.DataPerson.getPersonDataFromPerson
 import fleetkit.util.lib.CompressionUtil
 import fleetkit.util.lib.PrefixedCodec
 import java.util.*

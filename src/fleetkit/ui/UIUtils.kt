@@ -4,10 +4,6 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
-import fleetkit.otherMods.starficz.height
-import fleetkit.otherMods.starficz.width
-import fleetkit.otherMods.starficz.x
-import fleetkit.otherMods.starficz.y
 import org.lwjgl.opengl.GL11
 import org.magiclib.kotlin.alphaf
 import org.magiclib.kotlin.bluef

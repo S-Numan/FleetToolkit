@@ -3,13 +3,13 @@ package fleetkit.serialization.entities.fleet
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.FleetDataAPI
 import fleetkit.core.util.FTTxt
-import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.ModHeader
-import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.EntityFormat
+import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.fleet.sic.SecondInCommandCode
 import fleetkit.serialization.entities.member.MemberCode
+import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.util.api.FleetUtils
 
 // Composite: embeds PersonFormat and MemberFormat. Bump this version whenever either changes.

@@ -20,9 +20,9 @@ import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.handleUIFleet
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteFleet
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteIntoPlayerFleetPanel
 import fleetkit.features.recentBattles.RecentBattleDialog
-import fleetkit.serialization.io.ClipboardIO
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.entities.fleet.DataFleet
+import fleetkit.serialization.io.ClipboardIO
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.util.api.kotlin.isIdle
 import org.lwjgl.input.Keyboard

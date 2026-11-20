@@ -1,6 +1,5 @@
 package fleetkit.serialization.io
 
-import com.fs.starfarer.api.Global
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.serialization.content.MissingContent

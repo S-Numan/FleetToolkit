@@ -4,14 +4,13 @@ package fleetkit.serialization.entities.fleet.sic
 
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.serialization.content.MissingContent
+import fleetkit.serialization.entities.person.LegacyPersonCode
 import fleetkit.serialization.io.CodeImporter.fieldSep
 import fleetkit.serialization.io.CodeImporter.fleetSep1
 import fleetkit.serialization.io.CodeImporter.metaSep
 import fleetkit.serialization.io.CodeImporter.sep
-import fleetkit.serialization.entities.person.LegacyPersonCode
 import fleetkit.util.api.kotlin.roundToDecimals
 import fleetkit.util.lib.CompressionUtil
-import kotlin.collections.plusAssign
 
 @Deprecated("")
 object LegacySecondInCommandCode {

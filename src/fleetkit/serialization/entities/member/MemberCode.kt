@@ -2,12 +2,12 @@ package fleetkit.serialization.entities.member
 
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import fleetkit.core.util.FTTxt
+import fleetkit.serialization.content.ModVersionData
 import fleetkit.serialization.core.Codec
+import fleetkit.serialization.core.EntityFormat
 import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.person.PersonCode
 import fleetkit.serialization.entities.variant.VariantCode
-import fleetkit.serialization.content.ModVersionData
-import fleetkit.serialization.core.EntityFormat
 import fleetkit.util.api.MemberUtils
 import org.magiclib.util.MagicLookup
 

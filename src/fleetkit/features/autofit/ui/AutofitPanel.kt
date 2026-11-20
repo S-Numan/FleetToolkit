@@ -27,11 +27,11 @@ import fleetkit.features.autofit.shipDirectory.ShipDirectoryService.getCoreAutof
 import fleetkit.features.autofit.shipDirectory.ShipDirectoryService.getLoadoutAutofitSpecsForShip
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.io.ClipboardIO
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.entities.variant.DataVariant.clone
 import fleetkit.serialization.entities.variant.VariantSettings
+import fleetkit.serialization.io.ClipboardIO
 import fleetkit.ui.UIUtils
 import fleetkit.ui.customPanel.patterns.DialogPanel
 import fleetkit.util.api.VariantUtils

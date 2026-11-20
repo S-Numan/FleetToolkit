@@ -13,8 +13,8 @@ import com.fs.starfarer.campaign.fleet.FleetMember
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.serialization.entities.fleet.FleetSettings
 import fleetkit.serialization.entities.fleet.FleetJson.saveFleetToJson
+import fleetkit.serialization.entities.fleet.FleetSettings
 import fleetkit.serialization.entities.member.DataMember.clone
 import fleetkit.serialization.entities.person.DataPerson.clone
 import fleetkit.util.lib.ClipboardUtil

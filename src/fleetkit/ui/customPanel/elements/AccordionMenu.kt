@@ -5,7 +5,7 @@ import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import fleetkit.core.config.FTVariables
-import fleetkit.otherMods.starficz.*
+import fleetkit.otherMods.starficz.StarUIPanelPlugin
 import fleetkit.ui.UIUtils
 import org.lazywizard.lazylib.ui.FontException
 import org.lazywizard.lazylib.ui.LazyFont

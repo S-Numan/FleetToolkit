@@ -2,10 +2,10 @@ package fleetkit.serialization.entities.person
 
 import com.fs.starfarer.api.characters.FullName
 import com.fs.starfarer.api.characters.PersonAPI
-import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.EntityFormat
+import fleetkit.serialization.core.ModHeader
 import fleetkit.util.api.PersonUtils
 
 @Suppress("EnumValuesSoftDeprecate")

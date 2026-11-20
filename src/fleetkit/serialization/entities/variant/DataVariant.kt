@@ -1,7 +1,6 @@
 package fleetkit.serialization.entities.variant
 
 import com.fs.starfarer.api.Global
-import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.loading.VariantSource
 import com.fs.starfarer.api.loading.WeaponGroupSpec
@@ -12,8 +11,6 @@ import fleetkit.core.config.FTVariables
 import fleetkit.core.util.DisplayMessage.showError
 import fleetkit.serialization.content.MissingContent
 import fleetkit.serialization.core.ConvertibleToEntity
-import fleetkit.serialization.entities.person.DataPerson.getPersonDataFromPerson
-import fleetkit.serialization.entities.person.PersonSettings
 import fleetkit.util.api.VariantUtils
 import org.magiclib.kotlin.getErrorVariantID
 import org.magiclib.kotlin.getHullIdForVariantId
@@ -22,7 +19,7 @@ import org.magiclib.util.api.createHullVariant
 import org.magiclib.util.api.getActualHullId
 import org.magiclib.util.api.getModules
 import org.magiclib.util.api.removeModFull
-import java.util.Random
+import java.util.*
 
 object DataVariant {
 

@@ -9,8 +9,8 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtils.get
-import fleetkit.otherMods.starficz.findChildWithMethod
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.otherMods.starficz.findChildWithMethod
 
 object CampaignUtils {
 

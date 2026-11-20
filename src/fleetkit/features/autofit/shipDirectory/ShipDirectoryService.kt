@@ -12,9 +12,9 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.features.autofit.ui.AutofitSpec
 import fleetkit.serialization.content.MissingContent
-import fleetkit.serialization.io.CodeImporter
 import fleetkit.serialization.entities.variant.DataVariant
 import fleetkit.serialization.entities.variant.VariantSettings
+import fleetkit.serialization.io.CodeImporter
 import fleetkit.util.api.HullUtils
 import fleetkit.util.api.VariantUtils.compareVariantContents
 import fleetkit.util.api.VariantUtils.isVariantKnownToPlayer

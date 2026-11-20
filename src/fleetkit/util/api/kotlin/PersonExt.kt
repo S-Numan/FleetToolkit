@@ -2,8 +2,6 @@ package fleetkit.util.api.kotlin
 
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI
 import com.fs.starfarer.api.characters.PersonAPI
-import fleetkit.serialization.entities.person.DataPerson
-import fleetkit.serialization.entities.person.PersonSettings
 
 /**
  * Checks if the person has any skills with a level greater than 0.

@@ -1,10 +1,10 @@
 package fleetkit.serialization.entities.variant
 
 import com.fs.starfarer.api.combat.ShipVariantAPI
-import fleetkit.serialization.core.Codec
-import fleetkit.serialization.core.ModHeader
 import fleetkit.serialization.content.ModVersionData
+import fleetkit.serialization.core.Codec
 import fleetkit.serialization.core.EntityFormat
+import fleetkit.serialization.core.ModHeader
 import fleetkit.util.api.VariantUtils
 import org.magiclib.util.MagicLookup
 

@@ -5,7 +5,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
-import fleetkit.otherMods.starficz.*
+import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.UIUtils
 import fleetkit.ui.UIUtils.easeCubic
 import fleetkit.ui.UIUtils.lerp

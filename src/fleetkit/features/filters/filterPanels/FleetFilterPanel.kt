@@ -9,8 +9,11 @@ import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
-import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.otherMods.starficz.addTooltip
+import fleetkit.otherMods.starficz.enabled
+import fleetkit.otherMods.starficz.findChildWithMethod
+import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.api.kotlin.getShipNameWithoutPrefix
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse

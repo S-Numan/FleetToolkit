@@ -1,11 +1,7 @@
 package fleetkit.features.recentBattles
 
 import com.fs.starfarer.api.campaign.BaseCampaignEventListener
-import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
-import com.fs.starfarer.api.fleet.FleetMemberAPI
-import com.fs.starfarer.campaign.fleet.FleetMember
-import com.fs.starfarer.campaign.fleet.FleetMemberStatus
 import fleetkit.core.util.DisplayMessage
 import fleetkit.features.recentBattles.fleetDirectory.RBFleetDirectoryService
 import fleetkit.serialization.entities.fleet.FleetSettings
