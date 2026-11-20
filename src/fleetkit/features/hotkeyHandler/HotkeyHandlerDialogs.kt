@@ -77,6 +77,7 @@ import org.magiclib.util.membermemory.MemberMemoryExt.getMemberMemory
 import org.magiclib.util.reflection.UIFinder
 import org.magiclib.util.reflection.boxed.BoxedFleetTab
 import org.magiclib.util.reflection.boxed.BoxedRefitTab
+import org.magiclib.util.taskscheduler.CombatTaskScheduler
 import org.magiclib.util.taskscheduler.SystemTaskScheduler
 import second_in_command.SCData
 import second_in_command.SCUtils
@@ -94,6 +95,7 @@ import kotlin.math.max
 object HotkeyHandlerDialogs {
 
     fun createDevModeDialog() {
+
         val dialog = DialogPanel(FTTxt.txt("dev_options_title"))
         dialog.animation = ModalPanel.PanelAnimation.NONE
         dialog.createUINoise = false
@@ -1216,7 +1218,7 @@ object HotkeyHandlerDialogs {
                         // Fleet is not alive (location is null), so battle will see it as empty
                         //battle.genCombinedDoNotRemoveEmpty()
 
-                        val battleContext = BattleCreationContext(sector.playerFleet, FleetGoal.ATTACK, fleet, FleetGoal.ATTACK)
+                        val battleContext = BattleCreationContext(null, FleetGoal.ATTACK, fleet, FleetGoal.ATTACK)
                         battleContext.fightToTheLast = fightToTheLast
                         battleContext.aiRetreatAllowed = !fightToTheLast
                         battleContext.enemyDeployAll = true

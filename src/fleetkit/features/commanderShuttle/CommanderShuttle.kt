@@ -1,6 +1,9 @@
 package fleetkit.features.commanderShuttle
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.CampaignFleetAPI
+import com.fs.starfarer.api.campaign.SectorAPI
+import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.fleet.FleetMemberType
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl
 import com.fs.starfarer.api.impl.campaign.ids.Tags
@@ -94,6 +97,15 @@ internal object CommanderShuttle {
         EventDispatcher.manageTransientListener(CommanderShuttleListener::class.java) { commanderShuttleListener }
         EventDispatcher.manageTransientCampaignListener(CommanderShuttleListener::class.java) { commanderShuttleListener }
 
+        val shuttleMember = createCommanderShuttle()
+        sector.playerFleet.fleetData.addFleetMember(shuttleMember)
+        sector.playerFleet.fleetData.setFlagship(shuttleMember)
+        shuttleMember.repairTracker.cr = shuttleMember.repairTracker.maxCR
+
+        BoxedFleetTab.get()?.updateFleetPanelContents()
+    }
+
+    fun createCommanderShuttle(): FleetMemberAPI {
         val shuttleMember = Global.getSettings().createFleetMember(FleetMemberType.SHIP, "shuttlepod_Hull")
 
         shuttleMember.shipName = FTTxt.txt("command_shuttle")
@@ -108,11 +120,7 @@ internal object CommanderShuttle {
         shuttleMember.variant.addTag(Tags.SHIP_CAN_NOT_SCUTTLE)
         shuttleMember.variant.addTag(FTVariables.NO_COPY_TAG)
 
-        sector.playerFleet.fleetData.addFleetMember(shuttleMember)
-        sector.playerFleet.fleetData.setFlagship(shuttleMember)
-        shuttleMember.repairTracker.cr = shuttleMember.repairTracker.maxCR
-
-        BoxedFleetTab.get()?.updateFleetPanelContents()
+        return shuttleMember
     }
 
     fun togglePlayerShuttle() {
@@ -123,9 +131,8 @@ internal object CommanderShuttle {
         }
     }
 
-    fun playerShuttleExists(): Boolean {
-        val sector = Global.getSector() ?: return false
-        for (member in sector.playerFleet.fleetData.membersListCopy) {
+    fun playerShuttleExists(fleet: CampaignFleetAPI = Global.getSector().playerFleet): Boolean {
+        for (member in fleet.fleetData.membersListCopy) {
             if (member.variant.hasHullMod(FTVariables.COMMAND_SHUTTLE_ID)) {
                 return true
             }
