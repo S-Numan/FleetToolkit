@@ -20,6 +20,27 @@ class Codec private constructor(private val out: ByteBuffers.Out?, private val i
         try { return block() } finally { depth-- }
     }
 
+    /**
+     * Packs up to 8 booleans into one byte (bit i = argument i).
+     * Writing: stores the supplied flags. Reading: returns the stored flags, ignoring the supplied values.
+     * Flag order is part of the serialized format; changes require a version bump.
+     *
+     * Example:
+     * ```
+     * val f = c.flags(d?.name != null, d?.isFlagship == true)
+     * val name = if (f[0]) c.str(d?.name) else null
+     * val flagship = f[1]
+     * ```
+     */
+    fun flags(vararg v: Boolean): BooleanArray {
+        require(v.size <= 8)
+        var mask = 0
+        if (input == null) for (i in v.indices) if (v[i]) mask = mask or (1 shl i)
+        val m = input?.readByte() ?: mask.also { out!!.writeByte(it) }
+        check(m ushr v.size == 0) { "Corrupt data: bad flag bits" }
+        return BooleanArray(v.size) { (m shr it) and 1 != 0 }
+    }
+
     // Primitives: write `v` (or a default if null) / read and ignore `v`
     fun int(v: Int?): Int = input?.readInt() ?: (v ?: 0).also { out!!.writeInt(it) }
     fun long(v: Long?): Long = input?.readLong() ?: (v ?: 0L).also { out!!.writeLong(it) }
