@@ -26,6 +26,7 @@ import fleetkit.core.config.FTSettings
 import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTMisc
 import fleetkit.core.util.FTTxt
+import fleetkit.core.util.FTTxt.txt
 import fleetkit.core.util.FTTxt.txtPlural
 import fleetkit.core.util.file.directory.DirFile
 import fleetkit.core.util.file.directory.DirectoryManager
@@ -1207,6 +1208,12 @@ object HotkeyHandlerDialogs {
                     30f,
                     5f
                 ).apply {
+                    addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 500f) { tooltip ->
+                        tooltip.addPara(
+                            txt("simulated_battle_tooltip"),
+                            0f
+                        )
+                    }
                     setShortcut(Keyboard.KEY_T, true)
                     onClick {
                         excludeMissingShips(fleet)

@@ -89,6 +89,7 @@
   "combat_deployment_points": "Total Combat DP: %s",
   "actions": "Actions",
   "simulated_battle": "Simulated Battle",
+  "simulated_battle_tooltip": "All ships are simulated; no losses or lasting changes will result from this battle.",
 
   "ui.toggle.fight_to_last": "Fight to the last",
   "ui.toggle.fight_to_last.tooltip": "If checked; no members of the fleet will retreat",
