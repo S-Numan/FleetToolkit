@@ -6,7 +6,6 @@ import com.fs.starfarer.campaign.ui.UITable
 import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
-import fleetkit.otherMods.starficz.getChildrenCopy
 
 class ModPickerFilterPanel(
     width: Float,
@@ -41,7 +40,7 @@ class ModPickerFilterPanel(
 
         refreshUI()
 
-        val modPickerTable = modPicker.getChildrenCopy().find { it is UITable }
+        val modPickerTable = modPicker.childrenCopy2.find { it is UITable }
         val list = modPickerTable?.safeInvoke("getList")
         val items = list?.safeInvoke("getItems") as? List<Any?> ?: return
 

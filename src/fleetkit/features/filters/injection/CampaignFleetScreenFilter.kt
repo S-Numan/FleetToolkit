@@ -7,7 +7,6 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import fleetkit.features.filters.filterPanels.FleetFilterPanel
 import fleetkit.features.filters.filterPanels.FleetFilterPanel.Companion.removePreviousIfAny
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.magiclib.util.api.getActualCurrentTab
 import org.magiclib.util.reflection.boxed.BoxedFleetTab
@@ -55,7 +54,7 @@ internal class CampaignFleetScreenFilter : EveryFrameScript {
 
             val fleetSidePanel = InternalReflectionMisc.getFleetSidePanel(fleetTab) ?: return
             //If the FilterPanel is not in fleetSidePanel
-            val currentFilterPanel = fleetSidePanel.getChildrenCopy().find { (it as? CustomPanelAPI)?.plugin as? FleetFilterPanel != null }
+            val currentFilterPanel = fleetSidePanel.childrenCopy2.find { (it as? CustomPanelAPI)?.plugin as? FleetFilterPanel != null }
             if (currentFilterPanel == null) {
                 //Remake and add it!
                 filterPanel = FleetFilterPanel(20f, fleetTab, fleetSidePanel)

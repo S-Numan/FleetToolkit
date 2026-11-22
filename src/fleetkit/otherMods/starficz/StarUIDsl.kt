@@ -43,7 +43,7 @@ fun UIPanelAPI.ScrollPanel(
     val tempPanel = Global.getSettings().createCustom(width, height, null)
     val tempTMAPI = tempPanel.createUIElement(width, height, true)
     tempPanel.addUIElement(tempTMAPI) // make and add a temp TMAPI to a custom panel to make a scroll panel
-    val scrollPanel = tempPanel.children[0] as ScrollPanelAPI // hijack the scroll panel
+    val scrollPanel = tempPanel.childrenCopy2[0] as ScrollPanelAPI // hijack the scroll panel
     scrollPanel.removeComponent(tempTMAPI) // remove the temp TMAPI we just added to it
     val boxedScrollPanel = BoxedScrollPanel(scrollPanel) // box and use the scroll panel as needed
     boxedScrollPanel.setSize(width, height)

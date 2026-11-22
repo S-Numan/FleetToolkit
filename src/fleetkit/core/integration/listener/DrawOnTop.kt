@@ -10,7 +10,6 @@ import com.fs.starfarer.api.combat.ViewportAPI
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import fleetkit.core.util.misc.DrawMessageOnTop
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.TimeKeeper
 import org.magiclib.util.reflection.UIFinder
 
@@ -47,7 +46,7 @@ internal class DrawOnTop : EveryFrameScript, BaseEveryFrameCombatPlugin() {
             justLoadedGame--
             if (justLoadedGame == 0) {
                 val screenPanel = UIFinder.getScreenPanel()
-                if (screenPanel != null && screenPanel.getChildrenCopy().none { CampaignRenderer::class.java.isInstance((it as? CustomPanelAPI)?.plugin) })
+                if (screenPanel != null && screenPanel.childrenCopy2.none { CampaignRenderer::class.java.isInstance((it as? CustomPanelAPI)?.plugin) })
                     CampaignRenderer()
             }
         }
@@ -73,7 +72,7 @@ internal class DrawOnTop : EveryFrameScript, BaseEveryFrameCombatPlugin() {
             curState = state
 
             val screenPanel = UIFinder.getScreenPanel()
-            if (screenPanel != null && curState == GameState.CAMPAIGN && screenPanel.getChildrenCopy().none { CampaignRenderer::class.java.isInstance((it as? CustomPanelAPI)?.plugin) })
+            if (screenPanel != null && curState == GameState.CAMPAIGN && screenPanel.childrenCopy2.none { CampaignRenderer::class.java.isInstance((it as? CustomPanelAPI)?.plugin) })
                 CampaignRenderer()
         }
     }
@@ -100,7 +99,7 @@ private class CampaignRenderer : BaseCustomUIPanelPlugin() {
         // Move above other components if not top, but try to avoid fighting for control by excluding CustomPanelAPIs and MessageDisplayAPIs
 
         @Suppress("UNCHECKED_CAST")
-        val children = screenPanel.getChildrenCopy()
+        val children = screenPanel.childrenCopy2
 
         val lastValid = children.lastOrNull() { component ->
             when (component) {

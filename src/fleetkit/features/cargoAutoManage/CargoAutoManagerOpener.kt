@@ -16,7 +16,6 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.customPanel.DialogUtils
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.magiclib.util.api.getActualCurrentTab
@@ -47,7 +46,7 @@ internal class CargoAutoManagerOpener : CampaignInputListener {
 
             val submarketButtonParent = cargoPanel.findChildWithMethod("showSubmarketTextDialog") as? UIPanelAPI
                 ?: return
-            val submarketButtons = submarketButtonParent.getChildrenCopy()
+            val submarketButtons = submarketButtonParent.childrenCopy2
 
             submarketButtons.forEach { submarketButton ->
                 val fader = submarketButton.safeInvoke("getMouseoverHighlightFader") as? Fader ?: return@forEach

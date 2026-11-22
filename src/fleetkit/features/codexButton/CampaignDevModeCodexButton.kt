@@ -77,7 +77,7 @@ internal class CampaignDevModeCodexButton : EveryFrameScript {
             val pad = 18f
 
             var exists = false
-            val children = codex.target.getChildrenCopy()
+            val children = codex.target.childrenCopy2
             children.forEach { child ->
                 if (child === addToFleetButton) {
                     exists = true

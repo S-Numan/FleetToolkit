@@ -187,7 +187,7 @@ internal fun UIPanelAPI.StackLayout(
         var startingCoord = 0f
 
         // Core layout loop
-        children.forEachIndexed { index, component ->
+        childrenCopy2.forEachIndexed { index, component ->
             maxSecondaryDimension = max(maxSecondaryDimension, strategy.getSecondaryAxisDimension(component))
 
             if (index == 0) startingCoord = strategy.anchorFirst(component, alignment, primaryMargin, secondaryMargin)
@@ -196,7 +196,7 @@ internal fun UIPanelAPI.StackLayout(
         }
 
         // Calculate final size
-        val totalPrimarySize = children.lastOrNull()?.let {
+        val totalPrimarySize = childrenCopy2.lastOrNull()?.let {
             abs(strategy.getEndEdgeCoordinate(it, alignment) - startingCoord) + primaryMargin * 2
         } ?: (primaryMargin * 2) // Handle empty case
 

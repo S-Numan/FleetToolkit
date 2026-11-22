@@ -7,7 +7,6 @@ import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import fleetkit.core.util.DisplayMessage
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.customPanel.core.BasePanel
 import fleetkit.ui.customPanel.core.ModalPanel
 import fleetkit.ui.customPanel.patterns.ContextMenuPanel
@@ -43,7 +42,7 @@ class DialogUtils : BaseEveryFrameCombatPlugin(), EveryFrameScript {
         }
 
         fun isModalPanelOpen(): Boolean {
-            UIFinder.getScreenPanel()?.getChildrenCopy()?.forEach { child ->
+            UIFinder.getScreenPanel()?.childrenCopy2?.forEach { child ->
                 if (child is CustomPanelAPI && (child.plugin is ModalPanel)
                 ) {
                     return true
@@ -61,7 +60,7 @@ class DialogUtils : BaseEveryFrameCombatPlugin(), EveryFrameScript {
         fun forceCloseAllCustomPanels(): Boolean {
             var closedOne = false
             val screenPanel = UIFinder.getScreenPanel() ?: return false
-            screenPanel.getChildrenCopy().toList().forEach { child ->
+            screenPanel.childrenCopy2.toList().forEach { child ->
                 if (child is CustomPanelAPI && (child.plugin is BasePanel)) {
                     try {
                         (child.plugin as BasePanel).forceDismiss()

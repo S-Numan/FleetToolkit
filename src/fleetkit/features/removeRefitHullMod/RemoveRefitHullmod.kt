@@ -17,7 +17,6 @@ import fleetkit.features.autofit.ui.AutofitPanel
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.lwjgl.util.vector.Vector2f
 import org.magiclib.util.MagicLookup
@@ -48,7 +47,7 @@ internal class RemoveRefitHullmod : CampaignInputListener {
     private fun handleRefitRemoveHullMod(event: InputEventAPI) {
         val screenPanel = UIFinder.getScreenPanel() ?: return
         val isAutofitPanelOpen = screenPanel
-            .getChildrenCopy()
+            .childrenCopy2
             .filterIsInstance<CustomPanelAPI>()
             .any { it.plugin is AutofitPanel.AutofitPanelPlugin }
         if (isAutofitPanelOpen) return

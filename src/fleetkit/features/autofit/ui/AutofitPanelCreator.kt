@@ -28,7 +28,7 @@ internal object AutofitPanelCreator {
         }*/
 
         val fleetMember = refitTab.getCurrentMember()
-        val existingElements = hullmodsPanel.getChildrenCopy()
+        val existingElements = hullmodsPanel.childrenCopy2
         if (existingElements.isEmpty()) return false // if children is empty, return
 
         //val paintjobButton = existingElements.filterIsInstance<ButtonAPI>().firstOrNull { button ->
@@ -41,7 +41,7 @@ internal object AutofitPanelCreator {
             return false
         val coreUI = refitTab.getCoreUI() as? UIPanelAPI ?: return false
 
-        val curAutofitPanel = coreUI.getChildrenCopy().filterIsInstance<CustomPanelAPI>().firstOrNull { panel ->
+        val curAutofitPanel = coreUI.childrenCopy2.filterIsInstance<CustomPanelAPI>().firstOrNull { panel ->
             panel.plugin != null && panel.plugin is AutofitPanel.AutofitPanelPlugin
         }
 

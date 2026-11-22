@@ -13,7 +13,6 @@ import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.addTooltip
 import fleetkit.otherMods.starficz.enabled
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.api.kotlin.getShipNameWithoutPrefix
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
@@ -29,7 +28,7 @@ class FleetFilterPanel(
     private val fleetTab: BoxedFleetTab,
     private val fleetSidePanel: UIPanelAPI
 ) : BaseFilterPanel(
-    width = fleetSidePanel.getChildrenCopy().minByOrNull { it.x }?.width ?: 32f,
+    width = fleetSidePanel.childrenCopy2.minByOrNull { it.x }?.width ?: 32f,
     height = height,
     parent = fleetSidePanel,
     defaultText = FTTxt.txt("ctrl_f_to_search")
@@ -95,7 +94,7 @@ class FleetFilterPanel(
     }
 
     val lowestChild = fleetSidePanel.findChildWithMethod("createStoryPointsLabel")
-    val wideChild = fleetSidePanel.getChildrenCopy().minByOrNull { it.x }
+    val wideChild = fleetSidePanel.childrenCopy2.minByOrNull { it.x }
     override fun advance(amount: Float) {
 
         try {

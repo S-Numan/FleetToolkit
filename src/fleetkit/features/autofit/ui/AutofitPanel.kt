@@ -180,7 +180,7 @@ internal object AutofitPanel {
                 draggedPanel = ShipPreviewOverlayPlugin(draggedAutofitSpec!!.variant.createFleetMember(), selectorWidth, selectorWidth, manualScaleShipsToBetterFit = true).panel
 
             val screenPanel = UIFinder.getScreenPanel() ?: return
-            if (screenPanel.getChildrenCopy().find { it === draggedPanel } == null)
+            if (screenPanel.childrenCopy2.find { it === draggedPanel } == null)
                 screenPanel.addComponent(draggedPanel)
 
             draggedPanel!!.position.setXAlignOffset(Global.getSettings().mouseX.toFloat() - draggedPanel!!.width / 2f)

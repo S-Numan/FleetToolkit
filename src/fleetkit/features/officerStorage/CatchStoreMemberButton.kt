@@ -16,7 +16,6 @@ import fleetkit.core.util.DisplayMessage
 import fleetkit.core.util.FTTxt
 import fleetkit.features.commanderShuttle.CommanderShuttle
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.UIUtils
 import fleetkit.util.reflection.InternalReflectionMisc
 import org.lwjgl.input.Keyboard
@@ -61,11 +60,11 @@ internal class CatchStoreMemberButton : CampaignInputListener {
 
             try {
                 val parent = memberUI.parent ?: return null
-                val firstChild = parent.getChildrenCopy().find { it.getFieldsMatching(name = "buyButton").isNotEmpty() } as? UIPanelAPI
+                val firstChild = parent.childrenCopy2.find { it.getFieldsMatching(name = "buyButton").isNotEmpty() } as? UIPanelAPI
                     ?: return null
 
                 // Get the highest button. (Store button)
-                val desiredButton = firstChild.getChildrenCopy()
+                val desiredButton = firstChild.childrenCopy2
                     .maxByOrNull { child ->
                         child.position.y
                     } ?: return null

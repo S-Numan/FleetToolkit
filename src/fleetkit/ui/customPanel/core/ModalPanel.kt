@@ -5,7 +5,6 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.ui.UIUtils
 import fleetkit.ui.UIUtils.easeCubic
 import fleetkit.ui.UIUtils.lerp
@@ -225,7 +224,7 @@ open class ModalPanel : ComposablePanel() {
         this.animation = animation
         closing = true
 
-        panel.getChildrenCopy().forEach {
+        panel.childrenCopy2.forEach {
             panel.removeComponent(it)
         }
 

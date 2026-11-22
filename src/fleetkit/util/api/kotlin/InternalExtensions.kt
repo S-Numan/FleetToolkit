@@ -4,7 +4,6 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.ui.*
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.addButton
-import fleetkit.otherMods.starficz.getChildrenCopy
 import org.json.JSONArray
 import org.json.JSONObject
 import org.magiclib.kotlin.setAlpha
@@ -21,11 +20,11 @@ internal fun UIPanelAPI.whiteBoxForTesting(width: Float? = null, height: Float? 
 
 //For optimization purposes
 internal fun UIPanelAPI.findChildWithMethodReversed(methodName: String): UIComponentAPI? {
-    return getChildrenCopy().asReversed().find { it.getMethodsMatching(name = methodName).isNotEmpty() }
+    return childrenCopy2.asReversed().find { it.getMethodsMatching(name = methodName).isNotEmpty() }
 }
 
 internal fun UIPanelAPI.findChildWithPlugin(clazz: Class<*>): CustomPanelAPI? {
-    return getChildrenCopy().firstOrNull { child ->
+    return childrenCopy2.firstOrNull { child ->
         (child as? CustomPanelAPI)?.plugin?.let { clazz.isInstance(it) } == true
     } as? CustomPanelAPI
 }

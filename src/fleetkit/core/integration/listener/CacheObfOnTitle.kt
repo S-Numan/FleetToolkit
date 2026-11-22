@@ -12,7 +12,7 @@ import fleetkit.otherMods.starficz.ReflectionUtils.getConstructorsMatching
 import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.otherMods.starficz.getChildrenCopy
+
 import org.magiclib.util.reflection.UIFinder
 
 internal class CacheObfOnTitle : BaseEveryFrameCombatPlugin() {
@@ -32,7 +32,7 @@ internal class CacheObfOnTitle : BaseEveryFrameCombatPlugin() {
             if (BoxedUIShipPreview.SHIP_PREVIEW_CLASS != null) return
 
             val missionWidget = titleScreenPanel.findChildWithMethod("getMissionList") as? UIPanelAPI ?: return
-            val holographicBG = missionWidget.getChildrenCopy()[1] // 2 of the same class in the tree here
+            val holographicBG = missionWidget.childrenCopy2[1] // 2 of the same class in the tree here
 
             val missionDetail = holographicBG.safeInvoke("getCurr") as? UIPanelAPI ?: return
 

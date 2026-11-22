@@ -194,7 +194,7 @@ fun UIComponentAPI.applyAnchor(anchor: AnchorData) {
     val anchorPosition = when (anchor.reference) {
         is AnchorReference.Parent -> null
         is AnchorReference.Previous -> {
-            parent?.children?.dropLast(1)?.lastOrNull()?.position
+            parent?.childrenCopy2?.dropLast(1)?.lastOrNull()?.position
                 ?: throw Error("Previous Component does not exist!")
         }
 
@@ -209,10 +209,10 @@ fun UIComponentAPI.applyAnchor(anchor: AnchorData) {
 }
 
 val UIPanelAPI.lastComponent
-    get() = children.lastOrNull()
+    get() = childrenCopy2.lastOrNull()
 
 val UIPanelAPI.beforeLastComponent
-    get() = children.dropLast(1).lastOrNull()
+    get() = childrenCopy2.dropLast(1).lastOrNull()
 
 
 fun UIComponentAPI.addTooltip(
@@ -252,10 +252,10 @@ fun UIComponentAPI.addTooltip(
 
 
 // UIPanelAPI extensions that expose UIPanel methods
-@Suppress("UNCHECKED_CAST")
-fun UIPanelAPI.getChildrenCopy(): List<UIComponentAPI> {
-    return invoke("getChildrenCopy") as List<UIComponentAPI>
-}
+//@Suppress("UNCHECKED_CAST")
+//fun UIPanelAPI.getChildrenCopy(): List<UIComponentAPI> {
+//    return invoke("getChildrenCopy") as List<UIComponentAPI>
+//}
 
 @Suppress("UNCHECKED_CAST")
 fun UIPanelAPI.getChildrenNonCopy(): List<UIComponentAPI> {
@@ -285,7 +285,7 @@ internal fun TooltipMakerAPI.getParentWidget(): UIComponentAPI? {
     return ReflectionUtils.invoke("getParentWidget", this) as? UIPanelAPI
 }
 
-val UIPanelAPI.children get() = this.getChildrenCopy()
+//val UIPanelAPI.children get() = this.childrenCopy2()
 
 fun UIPanelAPI.findChildWithMethod(
     name: String? = null,
@@ -293,11 +293,11 @@ fun UIPanelAPI.findChildWithMethod(
     numOfParams: Int? = null,
     parameterTypes: Array<Class<*>?>? = null
 ): UIComponentAPI? {
-    return children.find { it.getMethodsMatching(name, returnType, numOfParams, parameterTypes).isNotEmpty() }
+    return childrenCopy2.find { it.getMethodsMatching(name, returnType, numOfParams, parameterTypes).isNotEmpty() }
 }
 
 fun UIPanelAPI.allChildrenWithMethod(methodName: String): List<UIComponentAPI> {
-    return children.filter { it.getMethodsMatching(name = methodName).isNotEmpty() }
+    return childrenCopy2.filter { it.getMethodsMatching(name = methodName).isNotEmpty() }
 }
 
 /*internal fun UIPanelAPI.clearChildren() {
@@ -668,8 +668,8 @@ fun UIPanelAPI.addImage(imageSpritePath: String, width: Float, height: Float): B
     val tempPanel = Global.getSettings().createCustom(width, height, null)
     val tempTMAPI = tempPanel.createUIElement(width, height, false)
     tempTMAPI.addImage(imageSpritePath, width, height, 0f)
-    val tempTMAPIsUIPanel = tempTMAPI.children[0] as UIPanelAPI
-    val image = tempTMAPIsUIPanel.children[0]
+    val tempTMAPIsUIPanel = tempTMAPI.childrenCopy2[0] as UIPanelAPI
+    val image = tempTMAPIsUIPanel.childrenCopy2[0]
 
     if (this is TooltipMakerAPI)
         this.addCustom(image, 0f)

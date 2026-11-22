@@ -15,7 +15,6 @@ import fleetkit.otherMods.starficz.ReflectionUtils.getFieldsMatching
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.otherMods.starficz.findChildWithMethod
-import fleetkit.otherMods.starficz.getChildrenCopy
 import fleetkit.util.api.kotlin.isIdle
 import org.magiclib.util.api.getActualCurrentTab
 import org.magiclib.util.reflection.UIFinder
@@ -37,18 +36,18 @@ internal object InternalReflectionMisc {
 
     @JvmOverloads
     fun getFleetSidePanel(fleetTab: BoxedFleetTab? = BoxedFleetTab.get()): UIPanelAPI? {
-        val children = fleetTab?.target?.getChildrenCopy()
+        val children = fleetTab?.target?.childrenCopy2
         return children?.find { it.getFieldsMatching(type = UITable::class.java).isNotEmpty() } as? UIPanelAPI
     }
 
     fun getRefitPanelModWidget(refitPanel: UIPanelAPI): ModWidget? {
-        val children = refitPanel.getChildrenCopy()
+        val children = refitPanel.childrenCopy2
         var desiredChild: UIPanelAPI? = null
         children.forEach { child ->
             var yup = false
 
             val panel = child as? UIPanelAPI
-            val childsChildren = panel?.getChildrenCopy()
+            val childsChildren = panel?.childrenCopy2
             childsChildren?.forEach { childChildChild ->
                 if (childChildChild.getMethodsMatching("removeNotApplicableMods").isNotEmpty()) {
                     yup = true
@@ -119,7 +118,7 @@ internal object InternalReflectionMisc {
 
     fun getBelowTitleDeeperPanel(codex: BoxedCodexDialog): UIPanelAPI? {
         val belowTitleBarPanel = codex.getDetailPanel()?.findChildWithMethod("addToOverlay") as? UIPanelAPI
-        return belowTitleBarPanel?.getChildrenCopy()?.find { (it as? UIPanelAPI)?.getChildrenCopy()?.isNotEmpty() == true } as? UIPanelAPI
+        return belowTitleBarPanel?.childrenCopy2?.find { (it as? UIPanelAPI)?.childrenCopy2?.isNotEmpty() == true } as? UIPanelAPI
     }
 
     fun getSelectedSubmarket(
@@ -164,6 +163,6 @@ internal object InternalReflectionMisc {
 
     @JvmStatic
     fun getCodexDetailLabel(codex: BoxedCodexDialog): LabelAPI? {
-        return codex.getDetailPanel()?.getChildrenCopy()?.filterIsInstance<LabelAPI>()?.firstOrNull()
+        return codex.getDetailPanel()?.childrenCopy2?.filterIsInstance<LabelAPI>()?.firstOrNull()
     }
 }

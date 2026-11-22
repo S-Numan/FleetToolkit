@@ -594,7 +594,7 @@ internal class CargoAutoManageUIPlugin(
             newText.addTooltip(TooltipMakerAPI.TooltipLocation.BELOW, 280f) {
                 it.addPara("This item is most likely from a removed mod.\n(The sprite was null)", 0f)
             }
-            val sprite = newText.getChildrenCopy().getOrNull(0)?.safeInvoke("getSprite")
+            val sprite = newText.childrenCopy2.getOrNull(0)?.safeInvoke("getSprite")
             sprite?.safeInvoke("setColor", Misc.getNegativeHighlightColor())
         }
         if (data == null) {
@@ -757,7 +757,7 @@ class CargoItemSelector(val market: MarketAPI, val selectedSubmarket: SubmarketA
                     val allDataChildren = dataViewPanels.mapNotNull { child ->
                         val dataView = (child.safeInvoke("getCargoDataView") as? UIPanelAPI)
                             ?: return@mapNotNull null
-                        dataView.getChildrenCopy()
+                        dataView.childrenCopy2
                     }.flatten()
 
                     allDataChildren.forEach { child ->
