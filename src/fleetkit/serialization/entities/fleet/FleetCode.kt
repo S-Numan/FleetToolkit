@@ -33,7 +33,7 @@ object FleetCode : EntityFormat<DataFleet.ParsedFleetData> {
         if (!withPrepend) {
             return output
         } else {
-            val resolvedFleetData = DataFleet.createCampaignFleetFromData(data).fleetData
+            val resolvedFleetData = DataFleet.createCampaignFleetFromData(data, settings = FleetSettings(includeIdleOfficers = false, includeMemKeys = false)).fleetData
 
             val dp = resolvedFleetData.membersListCopy.sumOf { it.deploymentPointsCost.toDouble() }
 
