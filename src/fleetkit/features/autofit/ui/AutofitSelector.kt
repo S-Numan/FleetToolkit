@@ -6,12 +6,15 @@ import com.fs.starfarer.api.combat.BoundsAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.ShipHullSpecAPI
 import com.fs.starfarer.api.combat.ShipVariantAPI
+import com.fs.starfarer.api.graphics.SpriteAPI
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
+import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.FaderUtil
 import com.fs.starfarer.api.util.Misc
 import fleetkit.core.config.FTVariables
+import fleetkit.core.util.FTTxt.txt
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtils.getConstructorsMatching
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
@@ -70,8 +73,75 @@ internal object AutofitSelector {
         }
 
         var comparisonStatus = ComparisonStatus.DEFAULT
+
+        private var indicatorHost: CustomPanelAPI? = null
+        private var lastTooltipLogic: Any? = null
+        private var lastExclusion: Any? = null
+
         var diffWeaponGroups = false
+            set(value) {
+                field = value
+                syncIndicators()
+            }
         var diffFluxStats = false
+            set(value) {
+                field = value
+                syncIndicators()
+            }
+
+        private fun syncIndicators() {
+            if (indicatorHost == null && !diffFluxStats && !diffWeaponGroups) return // Nothing to show or clean up
+
+            var host = indicatorHost
+            if (host == null || host.parent == null) { // Never made, or removed by selectorPanel.clearChildren()
+                host = Global.getSettings().createCustom(0f, 0f, BaseCustomUIPanelPlugin())
+                selectorPanel.addComponent(host).inBR(0f, 0f)
+                indicatorHost = host
+            }
+            host.clearChildren()
+            host.position.setSize(0f, 0f)
+
+            if (autofitSpec == null) return
+
+            // Bottom to top
+            val icons = mutableListOf<CustomPanelAPI>()
+            if (diffFluxStats) icons += createIndicatorIcon("different_flux_stats", "tooltip_diff_flux_stats")
+            if (diffWeaponGroups) icons += createIndicatorIcon("different_weapon_groups", "tooltip_diff_weapon_groups")
+            if (icons.isEmpty()) return
+
+            var width = 0f
+            var height = 0f
+            for (icon in icons) {
+                host.addComponent(icon).inBL(0f, height)
+                width = max(width, icon.position.width)
+                height += icon.position.height
+            }
+            host.position.setSize(width, height)
+            host.position.inBR(0f, 0f)
+        }
+
+        /**
+         * Keeps the selector's own tooltip from triggering while hovering the icons.
+         */
+        private fun updateTooltipExclusion() {
+            val host = indicatorHost ?: return
+            val logic = selectorPanel.safeInvoke("getTooltipLogic") ?: return
+            if (logic === lastTooltipLogic && host.position === lastExclusion) return
+            logic.safeInvoke("setExclusionArea", host.position)
+            lastTooltipLogic = logic
+            lastExclusion = host.position
+        }
+
+        private fun createIndicatorIcon(spriteKey: String, tooltipTxtKey: String): CustomPanelAPI {
+            val sprite = Global.getSettings().getSprite(FTVariables.MOD_ID, spriteKey)
+            val iconPlugin = IndicatorIconPlugin(sprite)
+            val icon = Global.getSettings().createCustom(sprite.width, sprite.height, iconPlugin)
+            iconPlugin.panel = icon
+            icon.addTooltip(TooltipMakerAPI.TooltipLocation.ABOVE, 430f) { tooltip ->
+                tooltip.addPara(txt(tooltipTxtKey), 0f)
+            }
+            return icon
+        }
 
         var isHovering = false
             private set
@@ -162,14 +232,6 @@ internal object AutofitSelector {
                     if (scaleFactor < 1)
                         lockedSprite.setSize(scaleFactor * lockedSprite.width, scaleFactor * lockedSprite.height)
                     lockedSprite.renderAtCenter(selectorPanel.centerX, selectorPanel.top - selectorPanel.width / 2)
-                }
-                if (diffWeaponGroups) {
-                    val diffWGSprite = Global.getSettings().getSprite(FTVariables.MOD_ID, "different_weapon_groups")
-                    diffWGSprite.render(selectorPanel.x + selectorPanel.width - diffWGSprite.width, selectorPanel.y + diffWGSprite.height)
-                }
-                if (diffFluxStats) {
-                    val diffFSSprite = Global.getSettings().getSprite(FTVariables.MOD_ID, "different_flux_stats")
-                    diffFSSprite.render(selectorPanel.x + selectorPanel.width - diffFSSprite.width, selectorPanel.y)
                 }
             } else if (addXIfAutofitSpecNull) {
                 val xSprite = Global.getSettings().getSprite(FTVariables.MOD_ID, "entity")
@@ -291,6 +353,8 @@ internal object AutofitSelector {
                 }
             }
 
+            updateTooltipExclusion()
+
             highlightFader.advance(amount)
             hoverFader.advance(amount)
             lockedHoverFader.advance(amount)
@@ -298,6 +362,16 @@ internal object AutofitSelector {
 
             if (isSelected) highlightFader.fadeIn()
             else highlightFader.fadeOut()
+        }
+    }
+
+    /** Draws a single sprite filling its own panel. Exists so the sprite is a hoverable component with a tooltip. */
+    internal class IndicatorIconPlugin(private val sprite: SpriteAPI) : BaseCustomUIPanelPlugin() {
+        lateinit var panel: CustomPanelAPI
+
+        override fun render(alphaMult: Float) {
+            sprite.alphaMult = alphaMult
+            sprite.render(panel.left, panel.bottom)
         }
     }
 

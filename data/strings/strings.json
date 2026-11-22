@@ -280,6 +280,9 @@
 
   "autofit_confirmed":"Autofit confirmed",
   "autofit_confirmed_purchased":"Autofit confirmed, purchased %s worth of ordnance",
+
+  "tooltip_diff_flux_stats": "This variant has different flux stats compared to your current variant.",
+  "tooltip_diff_weapon_groups": "This variant has a different weapon groups than your current variant.",
   # Ship Directory
   "default_directory_default_description":"Default Loadout",
   "default_directory_default_name":"Default",
