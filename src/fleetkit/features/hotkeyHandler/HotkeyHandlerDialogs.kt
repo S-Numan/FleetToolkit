@@ -617,6 +617,15 @@ object HotkeyHandlerDialogs {
         inputMissing: MissingContent,
         allowSimulationAnyway: Boolean = false,
         forceCheatsEnabled: Boolean = false,
+        initialFightToTheLast: Boolean = true,
+        initialAllowObjectives: Boolean = true,
+        initialForceObjectives: Boolean = false,
+        initialIncludeOfficers: Boolean = true,
+        initialIncludeCommanderAsCommander: Boolean = true,
+        initialRepairAndSetMaxCR: Boolean = true,
+        initialSetAggressionDoctrine: Boolean = true,
+        initialSelectedMemberID: String? = null,
+        initialSeed: Long? = null,
     ): DialogPanel {
         fun removeUnknownContent(member: FleetMemberAPI, unknown: MissingContent) {
             val variant = member.variant
@@ -655,7 +664,7 @@ object HotkeyHandlerDialogs {
 
 
         // IMPORTANT: persist outside UI rebuild
-        var isPressedMemberID: String? = null
+        var isPressedMemberID: String? = initialSelectedMemberID
         var currentHoverMemberID: String? = null
         var savedScrollRatio = 0f
         val previewList = mutableListOf<ShipPreviewOverlayPlugin>()
@@ -665,13 +674,13 @@ object HotkeyHandlerDialogs {
         }
         dialog.onExit { cleanupShipList() }
 
-        var fightToTheLast = true
-        var allowObjectives = true
-        var forceObjectives = false
-        var includeOfficers = true
-        var includeCommanderAsCommander = true
-        var repairAndSetMaxCR = true
-        var setAggressionDoctrine = true
+        var fightToTheLast = initialFightToTheLast
+        var allowObjectives = initialAllowObjectives
+        var forceObjectives = initialForceObjectives
+        var includeOfficers = initialIncludeOfficers
+        var includeCommanderAsCommander = initialIncludeCommanderAsCommander
+        var repairAndSetMaxCR = initialRepairAndSetMaxCR
+        var setAggressionDoctrine = initialSetAggressionDoctrine
 
         fun rebuildUI(maxScroll: Float, listUI: TooltipMakerAPI) {
             // Save scrollbar position BEFORE rebuild
@@ -687,7 +696,7 @@ object HotkeyHandlerDialogs {
             }
         }
 
-        val seed = Random().nextLong()
+        val seed = initialSeed ?: Random().nextLong()
 
         dialog.show(1280f, 800f) { ui ->
             ui.setSize(1280f, 800f) // Probably shouldn't be doing this, I should account for side pad properly, but it's too time-consuming to fix this mess of a function.
@@ -1247,7 +1256,20 @@ object HotkeyHandlerDialogs {
 
                             var dialog: DialogPanel? = dialog
                             if (coreUITadId == CoreUITabId.FLEET) {
-                                dialog = pasteFleetDialog(inputData, inputMissing, forceCheatsEnabled = cheatsEnabled)
+                                dialog = pasteFleetDialog(
+                                    inputData, inputMissing,
+                                    allowSimulationAnyway = allowSimulationAnyway,
+                                    forceCheatsEnabled = cheatsEnabled,
+                                    initialFightToTheLast = fightToTheLast,
+                                    initialAllowObjectives = allowObjectives,
+                                    initialForceObjectives = forceObjectives,
+                                    initialIncludeOfficers = includeOfficers,
+                                    initialIncludeCommanderAsCommander = includeCommanderAsCommander,
+                                    initialRepairAndSetMaxCR = repairAndSetMaxCR,
+                                    initialSetAggressionDoctrine = setAggressionDoctrine,
+                                    initialSelectedMemberID = isPressedMemberID,
+                                    initialSeed = seed,
+                                )
                             }
                             RecentBattleReplay.simulateBattle(battleContext) {
                                 //battle.finish(null, false)
