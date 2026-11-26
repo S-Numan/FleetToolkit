@@ -3,7 +3,6 @@ package fleetkit.features.hotkeyHandler
 import com.fs.starfarer.api.GameState
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignFleetAPI
-import com.fs.starfarer.api.campaign.CoreUITabId
 import com.fs.starfarer.api.characters.SkillSpecAPI
 import com.fs.starfarer.api.combat.BattleCreationContext
 import com.fs.starfarer.api.combat.ShipVariantAPI
@@ -37,7 +36,7 @@ import fleetkit.features.autofit.ui.AutofitSelector
 import fleetkit.features.autofit.ui.AutofitSpec
 import fleetkit.features.autofit.ui.ShipPreviewOverlayPlugin
 import fleetkit.features.hotkeyHandler.ClipboardHotkeyHandlerUtils.pasteFleet
-import fleetkit.features.recentBattles.RecentBattleReplay
+import fleetkit.features.recentBattles.RecentBattleSimulator
 import fleetkit.otherMods.starficz.*
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
 import fleetkit.serialization.content.MissingContent
@@ -61,7 +60,6 @@ import fleetkit.ui.customPanel.modules.AreYouSureDialog
 import fleetkit.ui.customPanel.modules.TextInputDialog
 import fleetkit.ui.customPanel.patterns.ContextMenuPanel
 import fleetkit.ui.customPanel.patterns.DialogPanel
-import fleetkit.util.api.CampaignUtils
 import fleetkit.util.api.FleetUtils
 import fleetkit.util.api.PersonUtils
 import fleetkit.util.api.VariantUtils
@@ -75,10 +73,8 @@ import org.lwjgl.opengl.GL11
 import org.magiclib.kotlin.*
 import org.magiclib.util.api.*
 import org.magiclib.util.membermemory.MemberMemoryExt.getMemberMemory
-import org.magiclib.util.reflection.UIFinder
 import org.magiclib.util.reflection.boxed.BoxedFleetTab
 import org.magiclib.util.reflection.boxed.BoxedRefitTab
-import org.magiclib.util.taskscheduler.CombatTaskScheduler
 import org.magiclib.util.taskscheduler.SystemTaskScheduler
 import second_in_command.SCData
 import second_in_command.SCUtils
@@ -1234,7 +1230,10 @@ object HotkeyHandlerDialogs {
                         // Fleet is not alive (location is null), so battle will see it as empty
                         //battle.genCombinedDoNotRemoveEmpty()
 
-                        val battleContext = BattleCreationContext(null, FleetGoal.ATTACK, fleet, FleetGoal.ATTACK)
+                        val battleContext = BattleCreationContext(
+                            RecentBattleSimulator.createSimulationFleet(sector.playerFleet), FleetGoal.ATTACK,
+                            fleet, FleetGoal.ATTACK
+                        )
                         battleContext.fightToTheLast = fightToTheLast
                         battleContext.aiRetreatAllowed = !fightToTheLast
                         battleContext.enemyDeployAll = true
@@ -1242,51 +1241,16 @@ object HotkeyHandlerDialogs {
                         battleContext.forceObjectivesOnMap = forceObjectives
                         battleContext.playerCommandPoints = 5
 
-                        val campUI = sector.campaignUI
-                        if (campUI.currentInteractionDialog == null) { // not at interaction?
-                            //Campaign Dialog Shenanigans
-                            val coreUITadId: CoreUITabId? = campUI.getActualCurrentTab()
-                            if (coreUITadId == CoreUITabId.FLEET) {
-                                dialog.forceDismiss()
+                        RecentBattleSimulator.simulateBattle(battleContext) {
+                            //battle.finish(null, false)
+                            dialog.panel.parent?.bringComponentToTop(dialog.panel)
 
-                                campUI.safeInvoke("setNextTransitionFast", true)
-                                val coreUI = UIFinder.getCoreUI()
-                                coreUI?.safeInvoke("dialogDismissed", coreUI, 0)
-                            }
-
-                            var dialog: DialogPanel? = dialog
-                            if (coreUITadId == CoreUITabId.FLEET) {
-                                dialog = pasteFleetDialog(
-                                    inputData, inputMissing,
-                                    allowSimulationAnyway = allowSimulationAnyway,
-                                    forceCheatsEnabled = cheatsEnabled,
-                                    initialFightToTheLast = fightToTheLast,
-                                    initialAllowObjectives = allowObjectives,
-                                    initialForceObjectives = forceObjectives,
-                                    initialIncludeOfficers = includeOfficers,
-                                    initialIncludeCommanderAsCommander = includeCommanderAsCommander,
-                                    initialRepairAndSetMaxCR = repairAndSetMaxCR,
-                                    initialSetAggressionDoctrine = setAggressionDoctrine,
-                                    initialSelectedMemberID = isPressedMemberID,
-                                    initialSeed = seed,
-                                )
-                            }
-                            RecentBattleReplay.simulateBattle(battleContext) {
-                                //battle.finish(null, false)
-                                CampaignUtils.closeCampaignDummyDialog()
-                                sector.isPaused = true
-                                if (coreUITadId == CoreUITabId.FLEET) {
-                                    campUI.safeInvoke("setNextTransitionFast", true)
-                                    campUI.showCoreUITab(coreUITadId)
-                                    dialog?.panel?.parent?.bringComponentToTop(dialog.panel)
+                            for (member in sector.playerFleet.fleetData.membersListCopy) {
+                                if (member.repairTracker.isMothballed && member.variant.hasHullMod(FTVariables.COMMAND_SHUTTLE_ID)) {
+                                    val maxCR = member.repairTracker.maxCR
+                                    member.repairTracker.isMothballed = false
+                                    member.repairTracker.cr = maxCR
                                 }
-                                CampaignUtils.openCampaignDummyDialog()
-                            }
-
-                        } else {
-                            RecentBattleReplay.simulateBattle(battleContext) {
-                                //battle.finish(null, false)
-                                dialog.panel.parent?.bringComponentToTop(dialog.panel)
                             }
                         }
                     }

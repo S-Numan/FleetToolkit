@@ -10,7 +10,7 @@ import fleetkit.serialization.entities.fleet.FleetSettings
 class RecentBattleTracker : BaseCampaignEventListener(false) {
     override fun reportPlayerEngagement(result: EngagementResultAPI?) {
         if (result == null) return
-        if (RecentBattleReplay.isSimulating) return // Simulated battles must not be recorded as real ones.
+        if (RecentBattleSimulator.isSimulating) return // Simulated battles must not be recorded as real ones.
 
         val playerResult = if (result.loserResult.isPlayer) result.loserResult else result.winnerResult
         val battleIsAutoPursuit = playerResult.allEverDeployedCopy == null
