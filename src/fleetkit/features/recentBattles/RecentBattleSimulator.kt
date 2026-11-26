@@ -6,10 +6,12 @@ import com.fs.starfarer.api.campaign.CampaignUIAPI
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin
 import com.fs.starfarer.api.campaign.rules.MemoryAPI
+import com.fs.starfarer.api.characters.PersonAPI
 import com.fs.starfarer.api.combat.BaseEveryFrameCombatPlugin
 import com.fs.starfarer.api.combat.BattleCreationContext
 import com.fs.starfarer.api.combat.CombatEngineAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
+import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.combat.CombatEngine
 import fleetkit.core.config.FTVariables
@@ -26,19 +28,9 @@ import org.magiclib.util.taskscheduler.SystemTaskScheduler
 
 // Initial code taken from Ship Mastery System by float
 
-/**
- * Runs a campaign battle as a simulation.
- *
- * Like the vanilla refit-tab simulator, the player's real ships never take part, the combat is done with throwaway copies.
- *
- * Callers do not need an interaction dialog, a dummy dialog or a particular campaign screen. [simulateBattle] works from:
- *  1. a real interaction dialog,
- *  2. a core UI screen (fleet, cargo, intel...),
- *  3. the bare campaign map.
- */
 object RecentBattleSimulator {
 
-    const val IS_SIMULATOR_KEY = "${FTVariables.PREFIX}_isSimulator"
+    const val IS_SIMULATOR_KEY = "${FTVariables.PREFIX}_isSimulation"
 
     private const val ENCOUNTER_DIALOG_FIELD = "encounterDialog"
     private const val ENEMY_FLEET_FIELD = "enemyFleetForBattle"
@@ -46,8 +38,6 @@ object RecentBattleSimulator {
 
     /**
      * True from the moment a simulation starts until it has been cleaned up.
-     *
-     * Campaign listeners should ignore engagements while this is set.
      */
     @Volatile
     var isSimulating = false
@@ -72,20 +62,10 @@ object RecentBattleSimulator {
         return findEncounterDialogConstructor(campUI).newInstance(null, plugin, screenPanel, campUI)
     }
 
-    // ---------------------------------------------------------------------------------------------------------------
-
     fun createSimulationFleet(realFleet: CampaignFleetAPI): CampaignFleetAPI {
         val simFleet = realFleet.toParsedData(filterParsed = false).toCampaignFleet(FleetSettings())
         simFleet.containingLocation = realFleet.containingLocation // Required
         simFleet.setLocation(realFleet.location.x, realFleet.location.y) // For environmental effects
-
-        /* if (CommanderShuttle.playerShuttleExists(realFleet)) {
-            val shuttleMember = CommanderShuttle.createCommanderShuttle()
-            simFleet.fleetData.addFleetMember(shuttleMember)
-            simFleet.fleetData.setFlagship(shuttleMember)
-            shuttleMember.repairTracker.isMothballed = true
-            shuttleMember.repairTracker.cr = shuttleMember.repairTracker.maxCR
-        } */
 
         return simFleet
     }
@@ -100,11 +80,10 @@ object RecentBattleSimulator {
 
         private val sector = Global.getSector()
 
-        // What the campaign looked like before. Null when no interaction dialog was open (core UI screen or bare map).
+        // What the campaign looked like before. This is null when no interaction dialog was open.
         private val previousDialog: InteractionDialogAPI? = campUI.currentInteractionDialog
 
-        // The only campaign state the battle return flow touches is the last-battle info, which
-        // CampaignState.prepare() sets after every engagement, so it is the only thing saved here.
+        // Reset these on battle return
         private val lastBattleTimestamp = sector.lastPlayerBattleTimestamp
         private val lastBattleWon = sector.isLastPlayerBattleWon
         private val wasPaused = sector.isPaused
@@ -113,11 +92,7 @@ object RecentBattleSimulator {
         private var ownDialog: InteractionDialogAPI? = null
 
         /**
-         * CampaignState needs a non-null encounterDialog and a non-null dialogType to route the battle result here.
-         *
-         * 1. Interaction dialog already open: swap it for a hidden one, put it back afterwards.
-         * 2. Core UI screen open: showInteractionDialog refuses, so the hidden dialog is installed anyway.
-         * 3. Bare map: show a real (empty) dialog, which sets the dialog type for us.
+         * CampaignState needs a non-null encounterDialog and a non-null dialogType to route the battle result.
          */
         fun install() {
             if (previousDialog == null && campUI.showInteractionDialog(this, null)) {
@@ -127,26 +102,24 @@ object RecentBattleSimulator {
             }
         }
 
-        /** Undoes [install] when the simulation never got to run. */
+        /** Undoes [install] if an error occurred */
         fun uninstall() {
             val own = ownDialog
             if (own != null) own.dismiss() else campUI.set(ENCOUNTER_DIALOG_FIELD, previousDialog)
         }
 
         override fun backFromEngagement(battleResult: EngagementResultAPI?) {
-            // This runs inside CampaignState.prepare(), an exception here would take the game down with it.
-            // Note: battleResult is malformed for a simulation (battleResult.battle is null), do not use it.
             try {
                 // Without a real enemy fleet set, CampaignState does not switch the music.
                 campUI.set(ENEMY_FLEET_FIELD, null)
 
-                // Put back whatever dialog was there (null for a core UI screen).
+                // Put back whatever dialog was there (can be null).
                 if (ownDialog == null) campUI.set(ENCOUNTER_DIALOG_FIELD, previousDialog)
             } catch (e: Exception) {
                 Global.getLogger(RecentBattleSimulator::class.java).error("Failed to restore campaign dialog: ", e)
             }
 
-            // prepare() writes the last-battle info right after this call, so the rest has to wait.
+            // The last-battle info is written right after this call, so the rest has to wait.
             SystemTaskScheduler.performLater { finish() }
         }
 
@@ -196,9 +169,19 @@ object RecentBattleSimulator {
             sector.isPaused = true
             isSimulating = true
 
+            class FlagshipBackup(val member: FleetMemberAPI, val wasFlagship: Boolean, val captain: PersonAPI)
+            val backups = bcc.playerFleet.fleetData.membersListCopy.map { FlagshipBackup(it, it.isFlagship, it.captain) }
+
             sector.campaignUI.startBattle(bcc)
 
-            // startBattle builds a brand new CombatEngine (the loader destroys the old instance), so the engine has to be fetched after it, not before.
+            for (backup in backups) { // Undo ensureHasFlagship
+                if (!backup.wasFlagship && backup.member.isFlagship) {
+                    backup.member.setFlagship(false, false)
+                    backup.member.captain = backup.captain
+                }
+            }
+
+            // startBattle builds a brand new CombatEngine
             val engine = CombatEngine.getInstance()
             engine.customData[IS_SIMULATOR_KEY] = true
 

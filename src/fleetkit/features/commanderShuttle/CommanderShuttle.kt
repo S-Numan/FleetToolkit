@@ -12,6 +12,7 @@ import fleetkit.core.util.FTTxt
 import fleetkit.otherMods.starficz.ReflectionUtils.getMethodsMatching
 import fleetkit.util.listeners.OfficerChangeEvents
 import org.magiclib.util.reflection.boxed.BoxedFleetTab
+import org.magiclib.util.taskscheduler.SectorTaskScheduler
 
 internal object CommanderShuttle {
     var commanderShuttleListener = CommanderShuttleListener()//Should not be present as a script if the shuttle is not in the player's fleet
@@ -50,6 +51,16 @@ internal object CommanderShuttle {
         //ShipOfficerChangeEvents.addTransientListener { change ->
         //    MISC.showMessage("Officer changed on ${change.member.shipName}: Previously captained by: ${change.previous?.name?.fullName} Currently: ${change.current?.name?.fullName}")
         //}
+
+        SectorTaskScheduler.performAfterPlayerBattle(true) {
+            for (member in Global.getSector().playerFleet.fleetData.membersListCopy) {
+                if (member.repairTracker.isMothballed && member.variant.hasHullMod(FTVariables.COMMAND_SHUTTLE_ID)) {
+                    val maxCR = member.repairTracker.maxCR
+                    member.repairTracker.isMothballed = false
+                    member.repairTracker.cr = maxCR
+                }
+            }
+        }
     }
 
 

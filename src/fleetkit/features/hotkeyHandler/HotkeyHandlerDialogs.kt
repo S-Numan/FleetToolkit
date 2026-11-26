@@ -1244,14 +1244,6 @@ object HotkeyHandlerDialogs {
                         RecentBattleSimulator.simulateBattle(battleContext) {
                             //battle.finish(null, false)
                             dialog.panel.parent?.bringComponentToTop(dialog.panel)
-
-                            for (member in sector.playerFleet.fleetData.membersListCopy) {
-                                if (member.repairTracker.isMothballed && member.variant.hasHullMod(FTVariables.COMMAND_SHUTTLE_ID)) {
-                                    val maxCR = member.repairTracker.maxCR
-                                    member.repairTracker.isMothballed = false
-                                    member.repairTracker.cr = maxCR
-                                }
-                            }
                         }
                     }
                 }
