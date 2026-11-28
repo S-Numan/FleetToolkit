@@ -163,8 +163,16 @@ class RBFleetDirectory(
         if (editDirectoryFile)
             updateDirectory(fleetID, currentTime)
 
-        if (editFleetFile)
-            Global.getSettings().writeTextFileToCommon("$directory$fleetPath", comp)
+        if (FTSettings.enableDebug) { // TODO, remove this temporary code
+            val temp = FleetCode.decode(comp) ?: throw Exception("AAAA")
+            val tempJSON = FleetJson.saveFleetToJson(temp)
+
+            if (editFleetFile)
+                Global.getSettings().writeTextFileToCommon("$directory$fleetPath", tempJSON.toString(4))
+        } else {
+            if (editFleetFile)
+                Global.getSettings().writeTextFileToCommon("$directory$fleetPath", comp)
+        }
 
         val entry = RBFleetEntry(
             parsedFleet,
@@ -208,7 +216,7 @@ class RBFleetDirectory(
         } catch (e: Exception) {
             DisplayMessage.showError(
                 "Failed to update fleet directory.",
-                "Failed to read fleet directory at /saves/common/$$directory$DIRECTORY_CONFIG_FILE_NAME\n",
+                "Failed to read fleet directory at /saves/common/$directory$DIRECTORY_CONFIG_FILE_NAME\n",
                 e
             )
             return
