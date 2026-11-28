@@ -105,7 +105,7 @@ object MemberJson {
             memberJson.put("ismothballed", true)
 
         if (data.personData != null) {
-            val officerJson = savePersonToJson(data.personData)
+            val officerJson = savePersonToJson(data.personData, includeModInfo = false)
             memberJson.put("officer", officerJson)
         }
 
