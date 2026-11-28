@@ -14,7 +14,7 @@ internal class DirectoryManager private constructor(
     manager = manager
 ) {
     companion object {
-        const val CONFIG_FILE_NAME = ".directory" // TODO, confirm if creating a file with a dot at the start actually works.
+        const val CONFIG_FILE_NAME = ".directory"
 
         private fun normalizeConfigPath(path: String): String {
             val normalized = path.replace("\\", "/")
@@ -79,11 +79,11 @@ internal class DirectoryManager private constructor(
     val folderPath: String = filePath.removeSuffix(CONFIG_FILE_NAME).removeSuffix("/")
     val folderName = folderPath.substringAfterLast('/')
 
-    private val _containingPaths: MutableList<DirPath> by lazy { // TODO, change to a MutableSet
-        loadPaths().toMutableList()
+    private val _containingPaths: MutableSet<DirPath> by lazy {
+        loadPaths().toMutableSet()
     }
 
-    fun getContainingPaths(): List<DirPath> {
+    fun getContainingPaths(): Set<DirPath> {
         return _containingPaths
     }
 
