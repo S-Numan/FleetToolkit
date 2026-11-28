@@ -174,8 +174,6 @@ object ShipDirectoryService {
 
                         directory.put("shipPaths", shipJsonPaths)
                         Global.getSettings().writeJSONToCommon(configFilePath, directory, false)
-
-                        i++
                         continue
                     }
 

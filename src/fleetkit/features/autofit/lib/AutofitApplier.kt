@@ -226,8 +226,11 @@ internal object AutofitApplier {
         } catch (e: Exception) {
             DisplayMessage.showError(FTTxt.txt("failed_to_apply_variant"), e)
             //e.printStackTrace()
+        } finally {
+            shipDisplay.safeInvoke("setSuppressMessages", false)
         }
 
+        shipDisplay.safeInvoke("setSuppressMessages", true)
         try {
             if (appliedSMods) {
                 // Prevent undo. Refunding SMods is difficult.
@@ -263,8 +266,9 @@ internal object AutofitApplier {
             //refitPanel.safeInvoke("recreateUI")
         } catch (e: Exception) {
             DisplayMessage.showError("ERROR: " + FTTxt.txt("failed_to_apply_variant"), e)
+        } finally {
+            shipDisplay.safeInvoke("setSuppressMessages", false)
         }
 
-        shipDisplay.safeInvoke("setSuppressMessages", false)
     }
 }

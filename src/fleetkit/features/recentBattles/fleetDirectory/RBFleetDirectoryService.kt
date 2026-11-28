@@ -42,6 +42,7 @@ object RBFleetDirectoryService {
         val fleetsJson = directoryJson.optJSONObject("fleets") ?: JSONObject()
 
         val keys = fleetsJson.keys()
+        val keysToRemove = mutableListOf<String>()
         while (keys.hasNext()) {
             val fleetId = keys.next() as? String ?: continue
             val obj = fleetsJson.optJSONObject(fleetId) ?: continue
@@ -54,7 +55,7 @@ object RBFleetDirectoryService {
                     "Fleet file missing at /saves/common/$directory$fleetPath, removing from directory"
                 )
 
-                fleetsJson.remove(fleetId)
+                keysToRemove.add(fleetId)
                 continue
             }
 
@@ -96,6 +97,9 @@ object RBFleetDirectoryService {
                 fleetId,
                 RBFleetEntry(parsed, fleetPath, missing, parsedDate, fleetDir, fleetId)
             )
+        }
+        keysToRemove.forEach {
+            fleetsJson.remove(it)
         }
 
         // Save cleaned JSON (in case missing files were removed)

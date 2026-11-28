@@ -18,7 +18,7 @@ internal class CampaignModPickerFilter : EveryFrameScript {
     }
 
     var filterPanel: ModPickerFilterPanel? = null
-    var isPermMode: Boolean = false
+    var isPermMode: Boolean? = null
 
     override fun advance(amount: Float) {
         if (!Global.getSector()!!.isPaused) return
@@ -35,15 +35,13 @@ internal class CampaignModPickerFilter : EveryFrameScript {
         val modPicker = coreUI.findChildWithMethod("canInstallGivenMarket") as? UIPanelAPI
         if (modPicker == null) {
             filterPanel = null
-            isPermMode = false
+            isPermMode = null
             return
         }
 
-        val newPermMode = modPicker.safeInvoke("isPermMode") as Boolean
-        //On  panel appearing
-        if (filterPanel == null) {
-            filterPanel = ModPickerFilterPanel(200f, 30f, modPicker, modPicker)
-        } else if (newPermMode != isPermMode) {
+        val newPermMode = modPicker.safeInvoke("isPermMode") as? Boolean ?: return
+        //On panel appearing, or panel perm state change
+        if (filterPanel == null || newPermMode != isPermMode) {
             filterPanel = ModPickerFilterPanel(200f, 30f, modPicker, modPicker)
             isPermMode = newPermMode
         }

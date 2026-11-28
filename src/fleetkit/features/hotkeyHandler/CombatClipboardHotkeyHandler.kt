@@ -191,9 +191,10 @@ internal class CombatClipboardHotkeyHandler : BaseEveryFrameCombatPlugin() {
             }
 
             is DataMember.ParsedMemberData -> {
-                if (element.variantData != null)
+                if (element.variantData != null) {
                     member = DataMember.buildMemberFull(element, missing = missing)
-                member!!.crewComposition.addCrew(member.neededCrew)
+                    member.crewComposition.addCrew(member.neededCrew)
+                }
             }
         }
         if (member == null)

@@ -31,6 +31,7 @@ internal class CodexAutofitButton : EveryFrameScript, BaseEveryFrameCombatPlugin
     override fun runWhilePaused(): Boolean = true
 
     override fun advance(amount: Float) {
+        // Campaign advance should only run if it was added to the campaign, that only happens if it was enabled. So a check for if it is enabled here is unnecessary.
         if (Global.getSector()!!.isPaused)
             onAdvance()
     }
@@ -60,6 +61,7 @@ internal class CodexAutofitButton : EveryFrameScript, BaseEveryFrameCombatPlugin
         if (Companion.param === param)
             return
         // Param change detected (may also occur on codex opening)
+        Companion.param = param
 
         val codexDetailPanel = codex.getDetailPanel() ?: return
 
@@ -97,20 +99,19 @@ internal class CodexAutofitButton : EveryFrameScript, BaseEveryFrameCombatPlugin
             openAutofitButton!!.setWidth(Global.getSettings().computeStringWidth(buttonText, Fonts.ORBITRON_20AA) + 12f)
 
             val belowTitleBarDeeperPanel = InternalReflectionMisc.getBelowTitleDeeperPanel(codex)
-            val shipDisplay = belowTitleBarDeeperPanel?.findChildWithMethod("isSchematicMode") as? UIPanelAPI ?: return
+            val shipDisplay = belowTitleBarDeeperPanel?.findChildWithMethod("isSchematicMode") as? UIPanelAPI
+            if (shipDisplay != null) {
+                val leftPanelSize = belowTitleBarDeeperPanel.x - codex.x
 
-            val leftPanelSize = belowTitleBarDeeperPanel.x - codex.x
+                openAutofitButton!!.xAlignOffset = -codexDetailPanel.x + shipDisplay.centerX - openAutofitButton!!.width / 2f
+                //openAutofitButton!!.yAlignOffset = -openAutofitButton!!.height + 1f
 
-            openAutofitButton!!.xAlignOffset = -codexDetailPanel.x + shipDisplay.centerX - openAutofitButton!!.width / 2f
-            //openAutofitButton!!.yAlignOffset = -openAutofitButton!!.height + 1f
-
-            openAutofitButton!!.addShortcutNoShow(FTSettings.autofitMenuHotkey)
-            openAutofitButton!!.onClick {
-                autofitPanel = AutofitPanel.createMagicAutofitPanel(codex, codex.width - leftPanelSize, codex.height, variant, false)
-                codex.addComponent(autofitPanel).setXAlignOffset(leftPanelSize)
+                openAutofitButton!!.addShortcutNoShow(FTSettings.autofitMenuHotkey)
+                openAutofitButton!!.onClick {
+                    autofitPanel = AutofitPanel.createMagicAutofitPanel(codex, codex.width - leftPanelSize, codex.height, variant, false)
+                    codex.addComponent(autofitPanel).setXAlignOffset(leftPanelSize)
+                }
             }
         }
-
-        Companion.param = param
     }
 }

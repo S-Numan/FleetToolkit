@@ -201,7 +201,7 @@ class ShipDirectory(
         val shipPath = "${savedVariant.hullSpec.getEffectiveHullId()}/${savedVariant.hullVariantId}"
 
         val newIndex = if (inputDesiredIndexInMenu < 0)
-            ShipDirectoryService.getHighestIndexInEffectiveMenu(FTSettings.defaultPrefix, variantToSave.hullSpec) + 1
+            ShipDirectoryService.getHighestIndexInEffectiveMenu(prefix, variantToSave.hullSpec) + 1
         else
             inputDesiredIndexInMenu
 
