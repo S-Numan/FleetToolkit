@@ -7,6 +7,7 @@ import com.fs.starfarer.api.ui.UIPanelAPI
 import fleetkit.core.config.FTSettings
 import fleetkit.features.autofit.ui.AutofitPanelCreator
 import fleetkit.otherMods.starficz.ReflectionUtilsSafe.safeInvoke
+import fleetkit.otherMods.starficz.clearOnClick
 import fleetkit.otherMods.starficz.findChildWithMethod
 import fleetkit.otherMods.starficz.onClick
 import org.lwjgl.input.Keyboard
@@ -42,6 +43,7 @@ internal class CampaignAutofitAdder : EveryFrameScript {
         val autofitButton = bottomLeftPanel.safeInvoke("getManageButton") as? ButtonAPI ?: return
         autofitButton.setShortcut(FTSettings.autofitMenuHotkey, false)
 
+        autofitButton.clearOnClick()
         autofitButton.onClick {
             if (FTSettings.autofitMenuHotkey != Keyboard.KEY_NONE && Keyboard.isKeyDown(FTSettings.autofitMenuHotkey))
                 AutofitPanelCreator.toggleAutofitButton(refitTab, true)

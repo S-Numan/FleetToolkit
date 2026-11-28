@@ -15,7 +15,7 @@ internal class TransponderOff : CurrentLocationChangedListener {
 
         if (playerFleet.isTransponderOn && curr.isHyperspace && !prev.isHyperspace) {
             playerFleet.isTransponderOn = false
-            playerFleet.getAbility(Abilities.TRANSPONDER).deactivate()
+            playerFleet.getAbility(Abilities.TRANSPONDER)?.deactivate()
         }
     }
 }

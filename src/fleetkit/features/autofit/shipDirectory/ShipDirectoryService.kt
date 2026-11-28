@@ -314,11 +314,9 @@ object ShipDirectoryService {
 
             // Replace the old array with the new formatted one
             directory.put("shipPaths", newArray)
+
+            Global.getSettings().writeJSONToCommon(configFilePath, directory, false)
         }
-
-
-
-        Global.getSettings().writeJSONToCommon(configFilePath, directory, false)
     }
 
 

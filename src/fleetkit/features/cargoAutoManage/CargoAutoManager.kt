@@ -46,7 +46,7 @@ internal class CargoAutoManager : EveryFrameScript {
                 }
             }
 
-            if (changeOccured)
+            if (changeOccured && FTSettings.reportCargoAutoManagerChanges)
                 DisplayMessage.showMessage(FTTxt.txt("cargo_auto_manage_message"))
 
         } else if (market == null && interactionMarket != null) { // Market Leave
